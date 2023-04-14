@@ -1,6 +1,6 @@
 # romly_blender_addon
 
-個人的に作成、使用している[Blender](https://www.blender.org/)用のスクリプトいろいろ。<br>
+個人的に作成、使用している[Blender](https://www.blender.org/)用のスクリプトいろいろをアドオンにまとめたもの。<br>
 動作確認したBlenderのバージョンは3.5です。<br>
 
 ## インストール方法
