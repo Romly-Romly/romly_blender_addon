@@ -19,6 +19,17 @@
 自分は原点を角や底面の中心などに修正してから使うことが多いのでスクリプトにまとめました。<br>
 UVマップは無いのでご注意下さい。<br>
 
+-----
+
+### Add Donut Cylinder
+
+*Add Menu*(<kbd>Shift+A</kbd>) → *Romly*
+
+中空になっている円柱を追加します。直径／内径の指定の他、直径または内径と肉厚での指定もできます。さらにオブジェクトの原点を最初から底辺や上辺にできるので長さ指定も楽ちん。セグメント数は外側と内側で別々に設定できるので、六角形の円柱に丸い穴というような形状も作れます。<br>
+これは[#軸の秤](https://twitter.com/search?q=%23%E8%BB%B8%E3%81%AE%E7%A7%A4&f=live)みたいもののケースをBlenderで作っていると、ネジ穴周りの設計で非常によく使う形状なのでスクリプトにまとめました。
+
+-----
+
 ### Apply All Modifiers
 
 *Object Context Menu*（オブジェクトを右クリック） → *Romly Tools*
@@ -26,12 +37,16 @@ UVマップは無いのでご注意下さい。<br>
 すべてのモデファイアをまとめて適用します。そのまま。<br>
 なんで標準機能にないんだろう？
 
+-----
+
 ### Add Fixed Count Array Modifier
 
 *Object Context Menu*（オブジェクトを右クリック） → *Romly Tools*
 
 Relative OffsetではなくConstant Offsetを設定した状態のArrayモデファイアを追加します。<br>
 自分の用途的にはRelative Offsetを指定することは極めて稀で、毎回毎回Constant Offsetにチェックを入れ直してオフセット距離を指定するのが面倒なのでスクリプトにまとめました。
+
+-----
 
 ### Export Collection as STL
 
