@@ -94,7 +94,7 @@ class ROMLYADDON_OT_add_box(bpy.types.Operator):
 	]
 
 	# プロパティ
-	val_size: FloatVectorProperty(name='Size', description='大きさ', default=[10, 10, 10], min=-100.0, max=100.0, size=3, subtype='TRANSLATION', unit='LENGTH')
+	val_size: FloatVectorProperty(name='Size', description='大きさ', default=[10, 10, 10], soft_min=-1000.0, soft_max=1000.0, size=3, subtype='TRANSLATION', unit='LENGTH')
 	val_origin_x: EnumProperty(name='X', description='X軸原点位置', default='0', items=ORIGIN_X_ITEMS)
 	val_origin_y: EnumProperty(name='Y', description='Y軸原点位置', default='0', items=ORIGIN_Y_ITEMS)
 	val_origin_z: EnumProperty(name='Z', description='Z軸原点位置', default='0', items=ORIGIN_Z_ITEMS)
