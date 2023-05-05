@@ -3,36 +3,8 @@ import mathutils
 import bmesh
 from bpy.props import *
 
+from . import romly_utils
 
-
-
-
-def create_object(vertices: list, faces: list, name: str = '', mesh_name=None):
-	"""
-	指定された頂点リストと面リストから新しいオブジェクトを生成する。
-
-	Parameters
-	----------
-	vertices : list of tuple of float
-		オブジェクトの頂点座標のリスト。
-	faces : list of tuple of int
-		オブジェクトの面を構成する頂点のインデックスのリスト。
-	name : str
-		作成されるオブジェクトの名前。
-	mesh_name : str, optional
-		作成されるメッシュデータの名前。デフォルトでは、オブジェクト名に '_mesh' を追加されたものになる。
-
-	Returns
-	-------
-	bpy.types.Object
-		作成されたオブジェクトのインスタンス。
-	"""
-	if mesh_name is None:
-		mesh_name = name + '_mesh'
-	mesh = bpy.data.meshes.new(mesh_name)
-	mesh.from_pydata(vertices, [], faces)
-	obj = bpy.data.objects.new(name, mesh)
-	return obj
 
 
 
@@ -59,7 +31,7 @@ def create_box(size: mathutils.Vector, offset: mathutils.Vector):
 	]
 
 	actual_vertices = [(v * size) + offset for v in vertices]
-	return cleanup_mesh(create_object(vertices=actual_vertices, faces=faces))
+	return romly_utils.cleanup_mesh(romly_utils.create_object(vertices=actual_vertices, faces=faces))
 
 
 
@@ -98,39 +70,6 @@ def create_combined_object(objects, obj_name: str, mesh_name: str = None):
 	combinedObject = bpy.data.objects.new(obj_name, mesh)
 	combinedObject.location = objects[0].location
 	return combinedObject
-
-
-
-
-
-def cleanup_mesh(object: bpy.types.Object, remove_doubles=True, recalc_normals=True):
-	"""
-	メッシュオブジェクトの重複する頂点を削除し、法線を再計算することでメッシュをクリーンアップする。
-
-	Parameters
-	----------
-	object : bpy.types.Object
-		クリーンアップするメッシュオブジェクト
-	remove_doubles : bool, optional
-		True の場合、重複する頂点を削除します。デフォルトは True。
-	recalc_normals : bool, optional
-		True の場合、法線を再計算します。デフォルトは True。
-
-	Returns
-	-------
-	bpy.types.Object
-	"""
-	bm = bmesh.new()
-	bm.from_mesh(object.data)
-	if remove_doubles:
-		bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=0.0001)
-	if recalc_normals:
-		bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
-	bm.to_mesh(object.data)
-	bm.clear()
-	object.data.update()
-	bm.free()
-	return object
 
 
 
@@ -203,7 +142,6 @@ class ROMLYADDON_OT_add_pinheader(bpy.types.Operator):
 
 	val_num_cols: IntProperty(name='Columns', description='ピン数', default=4, min=1, soft_max=20)
 	val_num_rows: IntProperty(name='Rows', description='行数', default=1, min=1, soft_max=3)
-	val_size: FloatVectorProperty(name='Size', description='大きさ', default=[10, 10, 10], soft_min=-1000.0, soft_max=1000.0, size=3, subtype='TRANSLATION', unit='LENGTH')
 
 
 
@@ -221,16 +159,22 @@ class ROMLYADDON_OT_add_pinheader(bpy.types.Operator):
 		col.label(text="Pitch")
 		row = col.row(align=True)
 		row.prop(self, 'val_pitch', expand=True)
-		row = col.row(align=True)
-		row.prop(self, 'val_block_size')
+		col.separator()
+
 		row = col.row(align=True)
 		row.prop(self, 'val_pin_thickness')
 		row = col.row(align=True)
 		row.prop(self, 'val_pin_length_top')
 		row = col.row(align=True)
 		row.prop(self, 'val_pin_length_bottom')
+		row = col.row(align=True)
+		row.alignment = 'RIGHT'
+		row.label(text=f"Pin Total Length: {romly_utils.units_to_string(self.val_pin_length_top + self.val_pin_length_bottom + self.val_block_size[2])}")
 		col.separator()
 
+		col.label(text='Block Size')
+		row = col.row(align=True)
+		row.prop(self, 'val_block_size', text='')
 		col.prop(self, 'val_block_concave_size')
 		col.separator()
 
@@ -239,8 +183,6 @@ class ROMLYADDON_OT_add_pinheader(bpy.types.Operator):
 		col.prop(self, 'val_num_rows')
 		col.separator()
 
-		col.prop(self, 'val_size')
-		col.separator()
 
 
 	def execute(self, context):

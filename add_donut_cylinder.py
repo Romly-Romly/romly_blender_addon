@@ -4,6 +4,8 @@ import bmesh
 import math
 import mathutils
 
+from . import romly_utils
+
 
 
 
@@ -21,19 +23,6 @@ MeshVerticalAlignment = [
 	(MESH_VERTICAL_ALIGNMENT_MIDDLE, 'Middle', 'Set origin to center'),
 	(MESH_VERTICAL_ALIGNMENT_BOTTOM, 'Bottom', 'Set origin to bottom')
 ]
-
-
-
-
-
-def UnitsToString(value, removeSpace=False):
-	s = bpy.utils.units.to_string(unit_system=bpy.context.scene.unit_settings.system, unit_category=bpy.utils.units.categories.LENGTH, value=value * bpy.context.scene.unit_settings.scale_length)
-
-	# スペースの削除
-	if removeSpace:
-		s = s.replace(' ', '')
-
-	return s
 
 
 
@@ -57,31 +46,6 @@ def ApplyBooleanObject(object, boolObject, unlink):
 	bpy.ops.object.modifier_apply(modifier="Boolean")
 	if unlink:
 		bpy.context.collection.objects.unlink(boolObject)
-
-
-
-
-
-def TranslateVertices(object, vector):
-	"""
-	オブジェクトの頂点を移動する
-
-	Parameters
-	----------
-	object : Mesh or list[Vector]
-		移動する頂点を含むMeshオブジェクトか、Vectorの配列。
-	"""
-	if isinstance(object, bpy.types.Mesh) or isinstance(object, bpy.types.Object):
-		bm = bmesh.new()
-		bm.from_mesh(object.data)
-		bmesh.ops.translate(bm, vec=vector, verts=bm.verts)
-		bm.to_mesh(object.data)
-		bm.clear()
-		object.data.update()
-		bm.free()
-	elif isinstance(object, list):
-		for i in range(len(object)):
-			object[i] = object[i] + vector
 
 
 
@@ -126,17 +90,17 @@ class ROMLY_OT_add_donut_cylinder(bpy.types.Operator):
 			col.prop(self, 'val_holeDiameter')
 			row = col.row()
 			row.alignment = 'RIGHT'
-			row.label(text='Thickness: {value}'.format(value=UnitsToString(value=(self.val_majorDiameter - self.val_holeDiameter) / 2)))
+			row.label(text='Thickness: {value}'.format(value=romly_utils.units_to_string(value=(self.val_majorDiameter - self.val_holeDiameter) / 2)))
 		elif self.val_diameterMethod == DONUT_CYLINDER_DIAMETER_METHOD_DIAMETER_AND_THICKNESS:
 			col.prop(self, 'val_majorDiameter')
 			row = col.row()
 			row.alignment = 'RIGHT'
-			row.label(text='Hole Diameter: {value}'.format(value=UnitsToString(value=(self.val_majorDiameter - self.val_thickness * 2))))
+			row.label(text='Hole Diameter: {value}'.format(value=romly_utils.units_to_string(value=(self.val_majorDiameter - self.val_thickness * 2))))
 			col.prop(self, 'val_thickness')
 		elif self.val_diameterMethod == DONUT_CYLINDER_DIAMETER_METHOD_HOLE_AND_THICKNESS:
 			row = col.row()
 			row.alignment = 'RIGHT'
-			row.label(text='Diameter: {value}'.format(value=UnitsToString(value=(self.val_holeDiameter + self.val_thickness * 2))))
+			row.label(text='Diameter: {value}'.format(value=romly_utils.units_to_string(value=(self.val_holeDiameter + self.val_thickness * 2))))
 			col.prop(self, 'val_holeDiameter')
 			col.prop(self, 'val_thickness')
 		col.separator()
@@ -206,9 +170,9 @@ class ROMLY_OT_add_donut_cylinder(bpy.types.Operator):
 
 			# 原点位置の設定に従ってずらす
 			if self.val_origin == MESH_VERTICAL_ALIGNMENT_TOP:
-				TranslateVertices(object=cylinderObject, vector=mathutils.Vector([0, 0, -self.val_height / 2]))
+				romly_utils.translate_vertices(object=cylinderObject, vector=mathutils.Vector([0, 0, -self.val_height / 2]))
 			elif self.val_origin == MESH_VERTICAL_ALIGNMENT_BOTTOM:
-				TranslateVertices(object=cylinderObject, vector=mathutils.Vector([0, 0, self.val_height / 2]))
+				romly_utils.translate_vertices(object=cylinderObject, vector=mathutils.Vector([0, 0, self.val_height / 2]))
 
 			# 選択
 			cylinderObject.select_set(state=True)
@@ -218,7 +182,7 @@ class ROMLY_OT_add_donut_cylinder(bpy.types.Operator):
 				bpy.ops.object.shade_smooth()
 				cylinderObject.data.use_auto_smooth = True
 
-			cylinderObject.name = 'Donut Cylinder {majorDiameter}/{holeDiameter}'.format(majorDiameter=UnitsToString(value=majorRadius * 2, removeSpace=True), holeDiameter=UnitsToString(value=holeRadius * 2, removeSpace=True))
+			cylinderObject.name = 'Donut Cylinder {majorDiameter}/{holeDiameter}'.format(majorDiameter=romly_utils.units_to_string(value=majorRadius * 2, removeSpace=True), holeDiameter=romly_utils.units_to_string(value=holeRadius * 2, removeSpace=True))
 
 			return {'FINISHED'}
 

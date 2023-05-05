@@ -30,6 +30,18 @@ UVマップは無いのでご注意下さい。<br>
 
 -----
 
+### Add Cross Extrusion
+
+*Add Menu*(<kbd>Shift+A</kbd>) → *Romly*
+
+![Add Cross Extrusion](add_cross_extrusion.png)
+
+XY平面に描いた十字をZ方向に掃引した形状を作成します。十字は横方向、縦方向それぞれの棒の太さと長さを個別に設定できます。
+
+こんな形何に使うんだって感じですが、昔Cherry MX対応のキーキャップを3Dプリントで作る時に、ソケット部分を削る形状を作るのに使ってました。
+
+-----
+
 ### Add Pin Header
 
 *Add Menu*(<kbd>Shift+A</kbd>) → *Romly*

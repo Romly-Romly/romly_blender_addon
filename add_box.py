@@ -3,69 +3,7 @@ import mathutils
 import bmesh
 from bpy.props import *
 
-
-
-
-
-def create_object(vertices, faces, name, mesh_name=None):
-	"""
-	指定された頂点リストと面リストから新しいオブジェクトを生成する。
-
-	Parameters
-	----------
-	vertices : list of tuple of float
-		オブジェクトの頂点座標のリスト。
-	faces : list of tuple of int
-		オブジェクトの面を構成する頂点のインデックスのリスト。
-	name : str
-		作成されるオブジェクトの名前。
-	mesh_name : str, optional
-		作成されるメッシュデータの名前。デフォルトでは、オブジェクト名に '_mesh' を追加されたものになる。
-
-	Returns
-	-------
-	bpy.types.Object
-		作成されたオブジェクトのインスタンス。
-	"""
-	if mesh_name is None:
-		mesh_name = name + '_mesh'
-	mesh = bpy.data.meshes.new(mesh_name)
-	mesh.from_pydata(vertices, [], faces)
-	obj = bpy.data.objects.new(name, mesh)
-	return obj
-
-
-
-
-
-def cleanup_mesh(object: bpy.types.Object, remove_doubles=True, recalc_normals=True):
-	"""
-	メッシュオブジェクトの重複する頂点を削除し、法線を再計算することでメッシュをクリーンアップする。
-
-	Parameters
-	----------
-	object : bpy.types.Object
-		クリーンアップするメッシュオブジェクト
-	remove_doubles : bool, optional
-		True の場合、重複する頂点を削除します。デフォルトは True。
-	recalc_normals : bool, optional
-		True の場合、法線を再計算します。デフォルトは True。
-
-	Returns
-	-------
-	bpy.types.Object
-	"""
-	bm = bmesh.new()
-	bm.from_mesh(object.data)
-	if remove_doubles:
-		bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=0.0001)
-	if recalc_normals:
-		bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
-	bm.to_mesh(object.data)
-	bm.clear()
-	object.data.update()
-	bm.free()
-	return object
+from . import romly_utils
 
 
 
@@ -147,7 +85,7 @@ class ROMLYADDON_OT_add_box(bpy.types.Operator):
 		box_vertices = [(v + offset) * self.val_size for v in vertices]
 
 		bpy.context.scene.cursor.location
-		obj = cleanup_mesh(create_object(box_vertices, faces, name='Box'))
+		obj = romly_utils.cleanup_mesh(romly_utils.create_object(box_vertices, faces, name='Box'))
 		bpy.context.collection.objects.link(obj)
 
 		# オブジェクトを3Dカーソル位置へ移動
