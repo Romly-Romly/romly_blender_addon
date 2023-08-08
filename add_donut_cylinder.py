@@ -4,11 +4,7 @@ import bmesh
 import math
 import mathutils
 
-import romly_utils
-
-# romly_utilsの再読み込み（Blenderを再起動しなくてもよくなる）
-import importlib
-importlib.reload(romly_utils)
+from . import romly_utils
 
 
 
