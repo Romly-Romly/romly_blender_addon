@@ -4,7 +4,11 @@ import bmesh
 import math
 import mathutils
 
-from . import romly_utils
+import romly_utils
+
+# romly_utilsの再読み込み（Blenderを再起動しなくてもよくなる）
+import importlib
+importlib.reload(romly_utils)
 
 
 
@@ -46,6 +50,60 @@ def ApplyBooleanObject(object, boolObject, unlink):
 	bpy.ops.object.modifier_apply(modifier="Boolean")
 	if unlink:
 		bpy.context.collection.objects.unlink(boolObject)
+
+
+
+
+
+def CreatePieCutMesh(amountAngle, rotateAngle, cutSize=10, cutHeight=10):
+	"""シリンダーなどをパイ状にカットするためのブーリアン用メッシュを作成する。
+
+	Parameters
+	----------
+	amountAngle : Float
+		シリンダーをこのメッシュでカットした時に残るパイのラジアン単位の角度。
+	rotateAngle : Float
+		生成されるメッシュのZ軸回りのラジアン単位の回転角度。残ったパイを原点周りに回転させたい時に。
+	cutSize : int, optional
+		生成されるメッシュの半径的な。カットしたいメッシュのサイズより十分に大きい値を指定してね。
+	cutHeight : int, optional
+		生成されるメッシュの高さ。カットしたいメッシュの高さより十分に大きい値を指定していね。
+
+	Returns
+	-------
+	Mesh
+		[description]
+	"""
+	vertices = []
+	faces = []
+
+	vertices.append(romly_utils.VECTOR_Y_PLUS() * cutSize)
+	vertices.append(romly_utils.VECTOR_ZERO())
+	vertices.append(romly_utils.rotated_vector(vector=romly_utils.VECTOR_Y_PLUS() * cutSize, angleRadians=amountAngle, axis='Z'))
+
+	# 180度以下の場合は窪んだ形になるので頂点が増える
+	if amountAngle < math.radians(180):
+		vertices.append(mathutils.Vector([-cutSize, -cutSize, 0]))
+		vertices.append(mathutils.Vector([0, -cutSize, 0]))
+
+	if amountAngle < math.radians(270):
+		vertices.append(mathutils.Vector([cutSize, -cutSize, 0]))
+
+	vertices.append(mathutils.Vector([cutSize, cutSize, 0]))
+
+	faces.append(list(reversed(range(len(vertices)))))
+
+	# 掃引
+	romly_utils.extrude_face(vertices=vertices, faces=faces, extrude_vertex_indices=faces[0], z_offset=cutHeight)
+
+	# 回転
+	romly_utils.rotate_vertices(object=vertices, degrees=math.degrees(rotateAngle), axis='Z')
+
+	mesh = romly_utils.create_object(vertices=vertices, faces=faces, name='Pie Cutter')
+	romly_utils.cleanup_mesh(object=mesh)
+	mesh.location.z = -cutHeight / 2
+	return mesh
+
 
 
 

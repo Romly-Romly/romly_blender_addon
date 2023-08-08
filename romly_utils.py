@@ -1,5 +1,35 @@
 import bpy
 import bmesh
+import mathutils
+import math
+
+
+
+
+
+def VECTOR_ZERO():
+	"""ゼロベクトルを返す。
+
+	Returns
+	-------
+	mathutils.Vector
+		Blenderにおけるゼロベクトル。
+	"""
+	return mathutils.Vector([0, 0, 0])
+
+
+
+
+
+def VECTOR_Y_PLUS():
+	"""Yプラス方向の単位ベクトルを返す。
+
+	Returns
+	-------
+	mathutils.Vector
+		BlenderにおけるYプラス方向の単位ベクトル。
+	"""
+	return mathutils.Vector([0, 1, 0])
 
 
 
@@ -241,3 +271,55 @@ def units_to_string(value, removeSpace=False):
 		s = s.replace(' ', '')
 
 	return s
+
+
+
+
+
+def rotated_vector(vector, angleRadians, axis):
+	"""原点周りで回転したベクトルを生成して返す。
+
+	Parameters
+	----------
+	vector : Vector
+		元になるベクトル。
+	angleRadians : Float
+		ラジアン単位の回転角度。
+	axis : ['X', 'Y', 'Z']
+		回転軸。Matrix.Rotationメソッドにそのまま渡される。
+
+	Returns
+	-------
+	Vector
+		回転したベクトル。新しいベクトルが生成されて返される。
+	"""
+	v = vector.copy()
+	v.rotate(mathutils.Matrix.Rotation(angleRadians, 4, axis))
+	return v
+
+
+
+
+
+def rotate_vertices(object, degrees, axis):
+	"""MeshまたはVectorの配列のすべての頂点を原点周りで回転する
+
+	Parameters
+	----------
+	object : Mesh or list[Vector]
+		回転する頂点を含むMeshオブジェクトか、Vectorの配列。
+	axis : ['X', 'Y', 'Z']
+		回転軸。Matrix.Rotationメソッドにそのまま渡される。
+
+	"""
+	if isinstance(object, bpy.types.Mesh) or isinstance(object, bpy.types.Object):
+		bm = bmesh.new()
+		bm.from_mesh(object.data)
+		bmesh.ops.rotate(bm, verts=bm.verts, cent=(0.0, 0.0, 0.0), matrix=mathutils.Matrix.Rotation(math.radians(degrees), 4, axis))
+		bm.to_mesh(object.data)
+		bm.clear()
+		object.data.update()
+		bm.free()
+	elif isinstance(object, list):
+		for v in object:
+			v.rotate(mathutils.Matrix.Rotation(math.radians(degrees), 4, axis))
