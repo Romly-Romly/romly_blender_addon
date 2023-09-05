@@ -1,6 +1,6 @@
 bl_info = {
 	'name': 'Romly Blender Add-on',
-	'version': (0, 4, 1),
+	'version': (0, 5, 0),
 	'blender': (3, 5, 0),
 	'category': 'Object',
 	'author': 'Romly',
@@ -16,6 +16,30 @@ from .add_donut_cylinder import ROMLY_OT_add_donut_cylinder
 from .add_cross_extrusion import ROMLYADDON_OT_add_cross_extrusion
 from .add_pinheader import ROMLYADDON_OT_add_pinheader
 from .export_collection_as_stl import ROMLYADDON_OT_export_collection_as_stl
+from .export_selection_as_stl import ROMLYADDON_OT_export_selection_as_stl
+
+
+
+
+
+# アウトライナーのオブジェクトの右クリックに追加するメニュー
+class ROMLYADDON_MT_romly_export_selection_as_stl_menu_parent(bpy.types.Menu):
+	bl_idname = "ROMLYADDON_MT_romly_export_selection_as_stl_menu_parent"
+	bl_label = "Romly Tools"
+	bl_description = "Romly Addon Menu"
+
+	def draw(self, context):
+		layout = self.layout
+		layout.operator(ROMLYADDON_OT_export_selection_as_stl.bl_idname, icon='EXPORT')
+
+
+
+
+
+# オブジェクトの右クリックメニューに登録
+def outliner_object_menu_func(self, context):
+	self.layout.separator()
+	self.layout.menu(ROMLYADDON_MT_romly_export_selection_as_stl_menu_parent.bl_idname, icon='NONE')
 
 
 
@@ -115,10 +139,14 @@ def register():
 	bpy.utils.register_class(ROMLYADDON_OT_export_collection_as_stl)
 	bpy.utils.register_class(ROMLYADDON_MT_romly_export_collection_as_stl_menu_parent)
 
+	bpy.utils.register_class(ROMLYADDON_OT_export_selection_as_stl)
+	bpy.utils.register_class(ROMLYADDON_MT_romly_export_selection_as_stl_menu_parent)
+
 	# それぞれのメニューに独自メニューを登録
 	bpy.types.VIEW3D_MT_object_context_menu.append(object_menu_func)
 	bpy.types.VIEW3D_MT_add.append(add_menu_func)
 	bpy.types.OUTLINER_MT_collection.append(collection_menu_func)
+	bpy.types.OUTLINER_MT_object.append(outliner_object_menu_func)
 
 
 
@@ -139,6 +167,10 @@ def unregister():
 	bpy.utils.unregister_class(ROMLYADDON_OT_export_collection_as_stl)
 	bpy.utils.unregister_class(ROMLYADDON_MT_romly_export_collection_as_stl_menu_parent)
 
+	bpy.utils.unregister_class(ROMLYADDON_OT_export_selection_as_stl)
+	bpy.utils.unregister_class(ROMLYADDON_MT_romly_export_selection_as_stl_menu_parent)
+
 	bpy.types.VIEW3D_MT_object_context_menu.remove(object_menu_func)
 	bpy.types.VIEW3D_MT_add.remove(add_menu_func)
 	bpy.types.OUTLINER_MT_collection.remove(collection_menu_func)
+	bpy.types.OUTLINER_MT_object.remove(outliner_object_menu_func)
