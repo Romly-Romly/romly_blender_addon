@@ -1,6 +1,6 @@
 bl_info = {
 	'name': 'Romly Blender Add-on',
-	'version': (0, 5, 0),
+	'version': (0, 6, 0),
 	'blender': (3, 5, 0),
 	'category': 'Object',
 	'author': 'Romly',
@@ -14,6 +14,7 @@ from .add_fixed_count_array_modifier import ROMLYADDON_OT_add_fixed_count_array_
 from .add_box import ROMLYADDON_OT_add_box
 from .add_donut_cylinder import ROMLY_OT_add_donut_cylinder
 from .add_cross_extrusion import ROMLYADDON_OT_add_cross_extrusion
+from .add_reuleaux_polygon import ROMLYADDON_OT_add_reuleaux_polygon
 from .add_pinheader import ROMLYADDON_OT_add_pinheader
 from .export_collection_as_stl import ROMLYADDON_OT_export_collection_as_stl
 from .export_selection_as_stl import ROMLYADDON_OT_export_selection_as_stl
@@ -84,6 +85,7 @@ class ROMLYADDON_MT_romly_add_mesh_menu_parent(bpy.types.Menu):
 		layout.operator(ROMLYADDON_OT_add_box.bl_idname, icon='MESH_CUBE')
 		layout.operator(ROMLY_OT_add_donut_cylinder.bl_idname, icon='MESH_CYLINDER')
 		layout.operator(ROMLYADDON_OT_add_cross_extrusion.bl_idname, icon='ADD')
+		layout.operator(ROMLYADDON_OT_add_reuleaux_polygon.bl_idname, icon='MESH_CIRCLE')
 		layout.operator(ROMLYADDON_OT_add_pinheader.bl_idname, icon='EMPTY_SINGLE_ARROW')
 
 
@@ -133,6 +135,7 @@ def register():
 	bpy.utils.register_class(ROMLYADDON_OT_add_box)
 	bpy.utils.register_class(ROMLY_OT_add_donut_cylinder)
 	bpy.utils.register_class(ROMLYADDON_OT_add_cross_extrusion)
+	bpy.utils.register_class(ROMLYADDON_OT_add_reuleaux_polygon)
 	bpy.utils.register_class(ROMLYADDON_OT_add_pinheader)
 	bpy.utils.register_class(ROMLYADDON_MT_romly_add_mesh_menu_parent)
 
@@ -161,6 +164,7 @@ def unregister():
 	bpy.utils.unregister_class(ROMLYADDON_OT_add_box)
 	bpy.utils.unregister_class(ROMLY_OT_add_donut_cylinder)
 	bpy.utils.unregister_class(ROMLYADDON_OT_add_cross_extrusion)
+	bpy.utils.unregister_class(ROMLYADDON_OT_add_reuleaux_polygon)
 	bpy.utils.unregister_class(ROMLYADDON_OT_add_pinheader)
 	bpy.utils.unregister_class(ROMLYADDON_MT_romly_add_mesh_menu_parent)
 
