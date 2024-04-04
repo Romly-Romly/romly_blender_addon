@@ -42,6 +42,18 @@ XY平面に描いた十字をZ方向に掃引した形状を作成します。�
 
 -----
 
+### Add Reuleaux Polygon
+
+*Add Menu(<kbd>Shift+A</kbd>) → *Romly*
+
+![Add Reuleaux Polygon](add_reuleaux_polygon.jpg)
+
+XY平面にルーローの多角形を作成します。正しくルーローの多角形になるのは辺の数が奇数の場合のみで、偶数の正多角形の時は反対側の辺の中点を中心とする円弧でそれっぽい形にしているだけです。
+
+円弧部のセグメント数を指定でき、1にすると円弧無しの正多角形になります。
+
+-----
+
 ### Add Pin Header
 
 *Add Menu*(<kbd>Shift+A</kbd>) → *Romly*
