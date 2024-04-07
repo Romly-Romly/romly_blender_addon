@@ -54,6 +54,16 @@ XY平面にルーローの多角形を作成します。正しくルーローの
 
 -----
 
+### Add Reuleaux Tetrahedron
+
+*Add Menu(<kbd>Shift+A</kbd>) → *Romly*
+
+![Add Reuleaux Tetrahedron](add_reuleaux_tetrahedron.jpg)
+
+ルーローの四面体を作成します。UV球またはICO球の共通部分を使って作成する方法と、頂点を計算して作成する方法を選択できます。前者の場合、メッシュの分割数が少ないと四面体の角が出ず形状が破綻してしまいます。いずれの作成方法でも、分割数を最小にすると通常の正四面体となります。
+
+-----
+
 ### Add Pin Header
 
 *Add Menu*(<kbd>Shift+A</kbd>) → *Romly*
