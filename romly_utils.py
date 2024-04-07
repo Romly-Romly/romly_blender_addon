@@ -35,7 +35,7 @@ def VECTOR_Y_PLUS():
 
 
 
-def create_object(vertices, faces, name, mesh_name=None):
+def create_object(vertices: list, faces: list, name: str = '', mesh_name: str = None):
 	"""
 	指定された頂点リストと面リストから新しいオブジェクトを生成する。
 
@@ -126,37 +126,6 @@ def translate_vertices(object, vector):
 	elif isinstance(object, list):
 		for i in range(len(object)):
 			object[i] = object[i] + vector
-
-
-
-
-
-def create_object(vertices: list, faces: list, name: str = '', mesh_name=None):
-	"""
-	指定された頂点リストと面リストから新しいオブジェクトを生成する。
-
-	Parameters
-	----------
-	vertices : list of tuple of float
-		オブジェクトの頂点座標のリスト。
-	faces : list of tuple of int
-		オブジェクトの面を構成する頂点のインデックスのリスト。
-	name : str
-		作成されるオブジェクトの名前。
-	mesh_name : str, optional
-		作成されるメッシュデータの名前。デフォルトでは、オブジェクト名に '_mesh' を追加されたものになる。
-
-	Returns
-	-------
-	bpy.types.Object
-		作成されたオブジェクトのインスタンス。
-	"""
-	if mesh_name is None:
-		mesh_name = name + '_mesh'
-	mesh = bpy.data.meshes.new(mesh_name)
-	mesh.from_pydata(vertices, [], faces)
-	obj = bpy.data.objects.new(name, mesh)
-	return obj
 
 
 
