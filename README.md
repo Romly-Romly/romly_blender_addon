@@ -64,6 +64,16 @@ XY平面にルーローの多角形を作成します。正しくルーローの
 
 -----
 
+### Add Oloid
+
+*Add Menu(<kbd>Shift+A</kbd>) → *Romly*
+
+![Add Oloid](add_oloid.jpg)
+
+オロイド形状のメッシュを作成します。円部分の頂点数を指定できますが、一部はオロイドを構築する際に削除されるため、実際の頂点数は指定した数より少なくなります。UVマップ展開済みです。
+
+-----
+
 ### Add Pin Header
 
 *Add Menu*(<kbd>Shift+A</kbd>) → *Romly*
