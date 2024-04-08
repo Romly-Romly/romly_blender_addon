@@ -6,11 +6,13 @@ from bpy.props import *
 from mathutils import Vector, Matrix, Quaternion
 from typing import List, Tuple, NamedTuple
 
-import romly_utils
 
-# romly_utilsの再読み込み（Blenderを再起動しなくてもよくなる）
-import importlib
-importlib.reload(romly_utils)
+
+from . import romly_utils
+
+
+
+
 
 
 
@@ -56,8 +58,8 @@ class TetrahedronIndices(NamedTuple):
 
 class ROMLYADDON_OT_add_reuleaux_tetrahedron(bpy.types.Operator):
 	bl_idname = "romlyaddon.add_reuleaux_tetrahedron"
-	bl_label = "Add Reuleaux Tetrahedron"
-	bl_description = 'ルーローの四面体のメッシュを追加します'
+	bl_label = bpy.app.translations.pgettext_iface('Add Reuleaux Tetrahedron')
+	bl_description = 'Construct a Reuleaux Tetrahedron mesh'
 	bl_options = {'REGISTER', 'UNDO'}
 
 	# UV球のリング数の最小値。設定できるのは8までで、-1の7にすると正四面体になる。
@@ -68,33 +70,33 @@ class ROMLYADDON_OT_add_reuleaux_tetrahedron(bpy.types.Operator):
 	BUILD_METHOD_ICO_SPHERES = 'ico_spheres'
 	BUILD_METHOD_VERTICES = 'vertices'
 	BUILD_METHOD_ITEMS = [
-		(BUILD_METHOD_UV_SPHERES, 'UV Sphere', 'UV球の交差部分を取ります。セグメント数が少ないと破綻します'),
-		(BUILD_METHOD_ICO_SPHERES, 'Icosphere', 'ICO球の交差部分を取ります。分割数が少ないと破綻します'),
-		(BUILD_METHOD_VERTICES, 'Calc Vertices', '球を使わずに頂点を計算します。少ないセグメント数でも破綻しません')
+		(BUILD_METHOD_UV_SPHERES, 'UV Sphere', 'Use UV spheres intersection part. It collapses when the number of segments/ring count is few'),
+		(BUILD_METHOD_ICO_SPHERES, 'Ico Sphere', 'Use Ico spheres intersection part. It collapses when the number of subdivisions is few'),
+		(BUILD_METHOD_VERTICES, 'Calc Vertices', "Calculate vertex positions without using spheres. It won't collapse even if the number of subdivisions is few")
 	]
 
 	# 原点の位置
 	ORIGIN_ITEMS = [
-		('center', 'Center', '原点を中心に設定します'),
-		('bottom', 'Bottom', '原点を底面の中心に設定します'),
-		('apex', 'Apex', '原点を頂点に設定します')
+		('center', 'Center', 'Set mesh origin to its center.'),
+		('bottom', 'Bottom Face', 'Set mesh origin to its bottom face center.'),
+		('apex', 'Apex', 'Set mesh origin to its apex.')
 	]
 
 
 	# プロパティ
 
 	# 外接円の半径
-	val_radius: FloatProperty(name='Radius', description='半径', default=1.0, soft_min=0.01, soft_max=100.0, step=1, precision=2, unit='LENGTH')
+	val_radius: FloatProperty(name='Radius', description='The radius of spheres that construct Reuleaux Tetrahedron (Edge length of Regular Tetrahedron)', default=1.0, soft_min=0.01, soft_max=100.0, step=1, precision=2, unit='LENGTH')
 
-	# 球の種類
-	val_build_method: EnumProperty(name='Sphere Type', description='球の種類', default=BUILD_METHOD_VERTICES, items=BUILD_METHOD_ITEMS)
+	# 構築方法
+	val_build_method: EnumProperty(name='Build Method', description='How to construct Reuleaux Tetrahedron mesh', default=BUILD_METHOD_VERTICES, items=BUILD_METHOD_ITEMS)
 
 	# メッシュのセグメント数
-	val_segments: IntProperty(name='Segments', description='円弧部の分割数', default=48, min=4, max=128, step=1)
-	val_ring_count: IntProperty(name='Ring Count', description='リングの数', default=48, min=RING_COUNT_MIN, max=128, step=1)
-	val_ico_subdivisions: IntProperty(name='Subdivisions', description='分割数', default=3, min=0, max=6, step=1)
+	val_segments: IntProperty(name='Segments', description='The number of UV spheres segments', default=48, min=4, max=128, step=1)
+	val_ring_count: IntProperty(name='Ring Count', description='The number of UV spheres ring counts', default=48, min=RING_COUNT_MIN, max=128, step=1)
+	val_ico_subdivisions: IntProperty(name='Subdivisions', description='The number of ICO spheres subdivisions / Mesh subdivisions', default=3, min=0, max=6, step=1)
 
-	val_triangulate: BoolProperty(name='Triangulate', description='三角形に分割します', default=True)
+	val_triangulate: BoolProperty(name='Triangulate', description='Triangulate quad faces', default=True)
 
 	# 原点をどこにするか
 	val_origin: EnumProperty(name='Origin', description='原点位置', default='center', items=ORIGIN_ITEMS)
@@ -144,13 +146,13 @@ class ROMLYADDON_OT_add_reuleaux_tetrahedron(bpy.types.Operator):
 			# ICO球かつ分割数が0の場合、またはUV球かつsegmentsが4またはring_countが self.RING_COUNT_MIN の場合、
 			# または頂点計算かつ分割数が0の場合、普通の正四面体を追加
 			tetrahedron = create_regular_tetrahedron(radius, origin=origin)
-			obj = romly_utils.create_object(tetrahedron.vertices, tetrahedron.faces, name='Regular Tetrahedron')
+			obj = romly_utils.create_object(tetrahedron.vertices, tetrahedron.faces, name=bpy.app.translations.pgettext_data('Regular Tetrahedron'))
 			bpy.context.collection.objects.link(obj)
 
 		elif build_method == self.BUILD_METHOD_VERTICES:
 			# 頂点計算かつ、分割数が0でない場合
 			vertices, faces = create_reuleaux_tetrahedron(radius=radius, origin=origin, subdivisions=ico_subdivisions)
-			obj = romly_utils.create_object(vertices=vertices, faces=faces, name='Regular Tetrahedron')
+			obj = romly_utils.create_object(vertices=vertices, faces=faces, name=bpy.app.translations.pgettext_data('Regular Tetrahedron'))
 			bpy.context.collection.objects.link(obj)
 
 		else:
@@ -163,7 +165,7 @@ class ROMLYADDON_OT_add_reuleaux_tetrahedron(bpy.types.Operator):
 			else:
 				bpy.ops.mesh.primitive_ico_sphere_add(radius=radius, location=location, subdivisions=ico_subdivisions)
 			sphere = bpy.context.active_object
-			sphere.name = 'Reuleaux Tetrahedron'
+			sphere.name = bpy.app.translations.pgettext_data('Reuleaux Tetrahedron')
 			for i in range(1, 4):
 				location = bpy.context.scene.cursor.location + tetrahedron.vertices[i]
 				if build_method == self.BUILD_METHOD_UV_SPHERES:
@@ -271,7 +273,7 @@ def subdivide_triangle(vertices: List[Vector], face: Tuple[int, int, int]) -> Tu
 
 
 
-def create_regular_tetrahedron(radius: float, origin: str):
+def create_regular_tetrahedron(radius: float, origin: str) -> int:
 	"""
 	指定された半径と原点の位置に基づいて、正四面体の頂点、面、その他の情報を計算する。
 
@@ -571,11 +573,23 @@ def menu_func(self, context):
 
 
 
-
 # blenderへのクラス登録処理
 def register():
-	bpy.utils.register_class(ROMLYADDON_OT_add_reuleaux_tetrahedron)
-	bpy.utils.register_class(ROMLYADDON_MT_romly_add_mesh_menu_parent)
+	# 翻訳辞書の登録
+	try:
+		bpy.app.translations.register(__name__, romly_translation.TRANSLATION_DICT)
+	except ValueError:
+		bpy.app.translations.unregister(__name__)
+		bpy.app.translations.register(__name__, romly_translation.TRANSLATION_DICT)
+
+	try:
+		bpy.utils.register_class(ROMLYADDON_OT_add_reuleaux_tetrahedron)
+	except RuntimeError:
+		pass
+	try:
+		bpy.utils.register_class(ROMLYADDON_MT_romly_add_mesh_menu_parent)
+	except RuntimeError:
+		pass
 	bpy.types.VIEW3D_MT_add.append(menu_func)
 
 
@@ -584,9 +598,18 @@ def register():
 
 # クラスの登録解除
 def unregister():
-	bpy.utils.unregister_class(ROMLYADDON_OT_add_reuleaux_tetrahedron)
-	bpy.utils.unregister_class(ROMLYADDON_MT_romly_add_mesh_menu_parent)
+	try:
+		bpy.utils.unregister_class(ROMLYADDON_OT_add_reuleaux_tetrahedron)
+	except RuntimeError:
+		pass
+	try:
+		bpy.utils.unregister_class(ROMLYADDON_MT_romly_add_mesh_menu_parent)
+	except RuntimeError:
+		pass
 	bpy.types.VIEW3D_MT_add.remove(menu_func)
+
+	# 翻訳辞書の登録解除
+	bpy.app.translations.unregister(__name__)
 
 
 
