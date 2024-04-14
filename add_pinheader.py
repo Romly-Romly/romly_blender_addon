@@ -195,19 +195,12 @@ class ROMLYADDON_OT_add_pinheader(bpy.types.Operator):
 		# 設定に従った頂点を生成
 		obj_plastic = create_box(size=self.val_block_size, offset=mathutils.Vector([0, 0, self.val_block_size[2] / 2]))
 
-		# BMeshオブジェクトを生成
-		mesh = bmesh.new()
-		mesh.from_mesh(obj_plastic.data)
+		bpy.context.collection.objects.link(obj_plastic)
 
-		# Bevel Weight のカスタムデータレイヤーを取得。存在しない場合は作成される。
-		bevel_weight_layer = mesh.edges.layers.bevel_weight.verify()
-
-		for edge in mesh.edges:
-			# Z方向に伸びる辺にベベルウェイトを設定
-			if edge.verts[0].co[2] != edge.verts[1].co[2]:
-				edge[bevel_weight_layer] = 1.0
-		mesh.to_mesh(obj_plastic.data)
-		mesh.free()
+		# Z軸と平行でない辺を選択し、Bevel Weightを設定
+		bpy.context.view_layer.objects.active = obj_plastic
+		romly_utils.select_edges_by_condition(lambda edge: not romly_utils.is_edge_along_z_axis(edge))
+		romly_utils.set_bevel_weight(obj_plastic)
 
 		# ベベルモディファイアを追加、適用
 		bevel_modifier = obj_plastic.modifiers.new(name='Bevel', type='BEVEL')
@@ -217,25 +210,24 @@ class ROMLYADDON_OT_add_pinheader(bpy.types.Operator):
 		bevel_modifier.width = self.val_block_size[1] * 0.15
 		bevel_modifier.segments = 1
 		bevel_modifier.profile = 0.5
-		bpy.ops.object.modifier_apply({'object': obj_plastic}, modifier=bevel_modifier.name)
+		bpy.ops.object.modifier_apply(modifier=bevel_modifier.name)
 
 		# ----------------------------------------
 		# プラスチックの下部を削る
 
 		if self.val_block_concave_size[0] > 0 and self.val_block_concave_size[1] > 0 and self.val_block_concave_size[2] > 0:
-			# ブーリアン処理のため一旦リンクする必要がある
-			bpy.context.collection.objects.link(obj_plastic)
-
 			obj_plastic_concave = create_box(size=self.val_block_concave_size, offset=mathutils.Vector([0, 0, self.val_block_concave_size[2] / 2]))
 			bpy.context.collection.objects.link(obj_plastic_concave)
 			boolean_modifier = obj_plastic.modifiers.new(type='BOOLEAN', name='bool')
 			boolean_modifier.object = obj_plastic_concave
 			boolean_modifier.operation = 'DIFFERENCE'
-			bpy.ops.object.modifier_apply({'object': obj_plastic}, modifier=boolean_modifier.name)
+			bpy.context.view_layer.objects.active = obj_plastic
+			bpy.ops.object.modifier_apply(modifier=boolean_modifier.name)
 
 			# リンク解除
-			bpy.context.collection.objects.unlink(obj_plastic)
 			bpy.context.collection.objects.unlink(obj_plastic_concave)
+
+		bpy.context.collection.objects.unlink(obj_plastic)
 
 		# ----------------------------------------
 		# ピン部分の作成
@@ -244,19 +236,11 @@ class ROMLYADDON_OT_add_pinheader(bpy.types.Operator):
 		pin_scale = mathutils.Vector([self.val_pin_thickness, self.val_pin_thickness, pin_length])
 		obj_pin = create_box(size=pin_scale, offset=mathutils.Vector([0, 0, pin_length / 2 - self.val_pin_length_bottom]))
 
-		# BMeshオブジェクトを生成
-		mesh = bmesh.new()
-		mesh.from_mesh(obj_pin.data)
-
-		# Bevel Weight のカスタムデータレイヤーを取得。存在しない場合は作成される。
-		bevel_weight_layer = mesh.edges.layers.bevel_weight.verify()
-
-		for edge in mesh.edges:
-			# Z方向がゼロの辺にベベルウェイトを設定
-			if edge.verts[0].co[2] == edge.verts[1].co[2]:
-				edge[bevel_weight_layer] = 1.0
-		mesh.to_mesh(obj_pin.data)
-		mesh.free()
+		# Z方向に伸びる辺を選択し、Bevel Weightを設定
+		bpy.context.collection.objects.link(obj_pin)
+		bpy.context.view_layer.objects.active = obj_pin
+		romly_utils.select_edges_by_condition(romly_utils.is_edge_along_z_axis)
+		romly_utils.set_bevel_weight(obj_pin)
 
 		# ベベルモディファイアを追加、適用
 		bevel_modifier = obj_pin.modifiers.new(name='Bevel', type='BEVEL')
@@ -266,7 +250,9 @@ class ROMLYADDON_OT_add_pinheader(bpy.types.Operator):
 		bevel_modifier.width = self.val_pin_thickness * 0.3
 		bevel_modifier.segments = 1
 		bevel_modifier.profile = 0.5
-		bpy.ops.object.modifier_apply({'object': obj_pin}, modifier=bevel_modifier.name)
+		bpy.ops.object.modifier_apply(modifier=bevel_modifier.name)
+
+		bpy.context.collection.objects.unlink(obj_pin)
 
 		# ----------------------------------------
 		# プラスチック部分とピン部分の結合、配列作成

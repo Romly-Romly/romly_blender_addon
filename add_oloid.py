@@ -305,22 +305,21 @@ def create_anti_oloid(radius: float, num_vertices: int, thickness: float, bevel_
 	bpy.context.collection.objects.link(obj)
 	bpy.context.view_layer.objects.active = obj
 
+	# すべての辺にBevel Weightを設定
 	bpy.ops.object.mode_set(mode='EDIT')
-
-	# Bevel Weightを設定
-	mesh = bmesh.from_edit_mesh(obj.data)
-	# Bevel Weightのレイヤーを取得（存在しない場合は新しく作成）
-	bevel_layer = mesh.edges.layers.float.get('bevel_weight_edge', mesh.edges.layers.float.new('bevel_weight_edge'))
-	for edge in mesh.edges:
-		edge[bevel_layer] = 1.0
+	bpy.ops.mesh.select_all(action='SELECT')
+	bpy.ops.object.mode_set(mode='OBJECT')
+	romly_utils.set_bevel_weight(obj)
 
 	# ブリッジループで繋ぎ、面の向きを統一
+	bpy.ops.object.mode_set(mode='EDIT')
 	bpy.ops.mesh.select_all(action='SELECT')
 	bpy.ops.mesh.bridge_edge_loops()
 	bpy.ops.mesh.normals_make_consistent(inside=False)
 
 	# ループカット。増やすと細長い面が分割されて滑らかになる。
 	if num_loop_cuts > 0:
+		mesh = bmesh.from_edit_mesh(obj.data)
 		mesh.edges.ensure_lookup_table()
 		edge_index = len(mesh.edges) - 1
 		bpy.ops.mesh.loopcut_slide(

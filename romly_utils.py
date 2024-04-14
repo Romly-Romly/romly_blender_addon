@@ -2,7 +2,7 @@ import bpy
 import bmesh
 import mathutils
 import math
-from typing import List, Tuple, NamedTuple
+from typing import List, Tuple, NamedTuple, Callable
 
 
 
@@ -368,3 +368,91 @@ def select_edges_on_fair_surface(object: bpy.types.Object) -> None:
 	# 更新を反映
 	bmesh.update_edit_mesh(object.data)
 
+
+
+
+
+
+
+
+
+
+def set_bevel_weight(obj: bpy.types.Object, bevel_weight: float = 1.0) -> None:
+	"""
+	アクティブオブジェクトを対象に、選択されている辺に Bevel Weight を設定する。
+	オブジェクトモードじゃないと使えないので注意。
+
+	Parameters
+	----------
+	bevel_weight : float, optional
+		設定するベベルウェイトの値。省略した場合は1.0。
+	"""
+	bm = bmesh.new()
+	bm.from_mesh(obj.data)
+
+	# Bevel Weightのレイヤーを取得（存在しない場合は新しく作成）
+	KEY = 'bevel_weight_edge'
+	bevel_layer = bm.edges.layers.float.get(KEY, bm.edges.layers.float.new(KEY))
+	for edge in bm.edges:
+		if edge.select:
+			edge[bevel_layer] = bevel_weight
+
+	# 更新
+	bm.to_mesh(obj.data)
+	bm.free()
+
+
+
+
+
+
+
+
+
+
+def select_edges_by_condition(condition_func: Callable[[bmesh.types.BMEdge], bool]) -> None:
+	"""
+	指定された条件に合った全てのエッジを選択する。
+
+	Parameters
+	----------
+	condition_func : Callable[[bmesh.types.BMEdge], bool]
+		選択の条件となるboolを返す関数。
+	"""
+	# from_edit_mesh は編集モードでないとエラーになるので、必要に応じて編集モードに変更
+	obj = bpy.context.view_layer.objects.active
+	current_mode = bpy.context.object.mode
+	if current_mode != 'EDIT':
+		bpy.ops.object.mode_set(mode='EDIT')
+
+	bpy.ops.mesh.select_all(action='DESELECT')	# 選択をクリア
+
+	bm = bmesh.from_edit_mesh(obj.data)
+	for edge in bm.edges:
+		edge.select = condition_func(edge)
+	bmesh.update_edit_mesh(obj.data)
+
+	if current_mode != bpy.context.object.mode:
+		bpy.ops.object.mode_set(mode=current_mode)
+
+
+
+
+
+
+
+
+
+
+def is_edge_along_z_axis(edge: bmesh.types.BMEdge) -> bool:
+	"""
+	エッジがZ軸に沿っている（Z軸に平行）かどうかを判定する、`select_edges_by_condition`用の関数。
+
+	Parameters:
+		edge : bmesh.types.BMEdge
+
+	Returns:
+		bool
+			エッジの始点と終点のZ座標が同じならTrue。
+	"""
+	return edge.verts[0].co[2] == edge.verts[1].co[2]
