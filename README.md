@@ -1,7 +1,27 @@
 # romly_blender_addon
 
 個人的に作成、使用している[Blender](https://www.blender.org/)用のスクリプトいろいろをアドオンにまとめたもの。<br>
-動作確認したBlenderのバージョンは3.6です。<br>
+動作確認したBlenderのバージョンは4.0です。<br>
+
+## 含まれる機能
+
+- メッシュ作成
+	- 原点位置を設定可能な立方体([Add Box](#Add-Box))
+	- 中空構造のシリンダー([Add Donut Cylinder](#add-donut-cylinder))
+	- 十字架を掃引した形状([Add Cross Extrusion](#add-cross-extrusion))
+	- ルーローの多角形([Add Reuleaux Polygon](#add-reuleaux-polygon))
+	- ルーローの四面体([Add Reuleaux Tetrahedron](#add-reuleaux-tetrahedron))
+	- オロイド／アンチオロイド([Add Oloid](#add-oloid))
+	- アルミフレーム([Add Aluminum Extrusion](#add-aluminum-extrusion))
+	- ピンヘッダー([Add Pin Header](#add-pin-header))
+- すべてのモデファイアを適用([Apply All Modifiers](#apply-all-modifiers))
+- 固定距離のArrayモデファイアを追加([Add Fixed Count Array Modifier](#add-fixed-count-array-modifier))
+- オブジェクト／コレクションをSTL形式で簡単にエクスポート([Export Selection as STL](#export-selection-as-stl), [Export Collection as STL](#export-collection-as-stl))
+- 平面上にある辺（溶解可能な辺）を選択([Select edges on Fair Surface](#select-edges-on-fair-surface))
+- 言語設定を切り替えられるパネル([Language Panel](#language-panel))
+
+![romly_blender_addonで作成可能なオブジェクトの一部](support_objects.jpg)
+作成可能なオブジェクトの一部
 
 ## インストール方法
 
@@ -70,7 +90,17 @@ XY平面にルーローの多角形を作成します。正しくルーローの
 
 ![Add Oloid](add_oloid.jpg)
 
-オロイド形状のメッシュを作成します。円部分の頂点数を指定できますが、一部はオロイドを構築する際に削除されるため、実際の頂点数は指定した数より少なくなります。UVマップ展開済みです。
+オロイドまたはアンチオロイド形状のメッシュを作成します。円部分の頂点数を指定できますが、一部はオロイドを構築する際に削除されるため、実際の頂点数は指定した数より少なくなります。オロイドのみ、UVマップ展開済みです。
+
+-----
+
+### Add Aluminum Extrusion
+
+*Add Menu(<kbd>Shift+A</kbd>) → *Romly*
+
+![Add Aluminum Extrusion](add_aluminum_extrusion.jpg)
+
+アルミフレーム形状のメッシュを作成します。パラメーターをいろいろ変更できるので存在しないアルミフレームの形状も作れてしまいますが、UI上に表示されている2020, 2040, 2060, 3030, 3060, 3090, 6090は比較的正確な大きさになると思います。CADのような正確な形状ではなく、ケース作成時などにあたりを取るためのオブジェクトという目的なのでご了承下さい。
 
 -----
 
@@ -126,3 +156,25 @@ Relative OffsetではなくConstant Offsetを設定した状態のArrayモデフ
 
 選択されているオブジェクトをSTLファイルとして出力します。出力されるファイル名は `(blenderファイル名) - (アクティブなオブジェクト名).stl` で、blenderファイルと同じフォルダに保存されます。このため、 *Export Collection as STL* と同様、**編集中のファイルが保存されていないと（ファイル名が無いと）エラーになります。**<br>
 *Export Collection as STL* とほとんど同じですが、単体オブジェクトや、選択範囲をサクッとSTLファイルにエクスポートしたい時のために作りました。
+
+-----
+
+### Select Edges on Fair Surface
+
+**平面上にある辺を選択**
+
+*Edge Menu*（編集モード）
+*Edit Mesh Context Menu*（編集モード・辺選択時に右クリック）
+
+編集中のメッシュの、平面上にある辺、つまり溶解しても影響がない辺をまとめて選択できます。STLファイルなどをインポートした時に、無駄な辺を整理するのに使えると思います。blenderの標準機能でありそうなのですが、見つけられないので作っちゃいました。
+
+-----
+
+### Language Panel
+
+![Language Panel](language_panel.jpg)
+
+サイドパネルのViewタブに『言語』というパネルが追加され、日本語、英語、フランス語、スペイン語、アラビア語、簡体字（4.1以降のみ）をボタン一つで切り替えられるようになります。また、言語設定の影響範囲を設定するチェックボックスも表示されます。
+
+アドオンを英語対応するにあたって、デバッグで頻繁に言語設定を切り替える必要に迫られたのと、4.1から設定画面の言語ドロップダウンが1列になってしまい、非常に選択しづらくなったので作りました。日本語と英語以外の選択に関しては特に何も考えてなくて、デバッグ用に大きく変わりそうな言語をテキトーに選んだだけです。
+
