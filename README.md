@@ -20,7 +20,7 @@
 - 平面上にある辺（溶解可能な辺）を選択([Select edges on Fair Surface](#select-edges-on-fair-surface))
 - 言語設定を切り替えられるパネル([Language Panel](#language-panel))
 
-![romly_blender_addonで作成可能なオブジェクトの一部](support_objects.jpg)
+![romly_blender_addonで作成可能なオブジェクトの一部](images/support_objects.jpg)
 作成可能なオブジェクトの一部
 
 ## インストール方法
@@ -54,7 +54,7 @@ UVマップは無いのでご注意下さい。<br>
 
 *Add Menu*(<kbd>Shift+A</kbd>) → *Romly*
 
-![Add Cross Extrusion](add_cross_extrusion.png)
+![Add Cross Extrusion](images/add_cross_extrusion.png)
 
 XY平面に描いた十字をZ方向に掃引した形状を作成します。十字は横方向、縦方向それぞれの棒の太さと長さを個別に設定できます。
 
@@ -66,7 +66,7 @@ XY平面に描いた十字をZ方向に掃引した形状を作成します。�
 
 *Add Menu(<kbd>Shift+A</kbd>) → *Romly*
 
-![Add Reuleaux Polygon](add_reuleaux_polygon.jpg)
+![Add Reuleaux Polygon](images/add_reuleaux_polygon.jpg)
 
 XY平面にルーローの多角形を作成します。正しくルーローの多角形になるのは辺の数が奇数の場合のみで、偶数の正多角形の時は反対側の辺の中点を中心とする円弧でそれっぽい形にしているだけです。
 
@@ -78,7 +78,7 @@ XY平面にルーローの多角形を作成します。正しくルーローの
 
 *Add Menu(<kbd>Shift+A</kbd>) → *Romly*
 
-![Add Reuleaux Tetrahedron](add_reuleaux_tetrahedron.jpg)
+![Add Reuleaux Tetrahedron](images/add_reuleaux_tetrahedron.jpg)
 
 ルーローの四面体を作成します。UV球またはICO球の共通部分を使って作成する方法と、頂点を計算して作成する方法を選択できます。前者の場合、メッシュの分割数が少ないと四面体の角が出ず形状が破綻してしまいます。いずれの作成方法でも、分割数を最小にすると通常の正四面体となります。
 
@@ -88,7 +88,7 @@ XY平面にルーローの多角形を作成します。正しくルーローの
 
 *Add Menu(<kbd>Shift+A</kbd>) → *Romly*
 
-![Add Oloid](add_oloid.jpg)
+![Add Oloid](images/add_oloid.jpg)
 
 オロイドまたはアンチオロイド形状のメッシュを作成します。円部分の頂点数を指定できますが、一部はオロイドを構築する際に削除されるため、実際の頂点数は指定した数より少なくなります。オロイドのみ、UVマップ展開済みです。
 
@@ -98,7 +98,7 @@ XY平面にルーローの多角形を作成します。正しくルーローの
 
 *Add Menu(<kbd>Shift+A</kbd>) → *Romly*
 
-![Add Aluminum Extrusion](add_aluminum_extrusion.jpg)
+![Add Aluminum Extrusion](images/add_aluminum_extrusion.jpg)
 
 アルミフレーム形状のメッシュを作成します。パラメーターをいろいろ変更できるので存在しないアルミフレームの形状も作れてしまいますが、UI上に表示されている2020, 2040, 2060, 3030, 3060, 3090, 6090は比較的正確な大きさになると思います。CADのような正確な形状ではなく、ケース作成時などにあたりを取るためのオブジェクトという目的なのでご了承下さい。
 
@@ -108,7 +108,7 @@ XY平面にルーローの多角形を作成します。正しくルーローの
 
 *Add Menu*(<kbd>Shift+A</kbd>) → *Romly*
 
-![Add Pin Header](add_pinheader.png)
+![Add Pin Header](images/add_pinheader.png)
 
 ピンヘッダーを追加します。ピン数とピンのピッチを2.54mm、2.00mm、1.27mmから選択できます。ピン数はArrayモデファイアになっています。オブジェクトの原点は1番ピンの中心、PCBと接する点になっています。<br>
 ピンの具体的な長さやブロック部分の大きさは一般的なものになっていると思いますが、必要に応じて生成時に調整可能です。マテリアルは未設定ですが、ピン部分とブロック部分は繋がっていないので塗り分けは簡単かと。
@@ -172,7 +172,7 @@ Relative OffsetではなくConstant Offsetを設定した状態のArrayモデフ
 
 ### Language Panel
 
-![Language Panel](language_panel.jpg)
+![Language Panel](images/language_panel.jpg)
 
 サイドパネルのViewタブに『言語』というパネルが追加され、日本語、英語、フランス語、スペイン語、アラビア語、簡体字（4.1以降のみ）をボタン一つで切り替えられるようになります。また、言語設定の影響範囲を設定するチェックボックスも表示されます。
 
