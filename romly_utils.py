@@ -2,6 +2,7 @@ import bpy
 import bmesh
 import mathutils
 import math
+from typing import List, Tuple, NamedTuple
 
 
 
@@ -35,7 +36,7 @@ def VECTOR_Y_PLUS():
 
 
 
-def create_object(vertices: list, faces: list, name: str = '', mesh_name: str = None):
+def create_object(vertices: list, faces: list, name: str = '', mesh_name: str = None, edges: List[Tuple[int, int]] = []) -> bpy.types.Object:
 	"""
 	指定された頂点リストと面リストから新しいオブジェクトを生成する。
 
@@ -49,6 +50,8 @@ def create_object(vertices: list, faces: list, name: str = '', mesh_name: str = 
 		作成されるオブジェクトの名前。
 	mesh_name : str, optional
 		作成されるメッシュデータの名前。デフォルトでは、オブジェクト名に '_mesh' を追加されたものになる。
+	edges : List[Tuple[int, int]], optional
+		オブジェクトのエッジを構成する頂点のインデックスのリスト。デフォルトでは辺は作成されない。
 
 	Returns
 	-------
@@ -58,7 +61,7 @@ def create_object(vertices: list, faces: list, name: str = '', mesh_name: str = 
 	if mesh_name is None:
 		mesh_name = name + '_mesh'
 	mesh = bpy.data.meshes.new(mesh_name)
-	mesh.from_pydata(vertices, [], faces)
+	mesh.from_pydata(vertices, edges, faces)
 	obj = bpy.data.objects.new(name, mesh)
 	return obj
 
@@ -66,7 +69,7 @@ def create_object(vertices: list, faces: list, name: str = '', mesh_name: str = 
 
 
 
-def cleanup_mesh(object: bpy.types.Object, remove_doubles=True, recalc_normals=True):
+def cleanup_mesh(object: bpy.types.Object, remove_doubles=True, recalc_normals=True) -> bpy.types.Object:
 	"""
 	メッシュオブジェクトの重複する頂点を削除し、法線を再計算することでメッシュをクリーンアップする。
 
@@ -164,7 +167,7 @@ def cleanup_mesh(object: bpy.types.Object, remove_doubles=True, recalc_normals=T
 
 
 
-def extrude_face(vertices, faces, extrude_vertex_indices, z_offset, cap=True):
+def extrude_face(vertices, faces, extrude_vertex_indices: List[int], z_offset: float, cap=True):
 	"""
 	指定された面を掃引して、新しくできた頂点と面を追加する。
 
@@ -174,7 +177,7 @@ def extrude_face(vertices, faces, extrude_vertex_indices, z_offset, cap=True):
 		頂点のリスト
 	faces : list of list of int
 		面を構成する頂点インデックスのリスト
-	extrude_vertex_indices : list of int
+	extrude_vertex_indices : List[int]
 		掃引する頂点のインデックスのリスト。頂点(Vector)のリストじゃないので注意してね。
 	z_offset : float
 		掃引する距離
@@ -292,3 +295,76 @@ def rotate_vertices(object, degrees, axis):
 	elif isinstance(object, list):
 		for v in object:
 			v.rotate(mathutils.Matrix.Rotation(math.radians(degrees), 4, axis))
+
+
+
+
+
+def apply_boolean_object(object, boolObject, unlink, apply=True, fast_solver=False):
+	"""
+	ブーリアンモデファイア(Difference)を使ってメッシュをもう一方のメッシュの形状で削る。
+
+	Parameters
+	----------
+	object : Mesh
+		元となるメッシュ。
+	boolObject : Mesh
+		ブーリアンモデファイアに設定されるメッシュ。シーンにリンクされていないとエラーになる。
+	unlink : Bool
+		処理後にboolObjectをシーンからアンリンクするか。
+	apply : Bool, optional
+		ブーリアンモデファイアを適用するかどうか。デフォルトはTrue。
+	"""
+	bpy.context.view_layer.objects.active = object
+	mod_name = 'Boolean'
+	mod = bpy.context.object.modifiers.new(type='BOOLEAN', name=mod_name)
+	mod.object = boolObject
+	if fast_solver:
+		mod.solver = 'FAST'
+	if apply:
+		bpy.ops.object.modifier_apply(modifier=mod_name)
+	if unlink:
+		bpy.context.collection.objects.unlink(boolObject)
+
+
+
+
+
+
+
+
+
+
+def select_edges_on_fair_surface(object: bpy.types.Object) -> None:
+	"""
+	平面上にある辺（隣接する面の法線が同じ辺）を選択します。
+
+	Parameters
+	----------
+	object : bpy.types.Object
+		法線を比較して辺を選択する対象のBlenderオブジェクト。
+	"""
+	bpy.ops.mesh.select_mode(type='EDGE')
+	bm = bmesh.from_edit_mesh(object.data)
+
+	# まず選択を解除
+	bpy.ops.mesh.select_all(action='DESELECT')
+
+	THRESHOLD = 0.999
+	for edge in bm.edges:
+		linked_faces = edge.link_faces
+		if len(linked_faces) == 2:
+			# 両面の法線を取得
+			normal1 = linked_faces[0].normal
+			normal2 = linked_faces[1].normal
+
+			# 法線の内積を計算
+			dot = normal1.dot(normal2)
+
+			# ドット積が閾値以上なら、その辺を選択
+			if dot > THRESHOLD:
+				edge.select = True
+
+	# 更新を反映
+	bmesh.update_edit_mesh(object.data)
+

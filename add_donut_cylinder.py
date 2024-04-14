@@ -28,29 +28,6 @@ MeshVerticalAlignment = [
 
 
 
-def ApplyBooleanObject(object, boolObject, unlink):
-	"""ブーリアンモデファイア(Difference)を使ってメッシュをもう一方のメッシュの形状で削る。
-
-	Parameters
-	----------
-	object : Mesh
-		元となるメッシュ。
-	boolObject : Mesh
-		ブーリアンモデファイアに設定されるメッシュ。シーンにリンクされていないとエラーになる。
-	unlink : Bool
-		処理後にboolObjectをシーンからアンリンクするか。
-	"""
-	bpy.context.view_layer.objects.active = object
-	bpy.context.object.modifiers.new(type='BOOLEAN', name='Boolean')
-	bpy.context.object.modifiers["Boolean"].object = boolObject
-	bpy.ops.object.modifier_apply(modifier="Boolean")
-	if unlink:
-		bpy.context.collection.objects.unlink(boolObject)
-
-
-
-
-
 def CreatePieCutMesh(amountAngle, rotateAngle, cutSize=10, cutHeight=10):
 	"""シリンダーなどをパイ状にカットするためのブーリアン用メッシュを作成する。
 
@@ -212,14 +189,14 @@ class ROMLY_OT_add_donut_cylinder(bpy.types.Operator):
 			if holeRadius > 0:
 				bpy.ops.mesh.primitive_cylinder_add(vertices=self.val_holeSegments, radius=holeRadius, depth=self.val_height * 2, end_fill_type='NGON', enter_editmode=False, location=bpy.context.scene.cursor.location)
 				holeCylinderObject = bpy.data.objects[bpy.context.active_object.name]
-				ApplyBooleanObject(object=cylinderObject, boolObject=holeCylinderObject, unlink=True)
+				romly_utils.apply_boolean_object(object=cylinderObject, boolObject=holeCylinderObject, unlink=True)
 
 			# 作成する分量が360度以下の場合
 			if self.val_amount < math.radians(360):
 				# ブーリアン用のメッシュを作成
 				subtructMesh = CreatePieCutMesh(amountAngle=self.val_amount, rotateAngle=self.val_rotation)
 				bpy.context.collection.objects.link(subtructMesh)
-				ApplyBooleanObject(object=cylinderObject, boolObject=subtructMesh, unlink=True)
+				romly_utils.apply_boolean_object(object=cylinderObject, boolObject=subtructMesh, unlink=True)
 
 
 			# 原点位置の設定に従ってずらす
@@ -234,7 +211,6 @@ class ROMLY_OT_add_donut_cylinder(bpy.types.Operator):
 			# スムーズシェーディング
 			if self.val_smooth:
 				bpy.ops.object.shade_smooth()
-				cylinderObject.data.use_auto_smooth = True
 
 			cylinderObject.name = 'Donut Cylinder {majorDiameter}/{holeDiameter}'.format(majorDiameter=romly_utils.units_to_string(value=majorRadius * 2, removeSpace=True), holeDiameter=romly_utils.units_to_string(value=holeRadius * 2, removeSpace=True))
 

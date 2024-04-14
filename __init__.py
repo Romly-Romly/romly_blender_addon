@@ -1,7 +1,7 @@
 bl_info = {
 	'name': 'Romly Blender Add-on',
 	'version': (0, 8, 0),
-	'blender': (3, 5, 0),
+	'blender': (4, 0, 0),
 	'category': 'Object',
 	'author': 'Romly',
 	'doc_url': 'https://github.com/Romly-Romly/romly_blender_addon'
@@ -17,9 +17,12 @@ from .add_cross_extrusion import ROMLYADDON_OT_add_cross_extrusion
 from .add_reuleaux_polygon import ROMLYADDON_OT_add_reuleaux_polygon
 from .add_reuleaux_tetrahedron import ROMLYADDON_OT_add_reuleaux_tetrahedron
 from .add_oloid import ROMLYADDON_OT_add_oloid
+from .add_aluminum_extrusion import ROMLYADDON_OT_add_aluminum_extrusion
 from .add_pinheader import ROMLYADDON_OT_add_pinheader
 from .export_collection_as_stl import ROMLYADDON_OT_export_collection_as_stl
 from .export_selection_as_stl import ROMLYADDON_OT_export_selection_as_stl
+from .select_edges_on_fair_surface import ROMLYADDON_OT_select_edges_on_fair_surface
+from .language_panel import ROMLYADDON_PT_language_panel, ROMLYADDON_OT_change_language
 from .romly_translation import TRANSLATION_DICT
 
 
@@ -44,6 +47,29 @@ class ROMLYADDON_MT_romly_export_selection_as_stl_menu_parent(bpy.types.Menu):
 def outliner_object_menu_func(self, context):
 	self.layout.separator()
 	self.layout.menu(ROMLYADDON_MT_romly_export_selection_as_stl_menu_parent.bl_idname, icon='NONE')
+
+
+
+
+
+def view3d_edit_mesh_edges_menu_func(self, context):
+	"""編集モードのエッジメニューに追加する関数。平面上にある辺を選択する項目を追加"""
+	self.layout.separator()
+	self.layout.operator(ROMLYADDON_OT_select_edges_on_fair_surface.bl_idname, text=bpy.app.translations.pgettext_iface(ROMLYADDON_OT_select_edges_on_fair_surface.bl_label), icon='EDGESEL')
+
+
+
+
+
+def view3d_edit_mesh_context_menu_func(self, context):
+	"""
+	編集モードのコンテキストメニュー（右クリックメニュー）に追加する関数。
+	平面上にある辺を選択する項目を、辺モードの時のみ追加。
+	"""
+	# 辺モードの時のみメニュー項目を追加（0=頂点, 1=辺, 2=面）
+	if bpy.context.tool_settings.mesh_select_mode[1]:
+		self.layout.separator()
+		self.layout.operator(ROMLYADDON_OT_select_edges_on_fair_surface.bl_idname, text=bpy.app.translations.pgettext_iface(ROMLYADDON_OT_select_edges_on_fair_surface.bl_label), icon='EDGESEL')
 
 
 
@@ -92,6 +118,7 @@ class ROMLYADDON_MT_romly_add_mesh_menu_parent(bpy.types.Menu):
 		layout.operator(ROMLYADDON_OT_add_reuleaux_tetrahedron.bl_idname, text=bpy.app.translations.pgettext_iface('Add Reuleaux Tetrahedron'), icon='MESH_CONE')
 		layout.operator(ROMLYADDON_OT_add_oloid.bl_idname, text=bpy.app.translations.pgettext_iface('Add Oloid'), icon='MESH_CAPSULE')
 		layout.separator()
+		layout.operator(ROMLYADDON_OT_add_aluminum_extrusion.bl_idname, text=bpy.app.translations.pgettext_iface('Add Aluminium Extrusion'), icon='FIXED_SIZE')
 		layout.operator(ROMLYADDON_OT_add_pinheader.bl_idname, icon='EMPTY_SINGLE_ARROW')
 
 
@@ -132,35 +159,43 @@ def collection_menu_func(self, context):
 
 
 
+MY_CLASS_LIST = [
+	ROMLYADDON_OT_apply_all_modifiers,
+	ROMLYADDON_OT_add_fixed_count_array_modifier,
+	ROMLYADDON_MT_romly_tool_menu_parent,
+	ROMLYADDON_OT_add_box,
+	ROMLY_OT_add_donut_cylinder,
+	ROMLYADDON_OT_add_cross_extrusion,
+	ROMLYADDON_OT_add_reuleaux_polygon,
+	ROMLYADDON_OT_add_reuleaux_tetrahedron,
+	ROMLYADDON_OT_add_oloid,
+	ROMLYADDON_OT_add_aluminum_extrusion,
+	ROMLYADDON_OT_add_pinheader,
+	ROMLYADDON_MT_romly_add_mesh_menu_parent,
+	ROMLYADDON_OT_export_collection_as_stl,
+	ROMLYADDON_MT_romly_export_collection_as_stl_menu_parent,
+	ROMLYADDON_OT_export_selection_as_stl,
+	ROMLYADDON_MT_romly_export_selection_as_stl_menu_parent,
+	ROMLYADDON_OT_select_edges_on_fair_surface,
+	ROMLYADDON_PT_language_panel,
+	ROMLYADDON_OT_change_language,
+]
+
 # blenderへのクラス登録処理
 def register():
 	# 翻訳辞書の登録
 	bpy.app.translations.register(__name__, TRANSLATION_DICT)
 
-	bpy.utils.register_class(ROMLYADDON_OT_apply_all_modifiers)
-	bpy.utils.register_class(ROMLYADDON_OT_add_fixed_count_array_modifier)
-	bpy.utils.register_class(ROMLYADDON_MT_romly_tool_menu_parent)
-
-	bpy.utils.register_class(ROMLYADDON_OT_add_box)
-	bpy.utils.register_class(ROMLY_OT_add_donut_cylinder)
-	bpy.utils.register_class(ROMLYADDON_OT_add_cross_extrusion)
-	bpy.utils.register_class(ROMLYADDON_OT_add_reuleaux_polygon)
-	bpy.utils.register_class(ROMLYADDON_OT_add_reuleaux_tetrahedron)
-	bpy.utils.register_class(ROMLYADDON_OT_add_oloid)
-	bpy.utils.register_class(ROMLYADDON_OT_add_pinheader)
-	bpy.utils.register_class(ROMLYADDON_MT_romly_add_mesh_menu_parent)
-
-	bpy.utils.register_class(ROMLYADDON_OT_export_collection_as_stl)
-	bpy.utils.register_class(ROMLYADDON_MT_romly_export_collection_as_stl_menu_parent)
-
-	bpy.utils.register_class(ROMLYADDON_OT_export_selection_as_stl)
-	bpy.utils.register_class(ROMLYADDON_MT_romly_export_selection_as_stl_menu_parent)
+	for cls in MY_CLASS_LIST:
+		bpy.utils.register_class(cls)
 
 	# それぞれのメニューに独自メニューを登録
 	bpy.types.VIEW3D_MT_object_context_menu.append(object_menu_func)
 	bpy.types.VIEW3D_MT_add.append(add_menu_func)
 	bpy.types.OUTLINER_MT_collection.append(collection_menu_func)
 	bpy.types.OUTLINER_MT_object.append(outliner_object_menu_func)
+	bpy.types.VIEW3D_MT_edit_mesh_edges.append(view3d_edit_mesh_edges_menu_func)
+	bpy.types.VIEW3D_MT_edit_mesh_context_menu.append(view3d_edit_mesh_context_menu_func)
 
 
 
@@ -168,29 +203,15 @@ def register():
 
 # クラスの登録解除
 def unregister():
-	bpy.utils.unregister_class(ROMLYADDON_OT_apply_all_modifiers)
-	bpy.utils.unregister_class(ROMLYADDON_OT_add_fixed_count_array_modifier)
-	bpy.utils.unregister_class(ROMLYADDON_MT_romly_tool_menu_parent)
-
-	bpy.utils.unregister_class(ROMLYADDON_OT_add_box)
-	bpy.utils.unregister_class(ROMLY_OT_add_donut_cylinder)
-	bpy.utils.unregister_class(ROMLYADDON_OT_add_cross_extrusion)
-	bpy.utils.unregister_class(ROMLYADDON_OT_add_reuleaux_polygon)
-	bpy.utils.unregister_class(ROMLYADDON_OT_add_reuleaux_tetrahedron)
-	bpy.utils.unregister_class(ROMLYADDON_OT_add_oloid)
-	bpy.utils.unregister_class(ROMLYADDON_OT_add_pinheader)
-	bpy.utils.unregister_class(ROMLYADDON_MT_romly_add_mesh_menu_parent)
-
-	bpy.utils.unregister_class(ROMLYADDON_OT_export_collection_as_stl)
-	bpy.utils.unregister_class(ROMLYADDON_MT_romly_export_collection_as_stl_menu_parent)
-
-	bpy.utils.unregister_class(ROMLYADDON_OT_export_selection_as_stl)
-	bpy.utils.unregister_class(ROMLYADDON_MT_romly_export_selection_as_stl_menu_parent)
-
 	bpy.types.VIEW3D_MT_object_context_menu.remove(object_menu_func)
 	bpy.types.VIEW3D_MT_add.remove(add_menu_func)
 	bpy.types.OUTLINER_MT_collection.remove(collection_menu_func)
 	bpy.types.OUTLINER_MT_object.remove(outliner_object_menu_func)
+	bpy.types.VIEW3D_MT_edit_mesh_edges.remove(view3d_edit_mesh_edges_menu_func)
+	bpy.types.VIEW3D_MT_edit_mesh_context_menu.remove(view3d_edit_mesh_context_menu_func)
+
+	for cls in MY_CLASS_LIST:
+		bpy.utils.unregister_class(cls)
 
 	# 翻訳辞書の登録解除
 	bpy.app.translations.unregister(__name__)

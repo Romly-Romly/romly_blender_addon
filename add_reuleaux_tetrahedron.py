@@ -573,6 +573,7 @@ def menu_func(self, context):
 
 
 
+
 # blenderへのクラス登録処理
 def register():
 	# 翻訳辞書の登録
