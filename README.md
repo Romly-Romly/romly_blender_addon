@@ -11,6 +11,7 @@
 	- 十字架を掃引した形状([Add Cross Extrusion](#add-cross-extrusion))
 	- ルーローの多角形([Add Reuleaux Polygon](#add-reuleaux-polygon))
 	- ルーローの四面体([Add Reuleaux Tetrahedron](#add-reuleaux-tetrahedron))
+	- スフェリコン([Add Sphericon](#add-sphericon))
 	- オロイド／アンチオロイド([Add Oloid](#add-oloid))
 	- アルミフレーム([Add Aluminum Extrusion](#add-aluminum-extrusion))
 	- ピンヘッダー([Add Pin Header](#add-pin-header))
@@ -19,9 +20,14 @@
 - オブジェクト／コレクションをSTL形式で簡単にエクスポート([Export Selection as STL](#export-selection-as-stl), [Export Collection as STL](#export-collection-as-stl))
 - 平面上にある辺（溶解可能な辺）を選択([Select edges on Fair Surface](#select-edges-on-fair-surface))
 - 言語設定を切り替えられるパネル([Language Panel](#language-panel))
+- 【おまけ】blend1ファイルを再帰的に削除するPythonスクリプト([blend1_cleaner.py](#blend1_cleanerpy))
 
 ![romly_blender_addonで作成可能なオブジェクトの一部](images/support_objects.jpg)
 作成可能なオブジェクトの一部
+
+
+
+
 
 ## インストール方法
 
@@ -80,7 +86,18 @@ XY平面にルーローの多角形を作成します。正しくルーローの
 
 ![Add Reuleaux Tetrahedron](images/add_reuleaux_tetrahedron.jpg)
 
-ルーローの四面体を作成します。UV球またはICO球の共通部分を使って作成する方法と、頂点を計算して作成する方法を選択できます。前者の場合、メッシュの分割数が少ないと四面体の角が出ず形状が破綻してしまいます。いずれの作成方法でも、分割数を最小にすると通常の正四面体となります。
+ルーローの四面体を作成します。UV球またはICO球の共通部分を使って作成する方法と、頂点を計算して作成する方法を選択できます。前者の場合、メッシュの分割数が少ないと四面体の角が出ず形状が破綻してしまいます。
+いずれの作成方法でも、分割数を最小にすれば通常の正四面体を作れます。
+
+-----
+
+### Add Sphericon
+
+*Add Menu(<kbd>Shift+A</kbd>) → *Romly*
+
+![Add Sphericon](images/add_sphericon.jpg)
+
+スフェリコン形状のメッシュを作成します。一般的な正方形の回転体から作るスフェリコンの他、任意の多角形から作成することが可能で、左右のずらし量も指定できます。
 
 -----
 
@@ -178,3 +195,50 @@ Relative OffsetではなくConstant Offsetを設定した状態のArrayモデフ
 
 アドオンを英語対応するにあたって、デバッグで頻繁に言語設定を切り替える必要に迫られたのと、4.1から設定画面の言語ドロップダウンが1列になってしまい、非常に選択しづらくなったので作りました。日本語と英語以外の選択に関しては特に何も考えてなくて、デバッグ用に大きく変わりそうな言語をテキトーに選んだだけです。
 
+おまけでblenderのバージョンと編集中のファイルのバージョンを表示します。
+
+
+
+
+
+-----
+
+
+
+
+
+## blend1_cleaner.py
+
+【おまけ】blend1ファイルを再帰的に削除するPythonスクリプト
+
+`extra/blend1_cleaner.py`
+
+指定されたディレクトリ以下にある`*.blend1`ファイルを再帰的に検索し、一括で削除するPythonスクリプトです。[Send2Trash](https://pypi.org/project/Send2Trash/)モジュールがインストールされている環境であれば、削除せずにゴミ箱に移動することもできます。
+
+**ファイルを削除する機能を持つスクリプトです。バグのために予期せぬファイルを削除してしまうことがあるかもしれません。当方は一切責任を負いかねます。了承の上自己責任でご利用下さい。**
+
+
+
+### 使い方
+
+```
+python blend1_cleaner.py "(検索を開始するディレクトリ)" [-d] [-h]
+```
+
+#### オプション
+
+##### `-d, --delete`
+
+ファイルをゴミ箱に移動せず、完全に削除する場合に指定します。Send2Trashモジュールがインストールされていない環境では常に完全に削除（`-d`を指定した状態）しかできません。
+
+##### `-h, --help`
+
+ヘルプを表示します。
+
+
+
+### 【オプション】send2trashのインストール
+
+```
+pip install Send2Trash
+```
