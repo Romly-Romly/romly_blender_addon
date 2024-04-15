@@ -1,6 +1,6 @@
 bl_info = {
 	'name': 'Romly Blender Add-on',
-	'version': (0, 9, 0),
+	'version': (1, 0, 0),
 	'blender': (4, 0, 0),
 	'category': 'Object',
 	'author': 'Romly',
@@ -16,6 +16,7 @@ from .add_donut_cylinder import ROMLY_OT_add_donut_cylinder
 from .add_cross_extrusion import ROMLYADDON_OT_add_cross_extrusion
 from .add_reuleaux_polygon import ROMLYADDON_OT_add_reuleaux_polygon
 from .add_reuleaux_tetrahedron import ROMLYADDON_OT_add_reuleaux_tetrahedron
+from .add_sphericon import ROMLYADDON_OT_add_sphericon
 from .add_oloid import ROMLYADDON_OT_add_oloid
 from .add_aluminum_extrusion import ROMLYADDON_OT_add_aluminum_extrusion
 from .add_pinheader import ROMLYADDON_OT_add_pinheader
@@ -111,15 +112,26 @@ class ROMLYADDON_MT_romly_add_mesh_menu_parent(bpy.types.Menu):
 
 	def draw(self, context):
 		layout = self.layout
-		layout.operator(ROMLYADDON_OT_add_box.bl_idname, icon='MESH_CUBE')
-		layout.operator(ROMLY_OT_add_donut_cylinder.bl_idname, icon='MESH_CYLINDER')
-		layout.operator(ROMLYADDON_OT_add_cross_extrusion.bl_idname, icon='ADD')
-		layout.operator(ROMLYADDON_OT_add_reuleaux_polygon.bl_idname, icon='MESH_CIRCLE')
-		layout.operator(ROMLYADDON_OT_add_reuleaux_tetrahedron.bl_idname, text=bpy.app.translations.pgettext_iface('Add Reuleaux Tetrahedron'), icon='MESH_CONE')
-		layout.operator(ROMLYADDON_OT_add_oloid.bl_idname, text=bpy.app.translations.pgettext_iface('Add Oloid'), icon='MESH_CAPSULE')
-		layout.separator()
-		layout.operator(ROMLYADDON_OT_add_aluminum_extrusion.bl_idname, text=bpy.app.translations.pgettext_iface('Add Aluminium Extrusion'), icon='FIXED_SIZE')
-		layout.operator(ROMLYADDON_OT_add_pinheader.bl_idname, icon='EMPTY_SINGLE_ARROW')
+
+		OPERATORS = [
+			(ROMLYADDON_OT_add_box, None, 'MESH_CUBE'),
+			(ROMLY_OT_add_donut_cylinder, None, 'MESH_CYLINDER'),
+			(ROMLYADDON_OT_add_cross_extrusion, None, 'ADD'),
+			(ROMLYADDON_OT_add_reuleaux_polygon, None, 'MESH_CIRCLE'),
+			(ROMLYADDON_OT_add_reuleaux_tetrahedron, 'Add Reuleaux Tetrahedron', 'MESH_CONE'),
+			(ROMLYADDON_OT_add_sphericon, 'Add Sphericon', 'MESH_CAPSULE'),
+			(ROMLYADDON_OT_add_oloid, 'Add Oloid', 'MESH_CAPSULE'),
+			(None, None, None),
+			(ROMLYADDON_OT_add_aluminum_extrusion, 'Add Aluminium Extrusion', 'FIXED_SIZE'),
+			(ROMLYADDON_OT_add_pinheader, 'Add Pinheader', 'EMPTY_SINGLE_ARROW'),
+		]
+		for operator, text, icon in OPERATORS:
+			if operator is None:
+				layout.separator()
+			elif text:
+				layout.operator(operator.bl_idname, text=bpy.app.translations.pgettext_iface(text), icon=icon)
+			else:
+				layout.operator(operator.bl_idname, icon=icon)
 
 
 
@@ -168,6 +180,7 @@ MY_CLASS_LIST = [
 	ROMLYADDON_OT_add_cross_extrusion,
 	ROMLYADDON_OT_add_reuleaux_polygon,
 	ROMLYADDON_OT_add_reuleaux_tetrahedron,
+	ROMLYADDON_OT_add_sphericon,
 	ROMLYADDON_OT_add_oloid,
 	ROMLYADDON_OT_add_aluminum_extrusion,
 	ROMLYADDON_OT_add_pinheader,

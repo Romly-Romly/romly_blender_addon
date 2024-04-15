@@ -130,9 +130,12 @@ class ROMLYADDON_OT_add_cross_extrusion(bpy.types.Operator):
 
 		# 原点位置の設定に従ってずらす
 		if self.val_origin == ROMLYADDON_OT_add_cross_extrusion.MESH_VERTICAL_ALIGNMENT_TOP:
-			translate_vertices(object=extrudedCrossObject, vector=mathutils.Vector([0, 0, -self.val_height]))
+			romly_utils.translate_vertices(object=extrudedCrossObject, vector=mathutils.Vector([0, 0, -self.val_height]))
 		elif self.val_origin == ROMLYADDON_OT_add_cross_extrusion.MESH_VERTICAL_ALIGNMENT_MIDDLE:
-			translate_vertices(object=extrudedCrossObject, vector=mathutils.Vector([0, 0, -self.val_height / 2]))
+			romly_utils.translate_vertices(object=extrudedCrossObject, vector=mathutils.Vector([0, 0, -self.val_height / 2]))
+
+		# オブジェクトを3Dカーソル位置へ移動
+		extrudedCrossObject.location = bpy.context.scene.cursor.location
 
 		# 選択
 		extrudedCrossObject.select_set(state=True)

@@ -2,6 +2,7 @@ import bpy
 import bmesh
 import mathutils
 import math
+from mathutils import Vector, Matrix
 from typing import List, Tuple, NamedTuple, Callable
 
 
@@ -273,7 +274,7 @@ def rotated_vector(vector, angleRadians, axis):
 
 
 
-def rotate_vertices(object, degrees, axis):
+def rotate_vertices(object, degrees: float, axis: str):
 	"""MeshまたはVectorの配列のすべての頂点を原点周りで回転する
 
 	Parameters
@@ -293,14 +294,21 @@ def rotate_vertices(object, degrees, axis):
 		object.data.update()
 		bm.free()
 	elif isinstance(object, list):
-		for v in object:
-			v.rotate(mathutils.Matrix.Rotation(math.radians(degrees), 4, axis))
+		for i in range(len(object)):
+			v = object[i]
+			if isinstance(v, mathutils.Vector):
+				v.rotate(mathutils.Matrix.Rotation(math.radians(degrees), 4, axis))
+				object[i] = v
+			else:
+				vec = Vector(v)
+				vec.rotate(mathutils.Matrix.Rotation(math.radians(degrees), 4, axis))
+				object[i] = vec.to_tuple()
 
 
 
 
 
-def apply_boolean_object(object, boolObject, unlink, apply=True, fast_solver=False):
+def apply_boolean_object(object, boolObject, operation='DIFFERENCE', use_self=False, unlink=True, apply=True, fast_solver=False):
 	"""
 	ブーリアンモデファイア(Difference)を使ってメッシュをもう一方のメッシュの形状で削る。
 
@@ -318,7 +326,9 @@ def apply_boolean_object(object, boolObject, unlink, apply=True, fast_solver=Fal
 	bpy.context.view_layer.objects.active = object
 	mod_name = 'Boolean'
 	mod = bpy.context.object.modifiers.new(type='BOOLEAN', name=mod_name)
+	mod.operation = operation
 	mod.object = boolObject
+	mod.use_self = use_self
 	if fast_solver:
 		mod.solver = 'FAST'
 	if apply:
@@ -456,3 +466,119 @@ def is_edge_along_z_axis(edge: bmesh.types.BMEdge) -> bool:
 			エッジの始点と終点のZ座標が同じならTrue。
 	"""
 	return edge.verts[0].co[2] == edge.verts[1].co[2]
+
+
+
+
+
+
+
+
+
+
+def create_circle_vertices(radius: float, num_vertices: int, center: Tuple[float, float, float] = (0, 0, 0), start_angle_degree: float = 0, normal_vector: Tuple[float, float, float] = (0, 0, 1)) -> List[Tuple[float, float, float]]:
+	"""
+	円周上の頂点群を生成する。指定された半径を持つ円を外接円とする多角形の作成にも使えるよ。頂点はディフォルトではXY平面上に配置され、Z座標はすべて0だけど、法線ベクトルを指定することで任意の平面に配置できるよ。
+
+	Parameters
+	----------
+	radius : float
+		円（外接円）の半径。
+	num_vertices : int
+		生成する頂点の数、または多角形の辺の数。
+	center : Tuple[float, float, float], optional
+		円の中心座標 (x, y, z)
+	start_angle_degree : float, optional
+		開始角度（度単位）。デフォルトは0（右、X軸プラス）。90で上、180で左、270で下からになる。
+	normal_vector : Tuple[float, float, float], optional
+		円を配置する平面の法線ベクトル。デフォルトは(0, 0, 1)、つまりZ軸で、XY平面に配置される。
+
+	Returns
+	-------
+	List[Tuple[float, float, float]]
+		生成された頂点の座標リスト。(x, y, z)のリスト。
+	"""
+	vertices = []
+
+	# 法線ベクトルを正規化
+	normal = Vector(normal_vector).normalized()
+
+	# Z軸（(0, 0, 1)）と法線ベクトルとの間の回転を表す行列を作成
+	if normal != Vector((0, 0, 1)):
+		rot_axis = normal.cross(Vector((0, 0, 1)))
+		if rot_axis.length != 0:
+			rot_axis.normalize()
+			angle = math.acos(normal.dot(Vector((0, 0, 1))))
+			rot_matrix = Matrix.Rotation(angle, 4, rot_axis)
+		else:
+			# 法線ベクトルがZ軸と一致または逆向きの場合
+			rot_matrix = Matrix.Rotation(math.pi, 4, Vector((1, 0, 0))) if normal.z < 0 else Matrix.Identity(4)
+	else:
+		rot_matrix = Matrix.Identity(4)
+
+	# 円の頂点を計算
+	start_angle = math.radians(start_angle_degree)
+	for i in range(num_vertices):
+		angle = 2 * math.pi * i / num_vertices + start_angle
+		x = radius * math.cos(angle)
+		y = radius * math.sin(angle)
+		vertex = Vector((x, y, 0))
+		vertex = rot_matrix @ vertex # 回転
+		vertex += Vector(center) # 中心へ移動
+		vertices.append(tuple(vertex))
+
+	return vertices
+
+
+
+
+
+
+
+
+
+
+def find_intersection(line1_start: Vector, line1_end: Vector, line2_start: Vector, line2_end: Vector, return_intersection_point_ratio: bool = False) -> Vector:
+	"""
+	二つの線分の交点を求める関数。
+
+	Parameters
+	----------
+	line1_start : Vector | Tuple[float, float, float]
+		線分1の始点。
+	line1_end : Vector
+		線分1の終点。
+	line2_start : Vector
+		線分2の始点。
+	line2_end : Vector
+		線分2の終点。
+	return_intersection_point_ratio : bool, optional, default: False
+		交点の座標をline1の始点からの相対的な割合で返すかどうか。これがTrueの場合、返り値はタプルとなる。
+
+	Returns
+	-------
+	Vector or None or Tuple[Vector, float]
+		二つの線分の交点。交点がなければNoneを返す。
+		return_intersection_point_ratioにTrueを指定した場合、返り値は交点と、交点のline1の始点からの相対的な割合の値が含まれるタプルとなる。
+	"""
+	p = line1_start if isinstance(line1_start, Vector) else Vector(line1_start)
+	q = line2_start if isinstance(line2_start, Vector) else Vector(line2_start)
+	r = (line1_end if isinstance(line1_end, Vector) else Vector(line1_end)) - p
+	s = (line2_end if isinstance(line2_end, Vector) else Vector(line2_end)) - q
+
+	if r.cross(s).length == 0:
+		# 線分が平行か重なっている場合
+		return None
+
+	t = (q - p).cross(s).length / r.cross(s).length
+	u = (q - p).cross(r).length / r.cross(s).length
+
+	result = None
+	# 交点が両線分上に存在する
+	if 0 <= t <= 1 and 0 <= u <= 1:
+		result = p + t * r
+
+	if return_intersection_point_ratio:
+		return result, t
+	else:
+		return result

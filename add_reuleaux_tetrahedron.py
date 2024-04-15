@@ -201,7 +201,7 @@ class ROMLYADDON_OT_add_reuleaux_tetrahedron(bpy.types.Operator):
 			bpy.ops.object.mode_set(mode='OBJECT')
 
 		# オブジェクトの原点を3Dカーソル位置に設定
-		bpy.ops.object.origin_set(type='ORIGIN_CURSOR')
+		obj.location = bpy.context.scene.cursor.location
 
 		return {'FINISHED'}
 

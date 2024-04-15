@@ -48,6 +48,16 @@ TRANSLATION_DICT = {
 		('*', 'Keep Modifiers'): 'モデファイアを維持',
 		('*', "Keep modifiers if it's checked"): 'オンの場合、モデファイアをそのままにします',
 
+		# スフェリコン関連
+		('*', 'Add Sphericon'): 'スフェリコンを作成',
+		('*', 'The number of vertices in the polygon that constructs the Sphericon'):
+			'スフェリコンの元になる多角形の頂点数',
+		('*', 'How many rotations should the shape be offset by on each side to create a sphericon'):
+			'形状を左右で何回転ずらしてスフェリコンを作るか',
+		('*', 'Diagonal Length'): '対角線の長さ',
+		('*', 'The diagonal length of the Sphericon'): 'スフェリコンの対角線の長さ',
+		('*', 'The number of segments in the conic parts of the Sphericon'): 'スフェリコンの円錐部分のセグメント数',
+
 		# アルミフレーム関連
 		('*', 'Add Aluminium Extrusion'): 'アルミフレームを作成',
 		('*', 'Construct an aluminum extrusion'): 'アルミフレームを作成します',

@@ -123,7 +123,7 @@ class ROMLYADDON_OT_add_oloid(bpy.types.Operator):
 		bpy.context.view_layer.objects.active = obj
 
 		# オブジェクトの原点を3Dカーソル位置に設定
-		bpy.ops.object.origin_set(type='ORIGIN_CURSOR')
+		obj.location = bpy.context.scene.cursor.location
 
 		return {'FINISHED'}
 
@@ -157,10 +157,10 @@ def create_two_circle_oloid_base(radius: float, num_vertices: int, make_edges: b
 	bpy.types.Object
 		作成されたオロイドベースのオブジェクト。
 	"""
-	circle_vertices1 = create_circle_vertices((0, 0, 0), radius=radius, num_vertices=num_vertices, start_angle=180)
+	circle_vertices1 = romly_utils.create_circle_vertices(radius=radius, num_vertices=num_vertices, start_angle_degree=180)
 
 	# 2個目の円はx軸で90度回転させて半径分右に移動
-	circle_vertices2 = create_circle_vertices((0, 0, 0), radius=radius, num_vertices=num_vertices, start_angle=0)
+	circle_vertices2 = romly_utils.create_circle_vertices(radius=radius, num_vertices=num_vertices, start_angle_degree=0)
 	for i in range(len(circle_vertices2)):
 		v = rotate_vertex_90_degrees_x_axis(circle_vertices2[i])
 		circle_vertices2[i] = (v[0] + radius, v[1], v[2])
@@ -431,43 +431,6 @@ def rotate_vertex_90_degrees_x_axis(vertex: Tuple[float, float, float]) -> Tuple
 		x軸で90度回転後の頂点の座標 (x, -z, y)
 	"""
 	return (vertex[0], -vertex[2], vertex[1])
-
-
-
-
-
-
-
-
-
-
-def create_circle_vertices(center: Tuple[float, float, float], radius: float, num_vertices: int, start_angle: float = 0) -> List[Tuple[float, float, float]]:
-	"""
-	円周上の頂点群を生成する。
-
-	Parameters
-	----------
-	center : Tuple[float, float, float]
-		円の中心座標 (x, y)。
-	radius : float
-		円の半径。
-	num_vertices : int
-		生成する頂点の数。
-	start_angle_degree : float, optional
-		開始角度（度単位）。デフォルトは0（右）。90で上、180で左、270で下からになる。
-
-	Returns
-	-------
-	List[Tuple[float, float, float]]
-		生成された頂点の座標リスト (x, y)。
-	"""
-	vertices = []
-	for i in range(num_vertices):
-		angle = 2 * math.pi * i / num_vertices + math.radians(start_angle)
-		x = center[0] + radius * math.cos(angle)
-		y = center[1] + radius * math.sin(angle)
-		vertices.append((x, y, 0))
-	return vertices
 
 
 

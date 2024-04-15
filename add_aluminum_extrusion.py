@@ -68,52 +68,6 @@ def mirror_point(point: Vector, normal: Vector) -> Vector:
 
 
 
-def find_intersection(line1_start: Vector, line1_end: Vector, line2_start: Vector, line2_end: Vector) -> Vector:
-	"""
-	二つの線分の交点を求める関数。
-
-	Parameters
-	----------
-	line1_start : Vector
-		線分1の始点。
-	line1_end : Vector
-		線分1の終点。
-	line2_start : Vector
-		線分2の始点。
-	line2_end : Vector
-		線分2の終点。
-
-	Returns
-	-------
-	Vector or None
-		二つの線分の交点。交点がなければNoneを返す。
-	"""
-	p = line1_start
-	q = line2_start
-	r = line1_end - line1_start
-	s = line2_end - line2_start
-
-	if r.cross(s).length == 0:
-		# 線分が平行か重なっている場合
-		return None
-
-	t = (q - p).cross(s).length / r.cross(s).length
-	u = (q - p).cross(r).length / r.cross(s).length
-
-	if 0 <= t <= 1 and 0 <= u <= 1:
-		# 交点が両線分上に存在する
-		return p + t * r
-	else:
-		# 交点が存在しない
-		return None
-
-
-
-
-
-
-
-
 class AluminumExtrusionSpec(NamedTuple):
 	size: float
 	x_slots: int
@@ -134,7 +88,7 @@ class AluminumExtrusionSpec(NamedTuple):
 		"""中間となるフレーム形状の左側の頂点群を生成して返す"""
 		diagonal_frame_horizontal_width = self.x_bone_thickness / math.sqrt(2) * 2
 		diagonal_frame_root_pos = Vector((self.core_width / 2 - diagonal_frame_horizontal_width / 2, self.core_width / 2, 0))
-		diagonal_frame_tip_pos = find_intersection(
+		diagonal_frame_tip_pos = romly_utils.find_intersection(
 			line1_start=diagonal_frame_root_pos,
 			line1_end=diagonal_frame_root_pos + Vector((1, 1, 0)) * 1000,
 			line2_start=Vector((self.slot_wide_width / 2, 1000, 0)),
@@ -161,7 +115,7 @@ class AluminumExtrusionSpec(NamedTuple):
 			vertices.append(diagonal_frame_root_pos + Vector((diagonal_frame_horizontal_width / 2, -diagonal_frame_horizontal_width / 2, 0)))
 			vertices.append(Vector((self.core_width / 2, 0, 0)))
 		else:
-			vertices.append(find_intersection(
+			vertices.append(romly_utils.find_intersection(
 				line1_start=Vector((0, self.core_width / 2 - self.x_bone_thickness, 0)),
 				line1_end=Vector((1000, self.core_width / 2 - self.x_bone_thickness, 0)),
 				line2_start=diagonal_frame_tip_pos_right,
@@ -195,7 +149,7 @@ def make_topleft_vertices(spec: AluminumExtrusionSpec) -> List[Vector]:
 	vertices.append(Vector((-spec.core_width / 2, 0, 0)))
 	v1 = Vector((-spec.core_width / 2, spec.core_width / 2 - diagonal_frame_horizontal_width / 2, 0))
 	vertices.append(v1)
-	vertices.append(find_intersection(
+	vertices.append(romly_utils.find_intersection(
 		line1_start=v1,
 		line1_end=v1 + Vector((-1, 1, 0)) * 1000,
 		line2_start=Vector((-1000, spec.slot_wide_width / 2, 0)),
@@ -209,7 +163,7 @@ def make_topleft_vertices(spec: AluminumExtrusionSpec) -> List[Vector]:
 	vertices.append(Vector((-spec.slot_width / 2, frame_height / 2 - spec.wall_thickness, 0)))
 	vertices.append(Vector((-spec.slot_wide_width / 2, frame_height / 2 - spec.wall_thickness, 0)))
 	v2 = Vector((-spec.core_width / 2 + diagonal_frame_horizontal_width / 2, spec.core_width / 2, 0))
-	vertices.append(find_intersection(
+	vertices.append(romly_utils.find_intersection(
 		line1_start=v2,
 		line1_end=v2 + Vector((-1, 1, 0)) * 1000,
 		line2_start=Vector((-spec.slot_wide_width / 2, 1000, 0)),

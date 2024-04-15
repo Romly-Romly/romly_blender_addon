@@ -54,7 +54,7 @@ class ROMLYADDON_OT_add_reuleaux_polygon(bpy.types.Operator):
 		segments = self.val_segments
 
 		# まず多角形の頂点リストを作る
-		polygon_vertices = generate_vertices_on_circumcircle(num_sides=num_sides, radius=radius)
+		polygon_vertices = romly_utils.create_circle_vertices(radius=radius, num_vertices=num_sides)
 
 		# ルーローの多角形にするために各辺の始点と終点を始点、終点とする円弧を描いていく
 		reuleaux_polygon_vertices = []
@@ -154,29 +154,6 @@ def get_polygon_name(num_sides):
 		result = 'Reuleaux-ish ' + result
 
 	return result
-
-
-
-def generate_vertices_on_circumcircle(num_sides, radius):
-	"""
-	指定された半径を持つ円を外接円とする多角形の頂点リストを作る。図形はxy平面上に配置される。z座標はすべて0。
-
-	Parameters:
-		num_sides (int): 多角形の辺の数。
-		radius (float): 多角形の外接円の半径。
-
-	Returns:
-		list of tuple: 多角形の各頂点の座標を(x, y, z)の形式で格納したリスト。
-	"""
-	vertices = []
-	for i in range(num_sides):
-		# 各頂点の角度を計算
-		angle = 2 * math.pi * i / num_sides
-		# 角度を基に頂点の座標を計算し、リストに追加
-		x = math.cos(angle) * radius
-		y = math.sin(angle) * radius
-		vertices.append((x, y, 0))
-	return vertices
 
 
 
