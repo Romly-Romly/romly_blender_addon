@@ -1,1 +1,5 @@
 .vscode/settings.json
+
+*.blend1
+
+sample.blend
