@@ -9,33 +9,43 @@ from . import romly_utils
 
 
 
+
+
+
+
+
+
+
+
+
 class ROMLYADDON_OT_add_box(bpy.types.Operator):
-	bl_idname = "romlyaddon.add_box"
-	bl_label = "Add Box"
-	bl_description = '直方体のメッシュを追加します'
+	"""直方体メッシュを作成するオペレーター"""
+	bl_idname = 'romlyaddon.add_box'
+	bl_label = bpy.app.translations.pgettext_iface('Add Box')
+	bl_description = 'Construct a cuboid mesh'
 	bl_options = {'REGISTER', 'UNDO'}
 
 	ORIGIN_X_ITEMS = [
-		('0.5', 'Left', 'X軸原点を左面に設定します'),
-		('0', 'Center', 'X軸原点を中心に設定します'),
-		('-0.5', 'Right', 'X軸原点を右面に設定します')
+		('0.5', 'Left', 'Set the X coordinate of the origin to the left surface'),
+		('0', 'Center', 'Set the X coordinate of the origin to the center'),
+		('-0.5', 'Right', 'Set the X coordinate of the origin to the right surface')
 	]
 	ORIGIN_Y_ITEMS = [
-		('0.5', 'Front', 'Y軸原点を正面に設定します'),
-		('0', 'Center', 'Y軸原点を中心に設定します'),
-		('-0.5', 'Back', 'Y軸原点を背面に設定します')
+		('0.5', 'Front', 'Set the Y coordinate of the origin to the front surface'),
+		('0', 'Center', 'Set the Y coordinate of the origin to the center'),
+		('-0.5', 'Back', 'Set the Y coordinate of the origin to the back surface')
 	]
 	ORIGIN_Z_ITEMS = [
-		('-0.5', 'Top', 'Z軸原点を上面に設定します'),
-		('0', 'center', 'Z軸原点を中心に設定します'),
-		('0.5', 'Bottom', 'Z軸原点を底面に設定します')
+		('-0.5', 'Top', 'Set the Z coordinate of the origin to the top surface'),
+		('0', 'Center', 'Set the Z coordinate of the origin to the center'),
+		('0.5', 'Bottom', 'Set the Z coordinate of the origin to the bottom surface')
 	]
 
 	# プロパティ
-	val_size: FloatVectorProperty(name='Size', description='大きさ', default=[10, 10, 10], soft_min=-1000.0, soft_max=1000.0, size=3, subtype='TRANSLATION', unit='LENGTH')
-	val_origin_x: EnumProperty(name='X', description='X軸原点位置', default='0', items=ORIGIN_X_ITEMS)
-	val_origin_y: EnumProperty(name='Y', description='Y軸原点位置', default='0', items=ORIGIN_Y_ITEMS)
-	val_origin_z: EnumProperty(name='Z', description='Z軸原点位置', default='0', items=ORIGIN_Z_ITEMS)
+	val_size: FloatVectorProperty(name='Size', description='Size of the cuboid', default=[10, 10, 10], soft_min=-1000.0, soft_max=1000.0, size=3, subtype='TRANSLATION', unit='LENGTH')
+	val_origin_x: EnumProperty(name='X', description='X coordinate of the origin', default='0', items=ORIGIN_X_ITEMS)
+	val_origin_y: EnumProperty(name='Y', description='Y coordinate of the origin', default='0', items=ORIGIN_Y_ITEMS)
+	val_origin_z: EnumProperty(name='Z', description='Z coordinate of the origin', default='0', items=ORIGIN_Z_ITEMS)
 
 
 
@@ -50,7 +60,7 @@ class ROMLYADDON_OT_add_box(bpy.types.Operator):
 		col.prop(self, 'val_size')
 		col.separator()
 
-		col.label(text="Origin")
+		col.label(text='Origin')
 		row = col.row(align=True)
 		row.prop(self, 'val_origin_x', expand=True)
 		row = col.row(align=True)
@@ -84,8 +94,8 @@ class ROMLYADDON_OT_add_box(bpy.types.Operator):
 		offset = mathutils.Vector([float(self.val_origin_x), float(self.val_origin_y), float(self.val_origin_z)])
 		box_vertices = [(v + offset) * self.val_size for v in vertices]
 
-		bpy.context.scene.cursor.location
-		obj = romly_utils.cleanup_mesh(romly_utils.create_object(box_vertices, faces, name='Box'))
+		obj_name = 'Cube' if self.val_size[0] == self.val_size[1] and self.val_size[1] == self.val_size[2] else 'Cuboid'
+		obj = romly_utils.cleanup_mesh(romly_utils.create_object(box_vertices, faces, name=bpy.app.translations.pgettext_data(obj_name)))
 		bpy.context.collection.objects.link(obj)
 
 		# オブジェクトを3Dカーソル位置へ移動
@@ -114,7 +124,7 @@ class ROMLYADDON_MT_romly_add_mesh_menu_parent(bpy.types.Menu):
 
 	def draw(self, context):
 		layout = self.layout
-		layout.operator(ROMLYADDON_OT_add_box.bl_idname, icon='MESH_CUBE')
+		layout.operator(ROMLYADDON_OT_add_box.bl_idname, text=bpy.app.translations.pgettext_iface('Add Box'), icon='MESH_CUBE')
 
 
 
@@ -129,22 +139,33 @@ def menu_func(self, context):
 
 
 
-# blenderへのクラス登録処理
 def register():
+	# 翻訳辞書の登録
+	try:
+		bpy.app.translations.register(__name__, romly_translation.TRANSLATION_DICT)
+	except ValueError:
+		bpy.app.translations.unregister(__name__)
+		bpy.app.translations.register(__name__, romly_translation.TRANSLATION_DICT)
+
+	# blenderへのクラス登録処理
 	bpy.utils.register_class(ROMLYADDON_OT_add_box)
 	bpy.utils.register_class(ROMLYADDON_MT_romly_add_mesh_menu_parent)
+
 	bpy.types.VIEW3D_MT_add.append(menu_func)
 
 
 
 
 
-# クラスの登録解除
 def unregister():
+	# クラスの登録解除
 	bpy.utils.unregister_class(ROMLYADDON_OT_add_box)
 	bpy.utils.unregister_class(ROMLYADDON_MT_romly_add_mesh_menu_parent)
+
 	bpy.types.VIEW3D_MT_add.remove(menu_func)
 
+	# 翻訳辞書の登録解除
+	bpy.app.translations.unregister(__name__)
 
 
 

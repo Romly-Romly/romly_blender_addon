@@ -1,6 +1,23 @@
 # 翻訳辞書
 TRANSLATION_DICT = {
 	'ja_JP': {
+		# Add Box
+		('*', 'Add Box'): '直方体を作成',
+		('*', 'Construct a cuboid mesh'): '直方体のメッシュを作成します',
+		('*', 'Set the X coordinate of the origin to the left surface'): '原点のX座標を左面に設定します',
+		('*', 'Set the X coordinate of the origin to the center'): '原点のX座標を中心に設定します',
+		('*', 'Set the X coordinate of the origin to the right surface'): '原点のX座標を右面に設定します',
+		('*', 'Set the Y coordinate of the origin to the front surface'): '原点のY座標を正面に設定します',
+		('*', 'Set the Y coordinate of the origin to the center'): '原点のY座標を中心に設定します',
+		('*', 'Set the Y coordinate of the origin to the back surface'): '原点のY座標を背面に設定します',
+		('*', 'Set the Z coordinate of the origin to the top surface'): '原点のZ座標を上面に設定します',
+		('*', 'Set the Z coordinate of the origin to the center'): '原点のZ座標を中心に設定します',
+		('*', 'Set the Z coordinate of the origin to the bottom surface'): '原点のZ座標を底面に設定します',
+		('*', 'Size of the cuboid'): '直方体の大きさ',
+		('*', 'X coordinate of the origin'): '原点のX座標',
+		('*', 'Y coordinate of the origin'): '原点のY座標',
+		('*', 'Z coordinate of the origin'): '原点のZ座標',
+
 		# ルーローの四面体関連
 		('*', 'Add Reuleaux Tetrahedron'): 'ルーローの四面体を作成',
 		('*', 'Construct a Reuleaux Tetrahedron mesh'): 'ルーローの四面体のメッシュを作成します',

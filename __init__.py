@@ -1,6 +1,6 @@
 bl_info = {
 	'name': 'Romly Blender Add-on',
-	'version': (1, 1, 1),
+	'version': (1, 1, 2),
 	'blender': (4, 0, 0),
 	'category': 'Object',
 	'author': 'Romly',
@@ -130,7 +130,7 @@ class ROMLYADDON_MT_romly_add_mesh_menu_parent(bpy.types.Menu):
 		layout = self.layout
 
 		OPERATORS = [
-			(ROMLYADDON_OT_add_box, None, 'MESH_CUBE'),
+			(ROMLYADDON_OT_add_box, 'Add Box', 'MESH_CUBE'),
 			(ROMLY_OT_add_donut_cylinder, None, 'MESH_CYLINDER'),
 			(ROMLYADDON_OT_add_cross_extrusion, None, 'ADD'),
 			(ROMLYADDON_OT_add_reuleaux_polygon, None, 'MESH_CIRCLE'),
