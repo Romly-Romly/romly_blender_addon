@@ -16,13 +16,20 @@
 	- ルーローの四面体([Add Reuleaux Tetrahedron](#add-reuleaux-tetrahedron))
 	- スフェリコン([Add Sphericon](#add-sphericon))
 	- オロイド／アンチオロイド([Add Oloid](#add-oloid))
+	- クロソイド曲線([Add Clothoid Curve](#add-clothoid-curve))
+	- クロソイド角丸矩形([Add Clothoid Corner Plate](#add-clothoid-corner-plate))
 	- アルミフレーム([Add Aluminum Extrusion](#add-aluminum-extrusion))
 	- ピンヘッダー([Add Pin Header](#add-pin-header))
-- すべてのモデファイアを適用([Apply All Modifiers](#apply-all-modifiers))
-- 固定距離のArrayモデファイアを追加([Add Fixed Count Array Modifier](#add-fixed-count-array-modifier))
+<br>
+- オブジェクトのコンテキストメニュー
+	- すべてのモデファイアを適用([Apply All Modifiers](#apply-all-modifiers))
+	- 固定距離のArrayモデファイアを追加([Add Constant Offset Array Modifier](#add-constant-offset-array-modifier))
+	- ビューポート表示のテクスチャ／ワイヤーフレーム切り替え([Toggle Viewport Display As](#toggle-viewport-display-as))
+<br>
 - オブジェクト／コレクションをSTL形式で簡単にエクスポート([Export Selection as STL](#export-selection-as-stl), [Export Collection as STL](#export-collection-as-stl))
 - 平面上にある辺（溶解可能な辺）を選択([Select edges on Fair Surface](#select-edges-on-fair-surface))
 - 言語設定を切り替えられるパネル([Language Panel](#language-panel))
+- アクティブスクリプトを再読み込みして実行([Reload and Run Script](#reload-and-run-script))
 - 【おまけ】blend1ファイルを再帰的に削除するPythonスクリプト([blend1_cleaner.py](#blend1_cleanerpy))
 
 ![romly_blender_addonで作成可能なオブジェクトの一部](images/support_objects.jpg)
@@ -114,6 +121,33 @@ XY平面にルーローの多角形を作成します。正しくルーローの
 
 -----
 
+### Add Clothoid Curve
+
+*Add Menu(<kbd>Shift+A</kbd>) → *Romly*
+
+![Add Clothoid Curve](images/add_clothoid_curve.jpg)
+
+クロソイド曲線（またはオイラー螺旋、コルニュ螺旋）と呼ばれる、曲率が一定で変わっていく曲線のメッシュを作成します。メッシュと言っても曲線なので頂点群とそれらを結ぶ辺のみで、面はありません。
+
+曲線半径、曲線長、クロソイドパラメーターのうちいずれか2つを指定して曲線の形状を決め、それらをいくつの頂点で再現するか指定できます。頂点数が少ないと当然ガタガタのカーブになってしまいます。足りない脳みそでなんとか曲線のアルゴリズムを再現したので、それぞれのパラメータについては誤りがあったらすいません。つくづく数学をもっとちゃんと勉強しとけば良かったと思いました。
+
+-----
+
+### Add Clothoid Corner Plate
+
+*Add Menu(<kbd>Shift+A</kbd>) → *Romly*
+
+![Add Clothoid Corner Plate](images/add_clothoid_corner_plate.jpg)
+
+角丸の矩形メッシュを追加しますが、ベベルモデファイアなどを使った角丸と違い、クロソイド曲線と円弧を使った角丸になっています。直線部分から徐々に曲率を上げていくので非常に滑らかな角丸になります。確か、iPhoneはアプリのアイコンや本体にこの形状を使っていたハズです。あとは道路のカーブにも必ず使われるやつです。
+上のスクリーンショットでは、黒い線の通常の角丸に対し、より滑らかなカーブになっていることがわかります。
+
+ただし、曲線半径、曲線長、クロソイドパラメーターのいずれか2つを使って角丸具合を指定するため、普通の角丸のように大きさを直接指定できないので若干使いにくいです。現在の設定で角丸部分全体がどれくらいの大きさになるかはオペレーターパネルに表示されます。通常はクロソイド曲線 → 円弧 → クロソイド曲線という流れになりますが、クロソイド曲線の設定によって曲線部分のみで45度に達してしまった時は円弧を挟まずに点対称なクロソイド曲線2つで構成される角丸となります。
+
+矩形としてはXY方向の大きさと厚みを指定できます。大きさは角丸部分を含む全体の大きさを指定します。クロソイド曲線の設定によっては角丸部分の大きさが矩形の大きさを超えてしまう事がありますが、その時は角丸部分が矩形の大きさに収まるよう縮小されます（角丸部分の実際の大きさとは別に、縮小された大きさも表示されるようになります）。
+
+-----
+
 ### Add Aluminum Extrusion
 
 *Add Menu(<kbd>Shift+A</kbd>) → *Romly*
@@ -148,12 +182,22 @@ L型のも作れるといいんだけどとりあえずストレートのみで�
 
 -----
 
-### Add Fixed Count Array Modifier
+### Add Constant Offset Array Modifier
 
 *Object Context Menu*（オブジェクトを右クリック） → *Romly Tools*
 
 Relative OffsetではなくConstant Offsetを設定した状態のArrayモデファイアを追加します。<br>
 自分の用途的にはRelative Offsetを指定することは極めて稀で、毎回毎回Constant Offsetにチェックを入れ直してオフセット距離を指定するのが面倒なのでスクリプトにまとめました。
+
+-----
+
+### Toggle Viewport Display As
+
+*Object Context Menu*（オブジェクトを右クリック） → *Romly Tools*
+
+オブジェクトの表示をテクスチャ ←→ ワイヤーフレームで切り替える機能です。Blenderのオブジェクトプロパティ → Viewport Display → Display As で Textured / Wired を設定するのと同じです。
+
+自分の場合はブーリアンモデファイアのツールオブジェクトを見やすいようワイヤーフレーム表示にすることが多いのですが、あとから編集する時はソリッドないしテクスチャ表示に戻す必要があり、頻繁に切り替えるのにいちいちオブジェクトプロパティパネルを表示しなくても切り替えられるようにしたかったので、右クリックメニューにこの機能を追加しました。地味に便利です。
 
 -----
 
@@ -186,7 +230,11 @@ Relative OffsetではなくConstant Offsetを設定した状態のArrayモデフ
 *Edge Menu*（編集モード）
 *Edit Mesh Context Menu*（編集モード・辺選択時に右クリック）
 
+![Select Edges on Fair Surface](images/select_edges_on_fair_surface.jpg)
+
 編集中のメッシュの、平面上にある辺、つまり溶解しても影響がない辺をまとめて選択できます。STLファイルなどをインポートした時に、無駄な辺を整理するのに使えると思います。blenderの標準機能でありそうなのですが、見つけられないので作っちゃいました。
+
+処理としてはすべての辺について、その辺を共有する2つの面の法線を求め、その内積が閾値の角度以下なら辺を選択します。閾値は変更可能で、0度なら平面にある辺のみを選択しますが、大きくすることで平面ではない面の辺も選択できるようになります。
 
 -----
 
@@ -200,6 +248,22 @@ Relative OffsetではなくConstant Offsetを設定した状態のArrayモデフ
 
 おまけでblenderのバージョンと編集中のファイルのバージョンを表示します。
 
+
+
+
+
+-----
+
+### Reload and Run Script
+
+**再読み込みして実行**
+
+*Text Editor Context Menu*（テキストエディターで右クリック） → Reload and Run Script
+
+![Reload and Run Script](images/reload_and_run_script.jpg)
+
+Blenderのテキストエディターに表示されているアクティブスクリプトに外部からの変更があった場合に再読み込みし、さらにスクリプトを実行します。
+Blenderの標準機能で *ディスクから再読み込み* → *スクリプト実行* するのと全く変わりませんが、アドオン開発中は最も頻繁に繰り返す流れなのでメニューにまとめました。
 
 
 
