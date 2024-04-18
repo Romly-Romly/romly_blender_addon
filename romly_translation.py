@@ -58,6 +58,30 @@ TRANSLATION_DICT = {
 		('*', 'The diagonal length of the Sphericon'): 'スフェリコンの対角線の長さ',
 		('*', 'The number of segments in the conic parts of the Sphericon'): 'スフェリコンの円錐部分のセグメント数',
 
+		# クロソイド曲線関連
+		('*', 'Add Clothoid Curve'): 'クロソイド曲線を作成',
+		('*', 'Construct a Clothoid Curve'): 'クロソイド曲線を作成します',
+		('*', 'Add Clothoid Corner Plate'): 'クロソイド角丸板を作成',
+		('*', 'Construct a Clothoid Corner Plate'): 'クロソイド角丸板を作成します',
+		('*', 'Curve Specification Method'): '曲線の指定方法',
+		('*', 'Input Clothoid Parameter and Curve Length to determine the clothoid curve.'):
+			'クロソイドパラメータと曲線長を入力してクロソイド曲線を決定します。',
+		('*', 'Input Curve Length and Clothoid Parameter to determine the clothoid curve.'):
+			'曲線長とクロソイドパラメータを入力してクロソイド曲線を決定します。',
+		('*', 'Input Curve Radius and Clothoid Parameter to determine the clothoid curve.'):
+			'曲線半径とクロソイドパラメータを入力してクロソイド曲線を決定します。',
+		('*', 'Curve Radius'): '曲線半径',
+		('*', 'Curve Length'): '曲線長',
+		('*', 'Clothoid Parameter'): 'クロソイドパラメータ',
+		('*', 'Rectangle Size'): '矩形サイズ',
+		('*', 'Thickness'): '厚み',
+		('*', 'Curve Vertices'): '曲線の頂点数',
+		('*', 'Arc Vertices'): '円弧の頂点数',
+		('*', 'Angle of Circular Arc'): '円弧の角度',
+		('*', 'Total width(height) of rounded corner'): '角丸部全体の幅（高さ）',
+		('*', 'Clothoid Curve'): 'クロソイド曲線',
+		('*', 'Clothoid Corner Plate'): 'クロソイド角丸板',
+
 		# アルミフレーム関連
 		('*', 'Add Aluminium Extrusion'): 'アルミフレームを作成',
 		('*', 'Construct an aluminum extrusion'): 'アルミフレームを作成します',
@@ -104,9 +128,37 @@ TRANSLATION_DICT = {
 		# Select Edges on Fair Surface
 		('*', 'Select Edges on Fair Surface'): '平面上にある辺を選択',
 		('*', 'Select all edges on fair surface plane'): '平面上にある全ての辺を選択します',
+		('*', 'Select edges when the angle between normals of the two surfaces sharing the edge is less than or equal to this value'):
+			'辺を共有する2つの面の法線の角度が、この値以下になる時にその辺を選択します。',
+
+		# Add Constant Offset Array Modifier
+		('*', 'Add Constant Offset Array Modifier'):
+			'固定オフセットの配列モデファイアを追加',
+		('*', 'Add an array modifier set to a constant offset'):
+			'固定オフセットに設定された配列モデファイアを追加します',
+
+		# Apply All Modifiers
+		('*', 'Apply All Modifiers'): 'すべてのモデファイアを適用',
+		('*', 'Apply all modifiers on the active object'):
+			'アクティブなオブジェクトのすべてのモデファイアを適用します',
+		('*', 'Please select the object to which the modifiers are to be applied'):
+			'モデファイアを適用するオブジェクトを選択して下さい',
+		('*', 'The object has no modifiers'):
+			'オブジェクトにはモデファイアがありません',
+
+		# Toggle Viewport Display As
+		('*', 'Toggle Viewport Display As'): 'ビューポート表示を切り替え',
+		('*', 'Toggle Viewport Display As Wire/Textured'):
+			'ビューポートでのオブジェクトの表示方法をテクスチャとワイヤーフレームで切り替えます',
+		('*', 'Please select an object to operate'): '対象となるオブジェクトを選択して下さい',
 
 		# language_panel
-		('*', 'Set blender language to specified language'): 'blenderを指定された言語に設定します',
+		('*', 'Set blender language to specified language'):
+			'blenderを指定された言語に設定します',
+
+		# Reload and Run Script
+		('*', 'Reload and Run Script'): '再読み込みして実行',
+		('*', 'Reload active script from disk and run'): 'アクティブスクリプトをディスクから再読み込みして実行します'
 	},
 
 	'fr_FR': {

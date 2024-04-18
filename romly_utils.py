@@ -37,7 +37,7 @@ def VECTOR_Y_PLUS():
 
 
 
-def create_object(vertices: list, faces: list, name: str = '', mesh_name: str = None, edges: List[Tuple[int, int]] = []) -> bpy.types.Object:
+def create_object(vertices: list, faces: list = [], name: str = '', mesh_name: str = None, edges: List[Tuple[int, int]] = []) -> bpy.types.Object:
 	"""
 	指定された頂点リストと面リストから新しいオブジェクトを生成する。
 
@@ -45,12 +45,12 @@ def create_object(vertices: list, faces: list, name: str = '', mesh_name: str = 
 	----------
 	vertices : list of tuple of float
 		オブジェクトの頂点座標のリスト。
-	faces : list of tuple of int
-		オブジェクトの面を構成する頂点のインデックスのリスト。
+	faces : list of tuple of int, optional
+		オブジェクトの面を構成する頂点のインデックスのリスト。省略すると面は作成されない。
 	name : str
 		作成されるオブジェクトの名前。
 	mesh_name : str, optional
-		作成されるメッシュデータの名前。デフォルトでは、オブジェクト名に '_mesh' を追加されたものになる。
+		作成されるメッシュデータの名前。省略した場合、オブジェクト名に '_mesh' を追加されたものになる。
 	edges : List[Tuple[int, int]], optional
 		オブジェクトのエッジを構成する頂点のインデックスのリスト。デフォルトでは辺は作成されない。
 
@@ -214,7 +214,7 @@ def extrude_face(vertices, faces, extrude_vertex_indices: List[int], z_offset: f
 
 
 
-def units_to_string(value, removeSpace=False):
+def units_to_string(value, category=bpy.utils.units.categories.LENGTH, removeSpace=False):
 	"""
 	Blender内の単位を文字列に変換する。
 
@@ -222,6 +222,8 @@ def units_to_string(value, removeSpace=False):
 	----------
 	value : float
 		変換する単位の値。
+	category : str, optional
+		変換する単位のカテログリ。bpy.utils.units.categoriesの定数。デフォルトは 'LENGTH'。
 	removeSpace : bool, optional
 		結果の文字列からスペースを削除するかどうか。デフォルトはFalse。
 
@@ -237,7 +239,10 @@ def units_to_string(value, removeSpace=False):
 	>>> units_to_string(2, True)
 	'2m'
 	"""
-	s = bpy.utils.units.to_string(unit_system=bpy.context.scene.unit_settings.system, unit_category=bpy.utils.units.categories.LENGTH, value=value * bpy.context.scene.unit_settings.scale_length)
+	if category == bpy.utils.units.categories.LENGTH:
+		s = bpy.utils.units.to_string(unit_system=bpy.context.scene.unit_settings.system, unit_category=category, value=value * bpy.context.scene.unit_settings.scale_length)
+	else:
+		s = bpy.utils.units.to_string(unit_system=bpy.context.scene.unit_settings.system, unit_category=category, value=value)
 
 	# スペースの削除
 	if removeSpace:
@@ -345,22 +350,25 @@ def apply_boolean_object(object, boolObject, operation='DIFFERENCE', use_self=Fa
 
 
 
-def select_edges_on_fair_surface(object: bpy.types.Object) -> None:
+def select_edges_on_fair_surface(obj: bpy.types.Object, threshold_degree: float = 0) -> None:
 	"""
 	平面上にある辺（隣接する面の法線が同じ辺）を選択します。
 
 	Parameters
 	----------
-	object : bpy.types.Object
+	obj : bpy.types.Object
 		法線を比較して辺を選択する対象のBlenderオブジェクト。
 	"""
 	bpy.ops.mesh.select_mode(type='EDGE')
-	bm = bmesh.from_edit_mesh(object.data)
+	bm = bmesh.from_edit_mesh(obj.data)
 
 	# まず選択を解除
 	bpy.ops.mesh.select_all(action='DESELECT')
 
-	THRESHOLD = 0.999
+	# 閾値値の角度を内積の値に変換
+	threshold_radian = math.radians(threshold_degree)
+	cos_value = math.cos(threshold_radian)
+
 	for edge in bm.edges:
 		linked_faces = edge.link_faces
 		if len(linked_faces) == 2:
@@ -372,11 +380,11 @@ def select_edges_on_fair_surface(object: bpy.types.Object) -> None:
 			dot = normal1.dot(normal2)
 
 			# ドット積が閾値以上なら、その辺を選択
-			if dot > THRESHOLD:
+			if dot >= cos_value:
 				edge.select = True
 
 	# 更新を反映
-	bmesh.update_edit_mesh(object.data)
+	bmesh.update_edit_mesh(obj.data)
 
 
 
@@ -476,7 +484,7 @@ def is_edge_along_z_axis(edge: bmesh.types.BMEdge) -> bool:
 
 
 
-def create_circle_vertices(radius: float, num_vertices: int, center: Tuple[float, float, float] = (0, 0, 0), start_angle_degree: float = 0, normal_vector: Tuple[float, float, float] = (0, 0, 1)) -> List[Tuple[float, float, float]]:
+def create_circle_vertices(radius: float, num_vertices: int, center: Tuple[float, float, float] = (0, 0, 0), start_angle_degree: float = 0, angle_degree: float = 360, normal_vector: Tuple[float, float, float] = (0, 0, 1)) -> List[Tuple[float, float, float]]:
 	"""
 	円周上の頂点群を生成する。指定された半径を持つ円を外接円とする多角形の作成にも使えるよ。頂点はディフォルトではXY平面上に配置され、Z座標はすべて0だけど、法線ベクトルを指定することで任意の平面に配置できるよ。
 
@@ -519,7 +527,7 @@ def create_circle_vertices(radius: float, num_vertices: int, center: Tuple[float
 	# 円の頂点を計算
 	start_angle = math.radians(start_angle_degree)
 	for i in range(num_vertices):
-		angle = 2 * math.pi * i / num_vertices + start_angle
+		angle = math.radians(angle_degree) * i / num_vertices + start_angle
 		x = radius * math.cos(angle)
 		y = radius * math.sin(angle)
 		vertex = Vector((x, y, 0))

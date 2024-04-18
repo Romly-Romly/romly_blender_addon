@@ -1,4 +1,5 @@
 import bpy
+from bpy.props import *
 
 
 
@@ -24,8 +25,23 @@ class ROMLYADDON_OT_select_edges_on_fair_surface(bpy.types.Operator):
 	bl_description = 'Select all edges on fair surface plane'
 	bl_options = {'REGISTER', 'UNDO'}
 
+	val_threshold_degree: FloatProperty(name='Threshold', description='Select edges when the angle between normals of the two surfaces sharing the edge is less than or equal to this value', default=0.0, min=0.0, soft_max=30.0, max=90, step=1, precision=3, unit='ROTATION')
+
+
+
+	def invoke(self, context, event):
+		return self.execute(context)
+
+
+
+	def draw(self, context):
+		col = self.layout.column()
+		col.prop(self, 'val_threshold_degree')
+
+
+
 	def execute(self, context):
-		romly_utils.select_edges_on_fair_surface(bpy.context.view_layer.objects.active)
+		romly_utils.select_edges_on_fair_surface(bpy.context.view_layer.objects.active, threshold_degree=self.val_threshold_degree)
 		return {'FINISHED'}
 
 

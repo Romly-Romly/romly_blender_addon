@@ -1,6 +1,4 @@
 import bpy
-import mathutils
-import bmesh
 from bpy.props import *
 
 
@@ -15,25 +13,10 @@ from bpy.props import *
 
 
 
-
-class ROMLYADDON_OT_apply_all_modifiers(bpy.types.Operator):
-	"""
-	すべてのモデファイアを一度に適用するためのオペレータクラス。
-
-	Attributes
-	----------
-	bl_idname : str
-		オペレータの内部名。
-	bl_label : str
-		オペレータの表示名。
-	bl_description : str
-		オペレータの説明。
-	bl_options : set
-		オペレータのオプション。
-	"""
-	bl_idname = 'romlyaddon.apply_all_modifiers'
-	bl_label = bpy.app.translations.pgettext_iface('Apply All Modifiers')
-	bl_description = 'Apply all modifiers on the active object'
+class ROMLYADDON_OT_toggle_viewport_display_as(bpy.types.Operator):
+	bl_idname = 'romlyaddon.toggle_viewport_display_as'
+	bl_label = bpy.app.translations.pgettext_iface('Toggle Viewport Display As')
+	bl_description = 'Toggle Viewport Display As Wire/Textured'
 	bl_options = {'REGISTER', 'UNDO'}
 
 
@@ -44,22 +27,19 @@ class ROMLYADDON_OT_apply_all_modifiers(bpy.types.Operator):
 
 
 	def execute(self, context):
-		# 選択されているオブジェクトを取得
 		if len(bpy.context.selected_objects) == 0:
-			# 選択されているオブジェクトがない
-			self.report({'WARNING'}, 'Please select the object to which the modifiers are to be applied')
+			self.report({'WARNING'}, 'Please select an object to operate')
 			return {'CANCELLED'}
 		else:
-			obj = obj = bpy.context.active_object
-			if len(obj.modifiers) == 0:
-				# モデファイアが一つもない
-				self.report({'WARNING'}, 'The object has no modifiers')
-				return {'CANCELLED'}
+			# アクティブオブジェクトがワイヤーフレーム表示以外ならワイヤーフレーム表示に、それ以外はテクスチャ表示に切り替える。
+			new_display_type = 'TEXTURED'
+			if bpy.context.selected_objects[0].display_type != 'WIRE':
+				new_display_type = 'WIRE'
 
-			# すべてのモデファイアを適用
-			for modifier in obj.modifiers:
-				bpy.ops.object.modifier_apply(modifier=modifier.name)
-		return {'FINISHED'}
+			for obj in bpy.context.selected_objects:
+				obj.display_type = new_display_type
+
+			return {'FINISHED'}
 
 
 
@@ -78,7 +58,7 @@ class ROMLYADDON_MT_object_context_menu_parent(bpy.types.Menu):
 
 	def draw(self, context):
 		layout = self.layout
-		layout.operator(ROMLYADDON_OT_apply_all_modifiers.bl_idname, text=bpy.app.translations.pgettext_iface('Apply All Modifiers'), icon='CHECKMARK')
+		layout.operator(ROMLYADDON_OT_toggle_viewport_display_as.bl_idname, text=bpy.app.translations.pgettext_iface('Toggle Viewport Display As'), icon='SHADING_WIRE')
 
 
 
@@ -93,7 +73,7 @@ def object_context_menu_func(self, context):
 
 
 classes = [
-	ROMLYADDON_OT_apply_all_modifiers,
+	ROMLYADDON_OT_toggle_viewport_display_as,
 	ROMLYADDON_MT_object_context_menu_parent,
 ]
 
@@ -119,7 +99,7 @@ def register():
 
 
 
-# クラスの登録解除
+
 def unregister():
 	bpy.types.VIEW3D_MT_object_context_menu.remove(object_context_menu_func)
 

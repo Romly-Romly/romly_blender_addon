@@ -15,26 +15,15 @@ from bpy.props import *
 
 
 
-
-class ROMLYADDON_OT_apply_all_modifiers(bpy.types.Operator):
-	"""
-	すべてのモデファイアを一度に適用するためのオペレータクラス。
-
-	Attributes
-	----------
-	bl_idname : str
-		オペレータの内部名。
-	bl_label : str
-		オペレータの表示名。
-	bl_description : str
-		オペレータの説明。
-	bl_options : set
-		オペレータのオプション。
-	"""
-	bl_idname = 'romlyaddon.apply_all_modifiers'
-	bl_label = bpy.app.translations.pgettext_iface('Apply All Modifiers')
-	bl_description = 'Apply all modifiers on the active object'
+class ROMLYADDON_OT_add_constant_offset_array_modifier(bpy.types.Operator):
+	bl_idname = "romlyaddon.add_constant_offset_array_modifier"
+	bl_label = bpy.app.translations.pgettext_iface('Add Constant Offset Array Modifier')
+	bl_description = 'Add an array modifier set to a constant offset'
 	bl_options = {'REGISTER', 'UNDO'}
+
+	# プロパティ
+	val_count: IntProperty(name='Count', description='Number of duplicates to make', default=3, min=2, soft_max=20)
+	val_offset: FloatVectorProperty(name='Distance', description='Value for the distance between arrayed items', default=[10, 0, 0], soft_min=-100.0, soft_max=100.0, size=3, subtype='TRANSLATION', unit='LENGTH')
 
 
 
@@ -43,27 +32,34 @@ class ROMLYADDON_OT_apply_all_modifiers(bpy.types.Operator):
 
 
 
+	def draw(self, context):
+		col = self.layout.column()
+
+		col.prop(self, 'val_count')
+		col.prop(self, 'val_offset')
+
+
+
 	def execute(self, context):
 		# 選択されているオブジェクトを取得
-		if len(bpy.context.selected_objects) == 0:
-			# 選択されているオブジェクトがない
-			self.report({'WARNING'}, 'Please select the object to which the modifiers are to be applied')
-			return {'CANCELLED'}
-		else:
-			obj = obj = bpy.context.active_object
-			if len(obj.modifiers) == 0:
-				# モデファイアが一つもない
-				self.report({'WARNING'}, 'The object has no modifiers')
-				return {'CANCELLED'}
+		active_obj = bpy.context.active_object
 
-			# すべてのモデファイアを適用
-			for modifier in obj.modifiers:
-				bpy.ops.object.modifier_apply(modifier=modifier.name)
+		# Arrayモデファイアを追加
+		array_modifier = active_obj.modifiers.new(name="Constant Offset Array", type="ARRAY")
+
+		# Arrayモデファイアのパラメータを設定
+		array_modifier.count = self.val_count
+		array_modifier.use_relative_offset = False
+		array_modifier.use_constant_offset = True
+		array_modifier.constant_offset_displace = self.val_offset
+
+		# 隣接する頂点をマージしない
+		array_modifier.use_merge_vertices = False
+
+		# モデファイアを折りたたまれた状態で表示
+		array_modifier.show_expanded = False
+
 		return {'FINISHED'}
-
-
-
-
 
 
 
@@ -78,7 +74,7 @@ class ROMLYADDON_MT_object_context_menu_parent(bpy.types.Menu):
 
 	def draw(self, context):
 		layout = self.layout
-		layout.operator(ROMLYADDON_OT_apply_all_modifiers.bl_idname, text=bpy.app.translations.pgettext_iface('Apply All Modifiers'), icon='CHECKMARK')
+		layout.operator(ROMLYADDON_OT_add_constant_offset_array_modifier.bl_idname, text=bpy.app.translations.pgettext_iface('Add Constant Offset Array Modifier'), icon='MOD_ARRAY')
 
 
 
@@ -93,7 +89,7 @@ def object_context_menu_func(self, context):
 
 
 classes = [
-	ROMLYADDON_OT_apply_all_modifiers,
+	ROMLYADDON_OT_add_constant_offset_array_modifier,
 	ROMLYADDON_MT_object_context_menu_parent,
 ]
 
@@ -119,7 +115,7 @@ def register():
 
 
 
-# クラスの登録解除
+
 def unregister():
 	bpy.types.VIEW3D_MT_object_context_menu.remove(object_context_menu_func)
 

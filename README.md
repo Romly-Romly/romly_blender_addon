@@ -1,3 +1,6 @@
+[![blender](https://img.shields.io/badge/blender-4.0.0-orange)](https://www.blender.org/)
+[![MIT](https://img.shields.io/badge/license-MIT-blue)](https://github.com/Romly-Romly/romly_blender_addon/blob/main/LICENSE)
+
 # romly_blender_addon
 
 個人的に作成、使用している[Blender](https://www.blender.org/)用のスクリプトいろいろをアドオンにまとめたもの。<br>
