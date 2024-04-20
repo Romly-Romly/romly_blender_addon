@@ -675,7 +675,6 @@ classes = [
 
 
 
-# blenderへのクラス登録処理
 def register():
 	# 翻訳辞書の登録
 	try:
@@ -694,7 +693,6 @@ def register():
 
 
 
-# クラスの登録解除
 def unregister():
 	# クラスの登録解除
 	for cls in classes:

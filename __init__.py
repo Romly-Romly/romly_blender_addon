@@ -1,6 +1,6 @@
 bl_info = {
 	'name': 'Romly Blender Add-on',
-	'version': (1, 1, 2),
+	'version': (1, 2, 0),
 	'blender': (4, 0, 0),
 	'category': 'Object',
 	'author': 'Romly',
@@ -13,13 +13,14 @@ from .apply_all_modifiers import ROMLYADDON_OT_apply_all_modifiers
 from .add_constant_offset_array_modifier import ROMLYADDON_OT_add_constant_offset_array_modifier
 from .toggle_viewport_display_as import ROMLYADDON_OT_toggle_viewport_display_as
 from .add_box import ROMLYADDON_OT_add_box
-from .add_donut_cylinder import ROMLY_OT_add_donut_cylinder
+from .add_donut_cylinder import ROMLYADDON_OT_add_donut_cylinder
 from .add_cross_extrusion import ROMLYADDON_OT_add_cross_extrusion
 from .add_reuleaux_polygon import ROMLYADDON_OT_add_reuleaux_polygon
 from .add_reuleaux_tetrahedron import ROMLYADDON_OT_add_reuleaux_tetrahedron
 from .add_sphericon import ROMLYADDON_OT_add_sphericon
 from .add_oloid import ROMLYADDON_OT_add_oloid
 from .add_clothoid_curve import ROMLYADDON_OT_add_clothoid_curve, ROMLYADDON_OT_add_clothoid_corner_plate
+from .add_jis_screw import ROMLYADDON_OT_add_jis_screw, ROMLYADDON_OT_add_jis_nut
 from .add_aluminum_extrusion import ROMLYADDON_OT_add_aluminum_extrusion
 from .add_pinheader import ROMLYADDON_OT_add_pinheader
 from .export_collection_as_stl import ROMLYADDON_OT_export_collection_as_stl
@@ -131,7 +132,7 @@ class ROMLYADDON_MT_romly_add_mesh_menu_parent(bpy.types.Menu):
 
 		OPERATORS = [
 			(ROMLYADDON_OT_add_box, 'Add Box', 'MESH_CUBE'),
-			(ROMLY_OT_add_donut_cylinder, None, 'MESH_CYLINDER'),
+			(ROMLYADDON_OT_add_donut_cylinder, 'Add Donut Cylinder', 'MESH_CYLINDER'),
 			(ROMLYADDON_OT_add_cross_extrusion, None, 'ADD'),
 			(ROMLYADDON_OT_add_reuleaux_polygon, None, 'MESH_CIRCLE'),
 			(ROMLYADDON_OT_add_reuleaux_tetrahedron, 'Add Reuleaux Tetrahedron', 'MESH_CONE'),
@@ -140,6 +141,8 @@ class ROMLYADDON_MT_romly_add_mesh_menu_parent(bpy.types.Menu):
 			(ROMLYADDON_OT_add_clothoid_curve, 'Add Clothoid Curve', 'FORCE_VORTEX'),
 			(ROMLYADDON_OT_add_clothoid_corner_plate, 'Add Clothoid Corner Plate', 'META_PLANE'),
 			(None, None, None),
+			(ROMLYADDON_OT_add_jis_screw, 'Add JIS Screw', 'MOD_SCREW'),
+			(ROMLYADDON_OT_add_jis_nut, 'Add JIS Nut', 'SEQ_CHROMA_SCOPE'),
 			(ROMLYADDON_OT_add_aluminum_extrusion, 'Add Aluminium Extrusion', 'FIXED_SIZE'),
 			(ROMLYADDON_OT_add_pinheader, 'Add Pinheader', 'EMPTY_SINGLE_ARROW'),
 		]
@@ -195,7 +198,7 @@ MY_CLASS_LIST = [
 	ROMLYADDON_OT_toggle_viewport_display_as,
 	ROMLYADDON_MT_romly_tool_menu_parent,
 	ROMLYADDON_OT_add_box,
-	ROMLY_OT_add_donut_cylinder,
+	ROMLYADDON_OT_add_donut_cylinder,
 	ROMLYADDON_OT_add_cross_extrusion,
 	ROMLYADDON_OT_add_reuleaux_polygon,
 	ROMLYADDON_OT_add_reuleaux_tetrahedron,
@@ -203,6 +206,8 @@ MY_CLASS_LIST = [
 	ROMLYADDON_OT_add_oloid,
 	ROMLYADDON_OT_add_clothoid_curve,
 	ROMLYADDON_OT_add_clothoid_corner_plate,
+	ROMLYADDON_OT_add_jis_screw,
+	ROMLYADDON_OT_add_jis_nut,
 	ROMLYADDON_OT_add_aluminum_extrusion,
 	ROMLYADDON_OT_add_pinheader,
 	ROMLYADDON_MT_romly_add_mesh_menu_parent,

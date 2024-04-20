@@ -10,6 +10,10 @@ from . import romly_utils
 
 
 
+
+
+
+
 DONUT_CYLINDER_DIAMETER_METHOD_DIAMETER_AND_HOLE = 'diameter/hole'
 DONUT_CYLINDER_DIAMETER_METHOD_DIAMETER_AND_THICKNESS = 'diameter/thickness'
 DONUT_CYLINDER_DIAMETER_METHOD_HOLE_AND_THICKNESS = 'hole/thickness'
@@ -52,7 +56,7 @@ def CreatePieCutMesh(amountAngle, rotateAngle, cutSize=10, cutHeight=10):
 
 	vertices.append(romly_utils.VECTOR_Y_PLUS() * cutSize)
 	vertices.append(romly_utils.VECTOR_ZERO())
-	vertices.append(romly_utils.rotated_vector(vector=romly_utils.VECTOR_Y_PLUS() * cutSize, angleRadians=amountAngle, axis='Z'))
+	vertices.append(romly_utils.rotated_vector(vector=romly_utils.VECTOR_Y_PLUS() * cutSize, angle_radians=amountAngle, axis='Z'))
 
 	# 180度以下の場合は窪んだ形になるので頂点が増える
 	if amountAngle < math.radians(180):
@@ -82,34 +86,33 @@ def CreatePieCutMesh(amountAngle, rotateAngle, cutSize=10, cutHeight=10):
 
 
 
-# 中央に穴の空いたシリンダーを生成する
-class ROMLY_OT_add_donut_cylinder(bpy.types.Operator):
-	bl_idname = "romly.add_donut_cylinder"
-	bl_label = "Add Donut Cylinder"
-	bl_description = '中央に穴の空いたシリンダーのメッシュを作成します'
+# MARK: Class
+class ROMLYADDON_OT_add_donut_cylinder(bpy.types.Operator):
+	"""中空構造の円柱を作成するオペレーター"""
+	bl_idname = 'romlyaddon.add_donut_cylinder'
+	bl_label = bpy.app.translations.pgettext_iface('Add Donut Cylinder')
+	bl_description = 'Construct a donut cylinder mesh'
 	bl_options = {'REGISTER', 'UNDO'}
 
-	DiameterMethod = [
-		(DONUT_CYLINDER_DIAMETER_METHOD_DIAMETER_AND_HOLE, '直径と穴径', '直径と穴径で指定します'),
-		(DONUT_CYLINDER_DIAMETER_METHOD_DIAMETER_AND_THICKNESS, '直径と厚み', '直径と厚みで指定します'),
-		(DONUT_CYLINDER_DIAMETER_METHOD_HOLE_AND_THICKNESS, '穴径と厚み', '穴径と厚みで指定します')
-	]
 
-	#--- properties ---#
-	val_diameterMethod: EnumProperty(name='Method', description='径の指定方法', default=DONUT_CYLINDER_DIAMETER_METHOD_DIAMETER_AND_HOLE, items=DiameterMethod)
-	val_majorDiameter: FloatProperty(name='Diameter', description='シリンダーの直径', default=1.0, min=0.001, max=1000, subtype='DISTANCE', unit='LENGTH')
-	val_holeDiameter: FloatProperty(name='Hole Diameter', description='穴の直径', default=0.5, min=0.0, max=1000, subtype='DISTANCE', unit='LENGTH')
-	val_thickness: FloatProperty(name='Thickness', description='厚み', min=0.01, max=1000, default=0.25, subtype='DISTANCE', unit='LENGTH')
 
-	val_height: FloatProperty(name='Height', description='シリンダーの高さ', default=1, min=0.0001, max=1000, subtype='DISTANCE', unit='LENGTH')
-	val_origin: EnumProperty(name='Origin', description='シリンダーの原点位置', default=MESH_VERTICAL_ALIGNMENT_BOTTOM, items=MeshVerticalAlignment)
+	val_diameterMethod: EnumProperty(name='Method', description='How to specify its size', default=DONUT_CYLINDER_DIAMETER_METHOD_DIAMETER_AND_HOLE, items=[
+		(DONUT_CYLINDER_DIAMETER_METHOD_DIAMETER_AND_HOLE, 'Diameter & Hole Diameter', 'Specify its size by the diameter and the hole diameter'),
+		(DONUT_CYLINDER_DIAMETER_METHOD_DIAMETER_AND_THICKNESS, 'Diameter & Thickness', 'Specify its size by the diameter and the thickness'),
+		(DONUT_CYLINDER_DIAMETER_METHOD_HOLE_AND_THICKNESS, 'Hole Diameter & Thickness', 'Specify its size by the hole diameter and the thickness')
+	])
+	val_majorDiameter: FloatProperty(name='Diameter', description='The outer diameter of the cylinder', default=1.0, min=0.001, max=1000, subtype='DISTANCE', unit='LENGTH')
+	val_holeDiameter: FloatProperty(name='Hole Diameter', description='Diameter of the hole', default=0.5, min=0.0, max=1000, subtype='DISTANCE', unit='LENGTH')
+	val_thickness: FloatProperty(name='Thickness', min=0.01, max=1000, default=0.25, subtype='DISTANCE', unit='LENGTH')
 
-	val_amount: FloatProperty(name='Amount', description='作成する立方体の分量', default=math.radians(360), min=math.radians(0.1), max=math.radians(360), subtype='ANGLE', unit='ROTATION')
-	val_rotation: FloatProperty(name='Rotation', description='回転', default=math.radians(0), min=math.radians(0.1), max=math.radians(360), subtype='ANGLE', unit='ROTATION')
+	val_height: FloatProperty(name='Height', description='Height of the cylinder', default=1, min=0.0001, max=1000, subtype='DISTANCE', unit='LENGTH')
+	val_origin: EnumProperty(name='Origin', description='The origin point of the cylinder mesh', default=MESH_VERTICAL_ALIGNMENT_BOTTOM, items=MeshVerticalAlignment)
 
-	val_majorSegments: IntProperty(name='Segments', description='セグメント数', default=32, min=3, max=128, subtype='NONE')
-	val_holeSegments: IntProperty(name='Hole Segments', description='穴のセグメント数', default=32, min=3, max=128, subtype='NONE')
-	val_smooth: BoolProperty(name='Auto Smooth', description='チェックするとメッシュのスムーズシェーディングとAuto Smoothを有効にします', default=True)
+	val_amount: FloatProperty(name='Amount', default=math.radians(360), min=math.radians(0.1), max=math.radians(360), subtype='ANGLE', unit='ROTATION')
+	val_rotation: FloatProperty(name='Rotation', default=math.radians(0), min=math.radians(0.1), max=math.radians(360), subtype='ANGLE', unit='ROTATION')
+
+	val_majorSegments: IntProperty(name='Segments', default=32, min=3, max=128, subtype='NONE')
+	val_holeSegments: IntProperty(name='Hole Segments', default=32, min=3, max=128, subtype='NONE')
 
 	def draw(self, context):
 		col = self.layout.column()
@@ -152,13 +155,14 @@ class ROMLY_OT_add_donut_cylinder(bpy.types.Operator):
 		col.label(text="Mesh Settings")
 		col.prop(self, 'val_majorSegments')
 		col.prop(self, 'val_holeSegments')
-		col.prop(self, 'val_smooth')
 
-	#--- invoke ---#
+
+
 	def invoke(self, context, event):
 		return self.execute(context)
 
-	#--- execute ---#
+
+
 	def execute(self, context):
 		if self.val_diameterMethod == DONUT_CYLINDER_DIAMETER_METHOD_DIAMETER_AND_HOLE:
 			majorRadius = self.val_majorDiameter / 2
@@ -172,49 +176,46 @@ class ROMLY_OT_add_donut_cylinder(bpy.types.Operator):
 
 		# 穴の直径の方が大きい場合は警告
 		if holeRadius >= majorRadius:
-			self.report({'WARNING'}, '穴の直径を外径より大きくすることはできません')
+			self.report({'WARNING'}, 'The hole diameter must be smaller than the outer diameter')
 			return {'CANCELLED'}
 		elif holeRadius < 0:
-			self.report({'WARNING'}, '穴の直径をマイナスにすることはできません')
+			self.report({'WARNING'}, 'The hole diameter must be larger than zero')
 			return {'CANCELLED'}
-		else:
-			# 選択を解除
-			bpy.ops.object.select_all(action='DESELECT')
-
-			# シリンダーを生成
-			bpy.ops.mesh.primitive_cylinder_add(vertices=self.val_majorSegments, radius=majorRadius, depth=self.val_height, end_fill_type='NGON', enter_editmode=False, location=bpy.context.scene.cursor.location)
-			cylinderObject = bpy.data.objects[bpy.context.active_object.name]
-
-			# 穴となるシリンダーを生成してブーリアン
-			if holeRadius > 0:
-				bpy.ops.mesh.primitive_cylinder_add(vertices=self.val_holeSegments, radius=holeRadius, depth=self.val_height * 2, end_fill_type='NGON', enter_editmode=False, location=bpy.context.scene.cursor.location)
-				holeCylinderObject = bpy.data.objects[bpy.context.active_object.name]
-				romly_utils.apply_boolean_object(object=cylinderObject, boolObject=holeCylinderObject, unlink=True)
-
-			# 作成する分量が360度以下の場合
-			if self.val_amount < math.radians(360):
-				# ブーリアン用のメッシュを作成
-				subtructMesh = CreatePieCutMesh(amountAngle=self.val_amount, rotateAngle=self.val_rotation)
-				bpy.context.collection.objects.link(subtructMesh)
-				romly_utils.apply_boolean_object(object=cylinderObject, boolObject=subtructMesh, unlink=True)
 
 
-			# 原点位置の設定に従ってずらす
-			if self.val_origin == MESH_VERTICAL_ALIGNMENT_TOP:
-				romly_utils.translate_vertices(object=cylinderObject, vector=mathutils.Vector([0, 0, -self.val_height / 2]))
-			elif self.val_origin == MESH_VERTICAL_ALIGNMENT_BOTTOM:
-				romly_utils.translate_vertices(object=cylinderObject, vector=mathutils.Vector([0, 0, self.val_height / 2]))
+		# 選択を解除
+		bpy.ops.object.select_all(action='DESELECT')
 
-			# 選択
-			cylinderObject.select_set(state=True)
+		# シリンダーを生成
+		bpy.ops.mesh.primitive_cylinder_add(vertices=self.val_majorSegments, radius=majorRadius, depth=self.val_height, end_fill_type='NGON', enter_editmode=False, location=bpy.context.scene.cursor.location)
+		cylinderObject = bpy.data.objects[bpy.context.active_object.name]
 
-			# スムーズシェーディング
-			if self.val_smooth:
-				bpy.ops.object.shade_smooth()
+		# 穴となるシリンダーを生成してブーリアン
+		if holeRadius > 0:
+			bpy.ops.mesh.primitive_cylinder_add(vertices=self.val_holeSegments, radius=holeRadius, depth=self.val_height * 2, end_fill_type='NGON', enter_editmode=False, location=bpy.context.scene.cursor.location)
+			holeCylinderObject = bpy.data.objects[bpy.context.active_object.name]
+			romly_utils.apply_boolean_object(object=cylinderObject, boolObject=holeCylinderObject, unlink=True)
 
-			cylinderObject.name = 'Donut Cylinder {majorDiameter}/{holeDiameter}'.format(majorDiameter=romly_utils.units_to_string(value=majorRadius * 2, removeSpace=True), holeDiameter=romly_utils.units_to_string(value=holeRadius * 2, removeSpace=True))
+		# 作成する分量が360度以下の場合
+		if self.val_amount < math.radians(360):
+			# ブーリアン用のメッシュを作成
+			subtructMesh = CreatePieCutMesh(amountAngle=self.val_amount, rotateAngle=self.val_rotation)
+			bpy.context.collection.objects.link(subtructMesh)
+			romly_utils.apply_boolean_object(object=cylinderObject, boolObject=subtructMesh, unlink=True)
 
-			return {'FINISHED'}
+
+		# 原点位置の設定に従ってずらす
+		if self.val_origin == MESH_VERTICAL_ALIGNMENT_TOP:
+			romly_utils.translate_vertices(object=cylinderObject, vector=mathutils.Vector([0, 0, -self.val_height / 2]))
+		elif self.val_origin == MESH_VERTICAL_ALIGNMENT_BOTTOM:
+			romly_utils.translate_vertices(object=cylinderObject, vector=mathutils.Vector([0, 0, self.val_height / 2]))
+
+		# 選択
+		cylinderObject.select_set(state=True)
+
+		cylinderObject.name = f"{bpy.app.translations.pgettext_data('Donut Cylinder')} {romly_utils.units_to_string(value=majorRadius * 2, removeSpace=True)}/{romly_utils.units_to_string(value=holeRadius * 2, removeSpace=True)}"
+
+		return {'FINISHED'}
 
 
 
@@ -230,7 +231,7 @@ class ROMLYADDON_MT_romly_add_mesh_menu_parent(bpy.types.Menu):
 
 	def draw(self, context):
 		layout = self.layout
-		layout.operator(ROMLY_OT_add_donut_cylinder.bl_idname, icon='MESH_CYLINDER')
+		layout.operator(ROMLYADDON_OT_add_donut_cylinder.bl_idname, text=bpy.app.translations.pgettext_iface('Add Donut Cylinder'), icon='MESH_CYLINDER')
 
 
 
@@ -245,20 +246,33 @@ def menu_func(self, context):
 
 
 
-# blenderへのクラス登録処理
 def register():
-	bpy.utils.register_class(ROMLY_OT_add_donut_cylinder)
+	# 翻訳辞書の登録
+	try:
+		bpy.app.translations.register(__name__, romly_translation.TRANSLATION_DICT)
+	except ValueError:
+		bpy.app.translations.unregister(__name__)
+		bpy.app.translations.register(__name__, romly_translation.TRANSLATION_DICT)
+
+	# blenderへのクラス登録処理
+	bpy.utils.register_class(ROMLYADDON_OT_add_donut_cylinder)
 	bpy.utils.register_class(ROMLYADDON_MT_romly_add_mesh_menu_parent)
+
 	bpy.types.VIEW3D_MT_add.append(menu_func)
 
 
 
 
 
-# クラスの登録解除
 def unregister():
-	bpy.utils.unregister_class(ROMLY_OT_add_donut_cylinder)
+	# クラスの登録解除
+	bpy.utils.unregister_class(ROMLYADDON_OT_add_box)
 	bpy.utils.unregister_class(ROMLYADDON_MT_romly_add_mesh_menu_parent)
+
+	# クラスの登録解除
+	bpy.utils.unregister_class(ROMLYADDON_OT_add_donut_cylinder)
+	bpy.utils.unregister_class(ROMLYADDON_MT_romly_add_mesh_menu_parent)
+
 	bpy.types.VIEW3D_MT_add.remove(menu_func)
 
 

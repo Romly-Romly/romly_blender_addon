@@ -3,7 +3,7 @@ import bmesh
 import mathutils
 import math
 from mathutils import Vector, Matrix
-from typing import List, Tuple, NamedTuple, Callable
+from typing import List, Tuple, NamedTuple, Callable, Union, Literal
 
 
 
@@ -254,16 +254,16 @@ def units_to_string(value, category=bpy.utils.units.categories.LENGTH, removeSpa
 
 
 
-def rotated_vector(vector, angleRadians, axis):
+def rotated_vector(vector: Vector, angle_radians: float, axis: Literal['X', 'Y', 'Z']) -> Vector:
 	"""原点周りで回転したベクトルを生成して返す。
 
 	Parameters
 	----------
 	vector : Vector
 		元になるベクトル。
-	angleRadians : Float
+	angle_radians : float
 		ラジアン単位の回転角度。
-	axis : ['X', 'Y', 'Z']
+	axis : Literal['X', 'Y', 'Z']
 		回転軸。Matrix.Rotationメソッドにそのまま渡される。
 
 	Returns
@@ -272,21 +272,21 @@ def rotated_vector(vector, angleRadians, axis):
 		回転したベクトル。新しいベクトルが生成されて返される。
 	"""
 	v = vector.copy()
-	v.rotate(mathutils.Matrix.Rotation(angleRadians, 4, axis))
+	v.rotate(mathutils.Matrix.Rotation(angle_radians, 4, axis))
 	return v
 
 
 
 
 
-def rotate_vertices(object, degrees: float, axis: str):
+def rotate_vertices(object: Union[bpy.types.Mesh, List[Vector]], degrees: float, axis: Literal['X', 'Y', 'Z']):
 	"""MeshまたはVectorの配列のすべての頂点を原点周りで回転する
 
 	Parameters
 	----------
-	object : Mesh or list[Vector]
+	object : Union[bpy.types.Mesh, List[Vector]]
 		回転する頂点を含むMeshオブジェクトか、Vectorの配列。
-	axis : ['X', 'Y', 'Z']
+	axis : Literal['X', 'Y', 'Z']
 		回転軸。Matrix.Rotationメソッドにそのまま渡される。
 
 	"""
