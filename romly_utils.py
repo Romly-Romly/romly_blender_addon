@@ -3,7 +3,21 @@ import bmesh
 import mathutils
 import math
 from mathutils import Vector, Matrix
-from typing import List, Tuple, NamedTuple, Callable, Union, Literal
+from typing import Literal
+from collections.abc import Callable
+
+
+
+import romly_translation
+
+# romly_translationの再読み込み（Blenderを再起動しなくてもよくなる）
+import importlib
+importlib.reload(romly_translation)
+
+
+
+
+
 
 
 
@@ -37,13 +51,13 @@ def VECTOR_Y_PLUS():
 
 
 
-def create_object(vertices: list, faces: list = [], name: str = '', mesh_name: str = None, edges: List[Tuple[int, int]] = []) -> bpy.types.Object:
+def create_object(vertices: list[tuple[float, float, float]], faces: list = [], name: str = '', mesh_name: str = None, edges: list[tuple[int, int]] = []) -> bpy.types.Object:
 	"""
 	指定された頂点リストと面リストから新しいオブジェクトを生成する。
 
 	Parameters
 	----------
-	vertices : list of tuple of float
+	vertices : list[tuple[float, float, float]]
 		オブジェクトの頂点座標のリスト。
 	faces : list of tuple of int, optional
 		オブジェクトの面を構成する頂点のインデックスのリスト。省略すると面は作成されない。
@@ -51,7 +65,7 @@ def create_object(vertices: list, faces: list = [], name: str = '', mesh_name: s
 		作成されるオブジェクトの名前。
 	mesh_name : str, optional
 		作成されるメッシュデータの名前。省略した場合、オブジェクト名に '_mesh' を追加されたものになる。
-	edges : List[Tuple[int, int]], optional
+	edges : list[tuple[int, int]], optional
 		オブジェクトのエッジを構成する頂点のインデックスのリスト。デフォルトでは辺は作成されない。
 
 	Returns
@@ -168,7 +182,7 @@ def cleanup_mesh(object: bpy.types.Object, remove_doubles=True, recalc_normals=T
 
 
 
-def extrude_face(vertices, faces, extrude_vertex_indices: List[int], z_offset: float, cap=True):
+def extrude_face(vertices, faces, extrude_vertex_indices: list[int], z_offset: float, cap=True):
 	"""
 	指定された面を掃引して、新しくできた頂点と面を追加する。
 
@@ -178,7 +192,7 @@ def extrude_face(vertices, faces, extrude_vertex_indices: List[int], z_offset: f
 		頂点のリスト
 	faces : list of list of int
 		面を構成する頂点インデックスのリスト
-	extrude_vertex_indices : List[int]
+	extrude_vertex_indices : list[int]
 		掃引する頂点のインデックスのリスト。頂点(Vector)のリストじゃないので注意してね。
 	z_offset : float
 		掃引する距離
@@ -279,12 +293,12 @@ def rotated_vector(vector: Vector, angle_radians: float, axis: Literal['X', 'Y',
 
 
 
-def rotate_vertices(object: Union[bpy.types.Mesh, List[Vector]], degrees: float, axis: Literal['X', 'Y', 'Z']):
+def rotate_vertices(object: bpy.types.Mesh | list[Vector], degrees: float, axis: Literal['X', 'Y', 'Z']):
 	"""MeshまたはVectorの配列のすべての頂点を原点周りで回転する
 
 	Parameters
 	----------
-	object : Union[bpy.types.Mesh, List[Vector]]
+	object : bpy.types.Mesh | list[Vector]
 		回転する頂点を含むMeshオブジェクトか、Vectorの配列。
 	axis : Literal['X', 'Y', 'Z']
 		回転軸。Matrix.Rotationメソッドにそのまま渡される。
@@ -484,7 +498,7 @@ def is_edge_along_z_axis(edge: bmesh.types.BMEdge) -> bool:
 
 
 
-def create_circle_vertices(radius: float, num_vertices: int, center: Tuple[float, float, float] = (0, 0, 0), start_angle_degree: float = 0, angle_degree: float = 360, normal_vector: Tuple[float, float, float] = (0, 0, 1)) -> List[Tuple[float, float, float]]:
+def create_circle_vertices(radius: float, num_vertices: int, center: tuple[float, float, float] = (0, 0, 0), start_angle_degree: float = 0, angle_degree: float = 360, normal_vector: tuple[float, float, float] = (0, 0, 1)) -> list[tuple[float, float, float]]:
 	"""
 	円周上の頂点群を生成する。指定された半径を持つ円を外接円とする多角形の作成にも使えるよ。頂点はディフォルトではXY平面上に配置され、Z座標はすべて0だけど、法線ベクトルを指定することで任意の平面に配置できるよ。
 
@@ -494,16 +508,16 @@ def create_circle_vertices(radius: float, num_vertices: int, center: Tuple[float
 		円（外接円）の半径。
 	num_vertices : int
 		生成する頂点の数、または多角形の辺の数。
-	center : Tuple[float, float, float], optional
+	center : tuple[float, float, float], optional
 		円の中心座標 (x, y, z)
 	start_angle_degree : float, optional
 		開始角度（度単位）。デフォルトは0（右、X軸プラス）。90で上、180で左、270で下からになる。
-	normal_vector : Tuple[float, float, float], optional
+	normal_vector : tuple[float, float, float], optional
 		円を配置する平面の法線ベクトル。デフォルトは(0, 0, 1)、つまりZ軸で、XY平面に配置される。
 
 	Returns
 	-------
-	List[Tuple[float, float, float]]
+	list[tuple[float, float, float]]
 		生成された頂点の座標リスト。(x, y, z)のリスト。
 	"""
 	vertices = []
@@ -590,3 +604,106 @@ def find_intersection(line1_start: Vector, line1_end: Vector, line2_start: Vecto
 		return result, t
 	else:
 		return result
+
+
+
+
+
+
+
+
+
+
+def is_blender_version_at_least(major: int, minor: int) -> bool:
+	"""
+	Blenderのバージョンが、指定されたバージョン以上かどうか判定
+
+	Parameters
+	----------
+	major : int
+		比較対象のメジャーバージョン番号。
+	minor : int
+		比較対象のマイナーバージョン番号。
+
+	Returns
+	-------
+	bool
+		指定されたバージョン以上の場合はTrue、そうでない場合はFalse。
+
+	Notes
+	-----
+	"""
+	# blenderのバージョンは bpy.app.version に[メジャー, マイナー, リビジョン]で格納されている
+	return bpy.app.version[0] >= major and bpy.app.version[1] >= minor
+
+
+
+
+
+
+
+
+
+
+def report(self: bpy.types.Operator, type: str, msg_key: str, params: dict[str, str] = None):
+	"""
+	BlenderのOperatorを使ったリポートを表示する。paramsに辞書を指定すると、文字列のformatに展開されて渡される。
+
+	Parameters
+	----------
+	self : bpy.types.Operator
+		オペレータークラスのインスタンスを指定
+	type : str
+		'INFO', 'WARNING', 'ERROR', 'DEBUG'
+	msg_key : str
+		表示するメッセージの辞書ファイルのキー
+	params : Dict[str, str], optional
+		指定されている場合、翻訳されたメッセージのformatに展開されて渡される。省略した場合はNoneでプレースホルダーの置き換えは行われない。
+	"""
+	if is_blender_version_at_least(4, 1):
+		msg = bpy.app.translations.pgettext_rpt(msg_key)
+	else:
+		msg = bpy.app.translations.pgettext_iface(msg_key)
+
+	if params:
+		msg = msg.format(**params)
+
+	self.report({type}, msg)
+
+
+
+
+
+
+
+
+
+
+def register_classes_and_translations(classes: list[type]):
+	"""翻訳辞書とクラスの登録。"""
+	try:
+		bpy.app.translations.register(__name__, romly_translation.TRANSLATION_DICT)
+	except ValueError:
+		bpy.app.translations.unregister(__name__)
+		bpy.app.translations.register(__name__, romly_translation.TRANSLATION_DICT)
+
+	# blenderへのクラス登録処理
+	for cls in classes:
+		bpy.utils.register_class(cls)
+
+
+
+
+
+
+
+
+
+
+def unregister_classes_and_translations(classes: list[type]):
+	"""翻訳辞書の登録解除。"""
+	bpy.app.translations.unregister(__name__)
+
+	# クラスの登録解除
+	for cls in classes:
+		bpy.utils.unregister_class(cls)

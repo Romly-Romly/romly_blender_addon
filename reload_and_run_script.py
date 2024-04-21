@@ -3,6 +3,7 @@ from bpy.props import *
 
 
 
+from . import romly_utils
 
 
 
@@ -58,16 +59,8 @@ classes = [
 
 
 def register():
-	# 翻訳辞書の登録
-	try:
-		bpy.app.translations.register(__name__, romly_translation.TRANSLATION_DICT)
-	except ValueError:
-		bpy.app.translations.unregister(__name__)
-		bpy.app.translations.register(__name__, romly_translation.TRANSLATION_DICT)
-
-	# blenderへのクラス登録処理
-	for cls in classes:
-		bpy.utils.register_class(cls)
+	# クラスと翻訳辞書の登録
+	romly_utils.register_classes_and_translations(classes)
 
 	# テキストエディタのコンテキストメニューに追加
 	bpy.types.TEXT_MT_context_menu.append(text_context_menu_func)
@@ -77,14 +70,11 @@ def register():
 
 
 def unregister():
+	# クラスと翻訳辞書の登録解除
+	romly_utils.unregister_classes_and_translations(classes)
+
 	bpy.types.TEXT_MT_context_menu.remove(text_context_menu_func)
 
-	# クラスの登録解除
-	for cls in classes:
-		bpy.utils.unregister_class(cls)
-
-	# 翻訳辞書の登録解除
-	bpy.app.translations.unregister(__name__)
 
 
 
@@ -92,5 +82,5 @@ def unregister():
 
 # スクリプトのエントリポイント
 # スクリプト単体のデバッグ用で、 __init__.py でアドオンとして追加したときは呼ばれない。
-if __name__ == "__main__":
+if __name__ == '__main__':
 	register()

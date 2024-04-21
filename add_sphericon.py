@@ -5,7 +5,6 @@ import bmesh
 from bmesh.types import BMVert
 from bpy.props import *
 from mathutils import Vector, Matrix, Quaternion
-from typing import List, Tuple, NamedTuple
 
 
 
@@ -20,25 +19,20 @@ from . import romly_utils
 
 
 
-
-
-
-
-
-def remove_y_minus_vertices(vertices: List[Tuple[float, float, float]], edges: List[Tuple[int, int]]) -> Tuple[List[Tuple[float, float]], List[Tuple[int, int]]]:
+def remove_y_minus_vertices(vertices: list[tuple[float, float, float]], edges: list[tuple[int, int]]) -> tuple[list[tuple[float, float]], list[tuple[int, int]]]:
 	"""
 	Y座標がマイナスの頂点を削除し、関連するエッジを更新する関数。
 
 	Parameters
 	----------
-	vertices : List[Tuple[float, float, float]]
+	vertices : list[tuple[float, float, float]]
 		頂点のリスト。
-	edges : List[Tuple[int, int]]
+	edges : list[tuple[int, int]]
 		辺のリスト。各辺は頂点のインデックス2つを持つタプル。
 
 	Returns
 	-------
-	Tuple[List[Tuple[float, float, float]], List[Tuple[int, int]]]
+	tuple[list[tuple[float, float, float]], list[tuple[int, int]]]
 		更新された頂点とエッジのリスト。
 	"""
 	# y < -0.0001 の頂点を削除
@@ -243,33 +237,30 @@ def menu_func(self, context):
 
 
 
-# blenderへのクラス登録処理
-def register():
-	# 翻訳辞書の登録
-	bpy.app.translations.register(__name__, romly_translation.TRANSLATION_DICT)
+classes = [
+	ROMLYADDON_OT_add_sphericon,
+	ROMLYADDON_MT_romly_add_mesh_menu_parent,
+]
 
-	bpy.utils.register_class(ROMLYADDON_OT_add_sphericon)
-	bpy.utils.register_class(ROMLYADDON_MT_romly_add_mesh_menu_parent)
+
+
+
+
+def register():
+	# クラスと翻訳辞書の登録
+	romly_utils.register_classes_and_translations(classes)
+
 	bpy.types.VIEW3D_MT_add.append(menu_func)
 
 
 
 
 
-# クラスの登録解除
 def unregister():
-	try:
-		bpy.utils.unregister_class(ROMLYADDON_OT_add_sphericon)
-	except RuntimeError:
-		pass
-	try:
-		bpy.utils.unregister_class(ROMLYADDON_MT_romly_add_mesh_menu_parent)
-	except RuntimeError:
-		pass
-	bpy.types.VIEW3D_MT_add.remove(menu_func)
+	# クラスと翻訳辞書の登録解除
+	romly_utils.unregister_classes_and_translations(classes)
 
-	# 翻訳辞書の登録解除
-	bpy.app.translations.unregister(__name__)
+	bpy.types.VIEW3D_MT_add.remove(menu_func)
 
 
 
@@ -277,7 +268,7 @@ def unregister():
 
 # スクリプトのエントリポイント
 # スクリプト単体のデバッグ用で、 __init__.py でアドオンとして追加したときは呼ばれない。
-if __name__ == "__main__":
+if __name__ == '__main__':
 	# 既に登録されていないかのチェック。テキストエディタから直接実行する時に必要
 	if 'bpy' in locals():
 		unregister()

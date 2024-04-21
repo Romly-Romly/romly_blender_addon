@@ -4,15 +4,11 @@ import mathutils
 import bmesh
 from bpy.props import *
 from mathutils import Vector, Matrix, Quaternion
-from typing import List, Tuple, NamedTuple
+from typing import NamedTuple
 
 
 
 from . import romly_utils
-
-
-
-
 
 
 
@@ -42,12 +38,12 @@ class TetrahedronIndices(NamedTuple):
 	adjoin_face_index_pairs : List[List[int]]
 		shpere_pairsから生成されるエッジが接する2つの面のインデックスのリスト。
 	"""
-	vertices: List[Vector]
-	faces: List[List[int]]
-	opposite_vertex_indices: List[int]
-	sphere_center_vertex_index_pairs: List[List[int]]
-	edge_arc_start_end_vertex_indices: List[List[int]]
-	adjoin_face_index_pairs: List[List[int]]
+	vertices: list[Vector]
+	faces: list[list[int]]
+	opposite_vertex_indices: list[int]
+	sphere_center_vertex_index_pairs: list[list[int]]
+	edge_arc_start_end_vertex_indices: list[list[int]]
+	adjoin_face_index_pairs: list[list[int]]
 
 
 
@@ -215,20 +211,20 @@ class ROMLYADDON_OT_add_reuleaux_tetrahedron(bpy.types.Operator):
 
 
 
-def subdivide_triangle(vertices: List[Vector], face: Tuple[int, int, int]) -> Tuple[List[int], List[Tuple[int, int, int]]]:
+def subdivide_triangle(vertices: list[Vector], face: tuple[int, int, int]) -> tuple[list[int], list[tuple[int, int, int]]]:
 	"""
 	三角形を分割して新しい頂点と面を生成します。
 
 	Parameters
 	----------
-	vertices : List[Vector]
+	vertices : list[Vector]
 		三角形を含む頂点リスト。分割時にできた新しい頂点はこのリストに追加されます。
-	face : Tuple[int, int, int]
+	face : tuple[int, int, int]
 		分割元の三角形を形成する頂点のインデックス。
 
 	Returns
 	-------
-	tuple : Tuple[List[int], List[Tuple[int, int, int]]]
+	tuple : tuple[List[int], list[tuple[int, int, int]]]
 		新しい頂点のインデックスのリストと新しい面のリストを含むタプル。
 	"""
 	new_vertex_indices = []
@@ -447,15 +443,15 @@ def calculate_subdivided_edge_vertex_count(n: int):
 
 
 
-def find_nearest_vertex(vertices: List[Vector], indices: List[int], target: Vector):
+def find_nearest_vertex(vertices: list[Vector], indices: list[int], target: Vector):
 	"""
 	指定された頂点リストから、ターゲット位置に最も近い頂点のインデックスを見つける。
 
 	Parameters
 	----------
-	vertices : List[Vector]
+	vertices : list[Vector]
 		検索される頂点のリスト。
-	indices : List[int]
+	indices : list[int]
 		検索する頂点のインデックスのリスト。このリストにないverticesの頂点は無視される。
 	target : Vector
 		元になる頂点座標。この座標に近い頂点を見つける。
@@ -574,43 +570,30 @@ def menu_func(self, context):
 
 
 
-# blenderへのクラス登録処理
-def register():
-	# 翻訳辞書の登録
-	try:
-		bpy.app.translations.register(__name__, romly_translation.TRANSLATION_DICT)
-	except ValueError:
-		bpy.app.translations.unregister(__name__)
-		bpy.app.translations.register(__name__, romly_translation.TRANSLATION_DICT)
+classes = [
+	ROMLYADDON_OT_add_reuleaux_tetrahedron,
+	ROMLYADDON_MT_romly_add_mesh_menu_parent,
+]
 
-	try:
-		bpy.utils.register_class(ROMLYADDON_OT_add_reuleaux_tetrahedron)
-	except RuntimeError:
-		pass
-	try:
-		bpy.utils.register_class(ROMLYADDON_MT_romly_add_mesh_menu_parent)
-	except RuntimeError:
-		pass
+
+
+
+
+def register():
+	# クラスと翻訳辞書の登録
+	romly_utils.register_classes_and_translations(classes)
+
 	bpy.types.VIEW3D_MT_add.append(menu_func)
 
 
 
 
 
-# クラスの登録解除
 def unregister():
-	try:
-		bpy.utils.unregister_class(ROMLYADDON_OT_add_reuleaux_tetrahedron)
-	except RuntimeError:
-		pass
-	try:
-		bpy.utils.unregister_class(ROMLYADDON_MT_romly_add_mesh_menu_parent)
-	except RuntimeError:
-		pass
-	bpy.types.VIEW3D_MT_add.remove(menu_func)
+	# クラスと翻訳辞書の登録解除
+	romly_utils.unregister_classes_and_translations(classes)
 
-	# 翻訳辞書の登録解除
-	bpy.app.translations.unregister(__name__)
+	bpy.types.VIEW3D_MT_add.remove(menu_func)
 
 
 
@@ -618,5 +601,5 @@ def unregister():
 
 # スクリプトのエントリポイント
 # スクリプト単体のデバッグ用で、 __init__.py でアドオンとして追加したときは呼ばれない。
-if __name__ == "__main__":
+if __name__ == '__main__':
 	register()

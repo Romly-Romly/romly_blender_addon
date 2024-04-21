@@ -1,6 +1,6 @@
 bl_info = {
 	'name': 'Romly Blender Add-on',
-	'version': (1, 2, 0),
+	'version': (1, 2, 1),
 	'blender': (4, 0, 0),
 	'category': 'Object',
 	'author': 'Romly',
@@ -23,8 +23,7 @@ from .add_clothoid_curve import ROMLYADDON_OT_add_clothoid_curve, ROMLYADDON_OT_
 from .add_jis_screw import ROMLYADDON_OT_add_jis_screw, ROMLYADDON_OT_add_jis_nut
 from .add_aluminum_extrusion import ROMLYADDON_OT_add_aluminum_extrusion
 from .add_pinheader import ROMLYADDON_OT_add_pinheader
-from .export_collection_as_stl import ROMLYADDON_OT_export_collection_as_stl
-from .export_selection_as_stl import ROMLYADDON_OT_export_selection_as_stl
+from .export_collection_as_stl import ROMLYADDON_OT_export_collection_as_stl, ROMLYADDON_OT_export_selection_as_stl
 from .select_edges_on_fair_surface import ROMLYADDON_OT_select_edges_on_fair_surface
 from .language_panel import ROMLYADDON_PT_language_panel, ROMLYADDON_OT_change_language
 from .reload_and_run_script import ROMLYADDON_OT_reload_and_run_script
@@ -42,7 +41,7 @@ class ROMLYADDON_MT_romly_export_selection_as_stl_menu_parent(bpy.types.Menu):
 
 	def draw(self, context):
 		layout = self.layout
-		layout.operator(ROMLYADDON_OT_export_selection_as_stl.bl_idname, icon='EXPORT')
+		layout.operator(ROMLYADDON_OT_export_selection_as_stl.bl_idname, text=bpy.app.translations.pgettext_iface('Export Selection as STL'), icon='EXPORT')
 
 
 
@@ -177,7 +176,7 @@ class ROMLYADDON_MT_romly_export_collection_as_stl_menu_parent(bpy.types.Menu):
 
 	def draw(self, context):
 		layout = self.layout
-		layout.operator(ROMLYADDON_OT_export_collection_as_stl.bl_idname, icon='EXPORT')
+		layout.operator(ROMLYADDON_OT_export_collection_as_stl.bl_idname, text=bpy.app.translations.pgettext_iface('Export Collection as STL'), icon='EXPORT')
 
 
 
@@ -213,7 +212,6 @@ MY_CLASS_LIST = [
 	ROMLYADDON_MT_romly_add_mesh_menu_parent,
 	ROMLYADDON_OT_export_collection_as_stl,
 	ROMLYADDON_MT_romly_export_collection_as_stl_menu_parent,
-	ROMLYADDON_OT_export_selection_as_stl,
 	ROMLYADDON_MT_romly_export_selection_as_stl_menu_parent,
 	ROMLYADDON_OT_select_edges_on_fair_surface,
 	ROMLYADDON_PT_language_panel,

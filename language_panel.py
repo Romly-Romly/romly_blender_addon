@@ -1,15 +1,10 @@
 import bpy
 from bl_i18n_utils import settings
 from bpy.props import *
-from typing import List, Tuple, NamedTuple
 
 
 
 from . import romly_utils
-
-
-
-
 
 
 
@@ -53,37 +48,6 @@ def get_language_label(language: str) -> str:
 
 
 
-def is_blender_version_at_least(major: int, minor: int) -> bool:
-	"""
-	Blenderのバージョンが、指定されたバージョン以上かどうか判定
-
-	Parameters
-	----------
-	major : int
-		比較対象のメジャーバージョン番号。
-	minor : int
-		比較対象のマイナーバージョン番号。
-
-	Returns
-	-------
-	bool
-		指定されたバージョン以上の場合はTrue、そうでない場合はFalse。
-
-	Notes
-	-----
-	"""
-	# blenderのバージョンは bpy.app.version に[メジャー, マイナー, リビジョン]で格納されている
-	return bpy.app.version[0] >= major and bpy.app.version[1] >= minor
-
-
-
-
-
-
-
-
-
-
 class ROMLYADDON_OT_change_language(bpy.types.Operator):
 	"""
 	Blenderの言語を設定するオペレーター。
@@ -98,7 +62,7 @@ class ROMLYADDON_OT_change_language(bpy.types.Operator):
 
 	def execute(self, context):
 		bpy.context.preferences.view.language = self.language
-		self.report({'INFO'}, f'Language is set to {get_language_label(bpy.context.preferences.view.language)}.')
+		romly_utils.report(self, 'INFO', msg_key='The language was set to {language}', params={'language': get_language_label(bpy.context.preferences.view.language)})
 		return {'FINISHED'}
 
 
@@ -129,7 +93,7 @@ class ROMLYADDON_PT_language_panel(bpy.types.Panel):
 		]
 
 		# 4.1以上なら簡体字も追加
-		if is_blender_version_at_least(4, 1):
+		if romly_utils.is_blender_version_at_least(4, 1):
 			LANGS.append(('zh_HANS', ''))
 
 		for l in LANGS:
@@ -145,12 +109,12 @@ class ROMLYADDON_PT_language_panel(bpy.types.Panel):
 		col.prop(view, 'use_translate_new_dataname', text='New Data')
 
 		# use_translate_reportsは4.1以上のみ
-		if is_blender_version_at_least(4, 1):
+		if romly_utils.is_blender_version_at_least(4, 1):
 			col.prop(view, 'use_translate_reports', text='Reports')
 
 		# おまけのblenderバージョン表示
 		col = layout.column(align=True)
-		def format_version(v: Tuple[int, int, int]) -> str:
+		def format_version(v: tuple[int, int, int]) -> str:
 			return f"{str(v[0])}.{str(v[1]).zfill(2)}.{str(v[2]).zfill(2)}"
 		col.label(text=f"Blender {bpy.app.translations.pgettext_iface('Version')}: {format_version(bpy.app.version)}")
 		col.label(text=f"{bpy.app.translations.pgettext_iface('Data')} {bpy.app.translations.pgettext_iface('Version')}: {format_version(bpy.data.version)}")
@@ -175,20 +139,20 @@ classes = [
 
 
 def register():
-	for cls in classes:
-		bpy.utils.register_class(cls)
+	# クラスと翻訳辞書の登録
+	romly_utils.register_classes_and_translations(classes)
 
 
 
 
 
 def unregister():
-	for cls in classes:
-		bpy.utils.unregister_class(cls)
+	# クラスと翻訳辞書の登録解除
+	romly_utils.unregister_classes_and_translations(classes)
 
 
 
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
 	register()

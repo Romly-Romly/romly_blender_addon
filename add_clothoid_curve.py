@@ -5,7 +5,7 @@ import bmesh
 from bmesh.types import BMVert
 from bpy.props import *
 from mathutils import Vector, Matrix, Quaternion
-from typing import List, Tuple, NamedTuple, Union
+from typing import NamedTuple
 
 
 
@@ -20,9 +20,7 @@ from . import romly_utils
 
 
 
-
-
-def tangent_at(a: float, t: float) -> Tuple[float, float]:
+def tangent_at(a: float, t: float) -> tuple[float, float]:
 	"""
 	クロソイド曲線での指定された位置での接線の角度を求める（接線を斜辺とする三角形の底辺と高さを返す）。
 
@@ -35,7 +33,7 @@ def tangent_at(a: float, t: float) -> Tuple[float, float]:
 
 	Returns
 	-------
-	Tuple[float, float]
+	tuple[float, float]
 		クロソイド曲線上の位置tを頂点とし、接線を斜辺に取る直角三角形の底辺の長さと高さを返す。
 	"""
 	angle = 0.5 * a * t * t
@@ -60,7 +58,7 @@ class ClothoidCurveVertices(NamedTuple):
 	angle_radians: float
 		曲線の終点での接触角度。X軸プラスベクトルを左回りにこの角度だけ回転すると終点からまっすぐ伸ばした線になり、Y軸プラスベクトルを左回りにこの角度だけ回転すると終点での垂直線（接触円に向かう直線）の向きになる。
 	"""
-	vertices: List[Vector]
+	vertices: list[Vector]
 	osculating_circle_radius: float
 	osculating_circle_center: Vector
 	angle_radians: float
@@ -148,20 +146,20 @@ def create_clothoid_curve_vertices(clothoid_param_A: float, curve_length: float,
 
 
 
-def translate_vertices(vertices: List[Union[Vector, Tuple[float, float, float]]], offset: Vector) -> List[Vector]:
+def translate_vertices(vertices: list[Vector | tuple[float, float, float]], offset: Vector) -> list[Vector]:
 	"""
 	頂点リストを平行移動する。頂点はVectorでもタプルでもOKだけど、返り値のリストはVectorに統一される。
 
 	Parameters
 	----------
-	vertices : List[Union[Vector, Tuple[float, float, float]]]
+	vertices : list[Vector | tuple[float, float, float]]
 		頂点リスト。Vectorでもタプル(0, 0, 0)でもOK。
 	offset : Vector
 		移動する距離。こっちはVectorで指定してちょ。
 
 	Returns
 	-------
-	List[Vector]
+	list[Vector]
 		移動した頂点リスト。
 	"""
 	result = []
@@ -182,7 +180,7 @@ def translate_vertices(vertices: List[Union[Vector, Tuple[float, float, float]]]
 
 
 # MARK: create_clothoid_only_corner_vertices
-def create_clothoid_only_corner_vertices(clothoid_param_A: float, curve_length: float, num_curve_vertices: int) -> List[Tuple[float, float, float]]:
+def create_clothoid_only_corner_vertices(clothoid_param_A: float, curve_length: float, num_curve_vertices: int) -> list[tuple[float, float, float]]:
 	"""
 	クロソイド曲線のみを使った角部分の頂点群を作成する。X軸プラス方向からY軸プラス方向へ90度曲がる軌跡の頂点群で、開始座標は(0, 0, 0)、終了座標は第1象限のどこか。
 	接線が45度になるまでのクロソイド曲線と、その曲線を反転した曲線で90度曲がる感じ。
@@ -198,7 +196,7 @@ def create_clothoid_only_corner_vertices(clothoid_param_A: float, curve_length: 
 
 	Returns
 	-------
-	List[Tuple[float, float, float]]
+	list[tuple[float, float, float]]
 		頂点群
 	"""
 
@@ -234,7 +232,7 @@ def create_clothoid_only_corner_vertices(clothoid_param_A: float, curve_length: 
 
 
 # MARK: create_clothoid_and_arc_corner_vertices
-def create_clothoid_and_arc_corner_vertices(clothoid_param_A: float, curve_length: float, num_curve_vertices: int, num_arc_vertices: int) -> Tuple[List[Vector], float]:
+def create_clothoid_and_arc_corner_vertices(clothoid_param_A: float, curve_length: float, num_curve_vertices: int, num_arc_vertices: int) -> tuple[list[Vector], float]:
 	"""
 	クロソイド曲線による緩和区間 → 円弧部分 → クロソイド曲線による緩和区間で構成される角部分の頂点群を作成する。
 	クロソイド区間のみで接角が45度に到達してしまった場合は円弧部分は省略され、そのまま再びクロソイド区間となる。
@@ -252,11 +250,11 @@ def create_clothoid_and_arc_corner_vertices(clothoid_param_A: float, curve_lengt
 
 	Returns
 	-------
-	Tuple[List[Vector], float]
+	tuple[list[Vector], float]
 		作成した頂点のリストと、円弧部分の角度（ラジアン）を返す。
 	"""
 
-	def mirror_vertices_45degree(vertices: List[Vector]) -> List[Vector]:
+	def mirror_vertices_45degree(vertices: list[Vector]) -> list[Vector]:
 		result = []
 		for v in reversed(vertices):
 			v = Quaternion(Vector((0, 0, 1)), math.radians(90)) @ Vector(v)
@@ -329,7 +327,7 @@ def create_clothoid_and_arc_corner_vertices(clothoid_param_A: float, curve_lengt
 
 
 # MARK: create_clothoid_corner_rectangle
-def create_clothoid_corner_rectangle(clothoid_param_A: float, curve_length: float, num_curve_vertices: int, num_arc_vertices: int, rectangle_width: float, rectangle_height: float) -> Tuple[List[Vector], float, float]:
+def create_clothoid_corner_rectangle(clothoid_param_A: float, curve_length: float, num_curve_vertices: int, num_arc_vertices: int, rectangle_width: float, rectangle_height: float) -> tuple[list[Vector], float, float]:
 	"""
 	クロソイド曲線と円弧を使った角丸を持つ矩形の頂点群を作成する。
 
@@ -350,7 +348,7 @@ def create_clothoid_corner_rectangle(clothoid_param_A: float, curve_length: floa
 
 	Returns
 	-------
-	Tuple[List[Vector], float, float]
+	tuple[list[Vector], float, float]
 		矩形の頂点群、円弧部分の角度、角丸部分全体の幅（高さ）
 	"""
 
@@ -676,16 +674,8 @@ classes = [
 
 
 def register():
-	# 翻訳辞書の登録
-	try:
-		bpy.app.translations.register(__name__, romly_translation.TRANSLATION_DICT)
-	except ValueError:
-		bpy.app.translations.unregister(__name__)
-		bpy.app.translations.register(__name__, romly_translation.TRANSLATION_DICT)
-
-	# blenderへのクラス登録処理
-	for cls in classes:
-		bpy.utils.register_class(cls)
+	# クラスと翻訳辞書の登録
+	romly_utils.register_classes_and_translations(classes)
 
 	bpy.types.VIEW3D_MT_add.append(menu_func)
 
@@ -694,14 +684,10 @@ def register():
 
 
 def unregister():
-	# クラスの登録解除
-	for cls in classes:
-		bpy.utils.unregister_class(cls)
+	# クラスと翻訳辞書の登録解除
+	romly_utils.unregister_classes_and_translations(classes)
 
 	bpy.types.VIEW3D_MT_add.remove(menu_func)
-
-	# 翻訳辞書の登録解除
-	bpy.app.translations.unregister(__name__)
 
 
 
@@ -709,5 +695,5 @@ def unregister():
 
 # スクリプトのエントリポイント
 # スクリプト単体のデバッグ用で、 __init__.py でアドオンとして追加したときは呼ばれない。
-if __name__ == "__main__":
+if __name__ == '__main__':
 	register()

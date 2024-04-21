@@ -14,6 +14,7 @@ from . import romly_utils
 
 
 
+
 DONUT_CYLINDER_DIAMETER_METHOD_DIAMETER_AND_HOLE = 'diameter/hole'
 DONUT_CYLINDER_DIAMETER_METHOD_DIAMETER_AND_THICKNESS = 'diameter/thickness'
 DONUT_CYLINDER_DIAMETER_METHOD_HOLE_AND_THICKNESS = 'hole/thickness'
@@ -176,10 +177,10 @@ class ROMLYADDON_OT_add_donut_cylinder(bpy.types.Operator):
 
 		# 穴の直径の方が大きい場合は警告
 		if holeRadius >= majorRadius:
-			self.report({'WARNING'}, 'The hole diameter must be smaller than the outer diameter')
+			romly_utils.report(self, 'WARNING', msg_key='The hole diameter must be smaller than the outer diameter')
 			return {'CANCELLED'}
 		elif holeRadius < 0:
-			self.report({'WARNING'}, 'The hole diameter must be larger than zero')
+			romly_utils.report(self, 'WARNING', msg_key='The hole diameter must be larger than zero')
 			return {'CANCELLED'}
 
 
@@ -245,18 +246,18 @@ def menu_func(self, context):
 
 
 
+classes = [
+	ROMLYADDON_OT_add_donut_cylinder,
+	ROMLYADDON_MT_romly_add_mesh_menu_parent,
+]
+
+
+
+
 
 def register():
-	# 翻訳辞書の登録
-	try:
-		bpy.app.translations.register(__name__, romly_translation.TRANSLATION_DICT)
-	except ValueError:
-		bpy.app.translations.unregister(__name__)
-		bpy.app.translations.register(__name__, romly_translation.TRANSLATION_DICT)
-
-	# blenderへのクラス登録処理
-	bpy.utils.register_class(ROMLYADDON_OT_add_donut_cylinder)
-	bpy.utils.register_class(ROMLYADDON_MT_romly_add_mesh_menu_parent)
+	# クラスと翻訳辞書の登録
+	romly_utils.register_classes_and_translations(classes)
 
 	bpy.types.VIEW3D_MT_add.append(menu_func)
 
@@ -265,13 +266,8 @@ def register():
 
 
 def unregister():
-	# クラスの登録解除
-	bpy.utils.unregister_class(ROMLYADDON_OT_add_box)
-	bpy.utils.unregister_class(ROMLYADDON_MT_romly_add_mesh_menu_parent)
-
-	# クラスの登録解除
-	bpy.utils.unregister_class(ROMLYADDON_OT_add_donut_cylinder)
-	bpy.utils.unregister_class(ROMLYADDON_MT_romly_add_mesh_menu_parent)
+	# クラスと翻訳辞書の登録解除
+	romly_utils.unregister_classes_and_translations(classes)
 
 	bpy.types.VIEW3D_MT_add.remove(menu_func)
 
@@ -281,5 +277,5 @@ def unregister():
 
 # スクリプトのエントリポイント
 # スクリプト単体のデバッグ用で、 __init__.py でアドオンとして追加したときは呼ばれない。
-if __name__ == "__main__":
+if __name__ == '__main__':
 	register()

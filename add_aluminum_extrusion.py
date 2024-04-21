@@ -5,25 +5,11 @@ import bmesh
 from bmesh.types import BMVert
 from bpy.props import *
 from mathutils import Vector, Matrix, Quaternion
-from typing import List, Tuple, NamedTuple
+from typing import NamedTuple
 
 
 
 from . import romly_utils
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -84,7 +70,7 @@ class AluminumExtrusionSpec(NamedTuple):
 
 
 
-	def make_topmiddle_left_vertices(self, middle: bool = False, core: bool = True) -> List[Vector]:
+	def make_topmiddle_left_vertices(self, middle: bool = False, core: bool = True) -> list[Vector]:
 		"""中間となるフレーム形状の左側の頂点群を生成して返す"""
 		diagonal_frame_horizontal_width = self.x_bone_thickness / math.sqrt(2) * 2
 		diagonal_frame_root_pos = Vector((self.core_width / 2 - diagonal_frame_horizontal_width / 2, self.core_width / 2, 0))
@@ -124,7 +110,7 @@ class AluminumExtrusionSpec(NamedTuple):
 
 
 
-	def make_topmiddle_right_vertices(self, middle: bool = False, core: bool = True) -> List[Vector]:
+	def make_topmiddle_right_vertices(self, middle: bool = False, core: bool = True) -> list[Vector]:
 		"""中間となるフレーム形状の右側の頂点群を生成して返す"""
 		left_vertices = self.make_topmiddle_left_vertices(middle, core=core)
 		mirror_normal = Vector((-1, 0, 0))
@@ -140,7 +126,7 @@ class AluminumExtrusionSpec(NamedTuple):
 
 
 
-def make_topleft_vertices(spec: AluminumExtrusionSpec) -> List[Vector]:
+def make_topleft_vertices(spec: AluminumExtrusionSpec) -> list[Vector]:
 	frame_width = frame_height = spec.size
 	diagonal_frame_horizontal_width = spec.x_bone_thickness / math.sqrt(2) * 2
 
@@ -177,7 +163,7 @@ def make_topleft_vertices(spec: AluminumExtrusionSpec) -> List[Vector]:
 
 
 
-def make_topright_vertices(spec: AluminumExtrusionSpec) -> List[Vector]:
+def make_topright_vertices(spec: AluminumExtrusionSpec) -> list[Vector]:
 	topleft_vertices = make_topleft_vertices(spec)
 	vertices = []
 	for i in range(len(topleft_vertices)):
@@ -189,7 +175,7 @@ def make_topright_vertices(spec: AluminumExtrusionSpec) -> List[Vector]:
 
 
 
-def make_leftmiddle_top_vertices(spec: AluminumExtrusionSpec) -> List[Vector]:
+def make_leftmiddle_top_vertices(spec: AluminumExtrusionSpec) -> list[Vector]:
 	topmiddle_left_vertices = spec.make_topmiddle_left_vertices()
 	vertices = []
 	for v in topmiddle_left_vertices:
@@ -198,7 +184,7 @@ def make_leftmiddle_top_vertices(spec: AluminumExtrusionSpec) -> List[Vector]:
 
 
 
-def make_leftmiddle_bottom_vertices(spec: AluminumExtrusionSpec) -> List[Vector]:
+def make_leftmiddle_bottom_vertices(spec: AluminumExtrusionSpec) -> list[Vector]:
 	topmiddle_right_vertices = make_leftmiddle_top_vertices(spec)
 	vertices = []
 	for v in topmiddle_right_vertices:
@@ -209,7 +195,7 @@ def make_leftmiddle_bottom_vertices(spec: AluminumExtrusionSpec) -> List[Vector]
 
 
 
-def make_aluminum_extrusion_bottom(spec: AluminumExtrusionSpec) -> Tuple[List[Vector], List[List[int]]]:
+def make_aluminum_extrusion_bottom(spec: AluminumExtrusionSpec) -> tuple[list[Vector], list[list[int]]]:
 	"""
 	アルミフレームの断面図となる形状を作成する。
 
@@ -220,7 +206,7 @@ def make_aluminum_extrusion_bottom(spec: AluminumExtrusionSpec) -> Tuple[List[Ve
 
 	Returns
 	-------
-	Tuple[List[Vector], List[List[int]]]
+	tuple[list[Vector], list[list[int]]]
 		断面図を構成する頂点リストと面リスト。
 	"""
 	vertices = []
@@ -228,7 +214,8 @@ def make_aluminum_extrusion_bottom(spec: AluminumExtrusionSpec) -> Tuple[List[Ve
 
 
 
-	def aiueo(new_vertices: List[Vector], offset: Vector, mirror_normal: Vector):
+	def add_offset_and_mirrored_vertices(new_vertices: list[Vector], offset: Vector, mirror_normal: Vector) -> None:
+		"""頂点群を平行移動したものと、指定の平面でミラーリングしたものを vertices に追加、 faces にその面を追加する。"""
 		old_len1 = len(vertices)
 		for i in range(len(new_vertices)):
 			vertices.append(new_vertices[i] + offset)
@@ -249,21 +236,21 @@ def make_aluminum_extrusion_bottom(spec: AluminumExtrusionSpec) -> Tuple[List[Ve
 		MIDDLE = spec.x_slots >= 3
 		CORE = not (spec.y_slots >= 2 and spec.x_slots >= 3 and 0 < i < spec.x_slots - 1)
 		if i == 0:
-			aiueo(make_topleft_vertices(spec), offset=offset, mirror_normal=mirror_normal)
+			add_offset_and_mirrored_vertices(make_topleft_vertices(spec), offset=offset, mirror_normal=mirror_normal)
 		else:
-			aiueo(spec.make_topmiddle_right_vertices(MIDDLE, core=CORE), offset=offset, mirror_normal=mirror_normal)
+			add_offset_and_mirrored_vertices(spec.make_topmiddle_right_vertices(MIDDLE, core=CORE), offset=offset, mirror_normal=mirror_normal)
 		if i < spec.x_slots - 1:
-			aiueo(spec.make_topmiddle_left_vertices(MIDDLE, core=CORE), offset=offset, mirror_normal=mirror_normal)
+			add_offset_and_mirrored_vertices(spec.make_topmiddle_left_vertices(MIDDLE, core=CORE), offset=offset, mirror_normal=mirror_normal)
 		else:
-			aiueo(make_topright_vertices(spec), offset=offset, mirror_normal=mirror_normal)
+			add_offset_and_mirrored_vertices(make_topright_vertices(spec), offset=offset, mirror_normal=mirror_normal)
 		offset += Vector((spec.size, 0, 0))
 
 	# 左側と右側の構造を作成
 	offset = Vector((-spec.size * (spec.x_slots - 1) / 2, spec.size * (spec.y_slots - 1) / 2 - spec.size, 0))
 	mirror_normal = Vector((-1, 0, 0))
 	for i in range(1, spec.y_slots):
-		aiueo(make_leftmiddle_top_vertices(spec), offset=offset + Vector((0, spec.size, 0)), mirror_normal=mirror_normal)
-		aiueo(make_leftmiddle_bottom_vertices(spec), offset=offset, mirror_normal=mirror_normal)
+		add_offset_and_mirrored_vertices(make_leftmiddle_top_vertices(spec), offset=offset + Vector((0, spec.size, 0)), mirror_normal=mirror_normal)
+		add_offset_and_mirrored_vertices(make_leftmiddle_bottom_vertices(spec), offset=offset, mirror_normal=mirror_normal)
 		offset += Vector((0, -spec.size, 0))
 
 	return vertices, faces
@@ -740,13 +727,19 @@ def menu_func(self, context):
 
 
 
-# blenderへのクラス登録処理
-def register():
-	# 翻訳辞書の登録
-	bpy.app.translations.register(__name__, romly_translation.TRANSLATION_DICT)
+classes = [
+	ROMLYADDON_OT_add_aluminum_extrusion,
+	ROMLYADDON_MT_romly_add_mesh_menu_parent,
+]
 
-	bpy.utils.register_class(ROMLYADDON_OT_add_aluminum_extrusion)
-	bpy.utils.register_class(ROMLYADDON_MT_romly_add_mesh_menu_parent)
+
+
+
+
+def register():
+	# クラスと翻訳辞書の登録
+	romly_utils.register_classes_and_translations(classes)
+
 	bpy.types.VIEW3D_MT_add.append(menu_func)
 
 
@@ -755,15 +748,8 @@ def register():
 
 # クラスの登録解除
 def unregister():
-	try:
-		bpy.utils.unregister_class(ROMLYADDON_OT_add_aluminum_extrusion)
-	except RuntimeError:
-		pass
-	try:
-		bpy.utils.unregister_class(ROMLYADDON_MT_romly_add_mesh_menu_parent)
-	except RuntimeError:
-		pass
-	bpy.types.VIEW3D_MT_add.remove(menu_func)
+	# クラスと翻訳辞書の登録解除
+	romly_utils.unregister_classes_and_translations(classes)
 
 	# 翻訳辞書の登録解除
 	bpy.app.translations.unregister(__name__)
@@ -774,7 +760,7 @@ def unregister():
 
 # スクリプトのエントリポイント
 # スクリプト単体のデバッグ用で、 __init__.py でアドオンとして追加したときは呼ばれない。
-if __name__ == "__main__":
+if __name__ == '__main__':
 	# 既に登録されていないかのチェック。テキストエディタから直接実行する時に必要
 	if 'bpy' in locals():
 		unregister()

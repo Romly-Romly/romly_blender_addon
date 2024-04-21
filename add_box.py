@@ -14,10 +14,6 @@ from . import romly_utils
 
 
 
-
-
-
-
 class ROMLYADDON_OT_add_box(bpy.types.Operator):
 	"""直方体メッシュを作成するオペレーター"""
 	bl_idname = 'romlyaddon.add_box'
@@ -139,17 +135,18 @@ def menu_func(self, context):
 
 
 
-def register():
-	# 翻訳辞書の登録
-	try:
-		bpy.app.translations.register(__name__, romly_translation.TRANSLATION_DICT)
-	except ValueError:
-		bpy.app.translations.unregister(__name__)
-		bpy.app.translations.register(__name__, romly_translation.TRANSLATION_DICT)
+classes = [
+	ROMLYADDON_OT_add_box,
+	ROMLYADDON_MT_romly_add_mesh_menu_parent,
+]
 
-	# blenderへのクラス登録処理
-	bpy.utils.register_class(ROMLYADDON_OT_add_box)
-	bpy.utils.register_class(ROMLYADDON_MT_romly_add_mesh_menu_parent)
+
+
+
+
+def register():
+	# クラスと翻訳辞書の登録
+	romly_utils.register_classes_and_translations(classes)
 
 	bpy.types.VIEW3D_MT_add.append(menu_func)
 
@@ -158,19 +155,16 @@ def register():
 
 
 def unregister():
-	# クラスの登録解除
-	bpy.utils.unregister_class(ROMLYADDON_OT_add_box)
-	bpy.utils.unregister_class(ROMLYADDON_MT_romly_add_mesh_menu_parent)
+	# クラスと翻訳辞書の登録解除
+	romly_utils.unregister_classes_and_translations(classes)
 
 	bpy.types.VIEW3D_MT_add.remove(menu_func)
 
-	# 翻訳辞書の登録解除
-	bpy.app.translations.unregister(__name__)
 
 
 
 
 # スクリプトのエントリポイント
 # スクリプト単体のデバッグ用で、 __init__.py でアドオンとして追加したときは呼ばれない。
-if __name__ == "__main__":
+if __name__ == '__main__':
 	register()

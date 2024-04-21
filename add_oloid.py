@@ -5,17 +5,10 @@ import bmesh
 from bmesh.types import BMVert
 from bpy.props import *
 from mathutils import Vector, Matrix, Quaternion
-from typing import List, Tuple, NamedTuple
 
 
 
 from . import romly_utils
-
-
-
-
-
-
 
 
 
@@ -170,7 +163,7 @@ def create_two_circle_oloid_base(radius: float, num_vertices: int, make_edges: b
 	# edges が True の場合は辺を作成
 	edges = []
 	if make_edges:
-		def add_edges(edges: List[Tuple[int, int]], vertices: List[Tuple[float, float, float]], start: int, count: int):
+		def add_edges(edges: list[tuple[int, int]], vertices: list[tuple[float, float, float]], start: int, count: int):
 			"""指定された頂点群に対して順番に辺を追加し、最後の頂点は最初の頂点とで辺を作成"""
 			for i in range(start, start + count - 1):
 				edges.append((i, i + 1))
@@ -352,7 +345,7 @@ def create_anti_oloid(radius: float, num_vertices: int, thickness: float, bevel_
 
 
 
-def farthest_x_vertex(mesh: bmesh.types.BMesh) -> Tuple[float, float, float]:
+def farthest_x_vertex(mesh: bmesh.types.BMesh) -> tuple[float, float, float]:
 	"""
 	X軸上で一番左（マイナス）にある頂点の座標を探すメソッド。
 
@@ -363,7 +356,7 @@ def farthest_x_vertex(mesh: bmesh.types.BMesh) -> Tuple[float, float, float]:
 
 	Returns
 	-------
-	Tuple[float, float, float]
+	tuple[float, float, float]
 		一番左にある頂点の座標。全ての頂点が正のX値を持つ場合はNoneを返す。
 
 	"""
@@ -387,7 +380,7 @@ def farthest_x_vertex(mesh: bmesh.types.BMesh) -> Tuple[float, float, float]:
 
 
 
-def distance_to_point(v: BMVert, origin: Tuple[float, float, float]) -> float:
+def distance_to_point(v: BMVert, origin: tuple[float, float, float]) -> float:
 	"""
 	与えられた頂点と特定の点との間の距離を計算する。
 
@@ -395,7 +388,7 @@ def distance_to_point(v: BMVert, origin: Tuple[float, float, float]) -> float:
 	----------
 	vertex : BMVert
 		距離を計算する対象の頂点。
-	origin : Tuple[float, float, float]
+	origin : tuple[float, float, float]
 		始点となる座標のタプル。(x, y, z)の形式。
 
 	Returns
@@ -416,18 +409,18 @@ def distance_to_point(v: BMVert, origin: Tuple[float, float, float]) -> float:
 
 
 
-def rotate_vertex_90_degrees_x_axis(vertex: Tuple[float, float, float]) -> Tuple[float, float, float]:
+def rotate_vertex_90_degrees_x_axis(vertex: tuple[float, float, float]) -> tuple[float, float, float]:
 	"""
 	頂点をx軸で90度回転させる
 
 	パラメータ
 	----------
-	vertex : Tuple[float, float, float]
+	vertex : tuple[float, float, float]
 		回転させる頂点の座標 (x, y, z)
 
 	戻り値
 	-------
-	Tuple[float, float, float]
+	tuple[float, float, float]
 		x軸で90度回転後の頂点の座標 (x, -z, y)
 	"""
 	return (vertex[0], -vertex[2], vertex[1])
@@ -469,33 +462,30 @@ def menu_func(self, context):
 
 
 
-# blenderへのクラス登録処理
-def register():
-	# 翻訳辞書の登録
-	bpy.app.translations.register(__name__, romly_translation.TRANSLATION_DICT)
+classes = [
+	ROMLYADDON_OT_add_oloid,
+	ROMLYADDON_MT_romly_add_mesh_menu_parent,
+]
 
-	bpy.utils.register_class(ROMLYADDON_OT_add_oloid)
-	bpy.utils.register_class(ROMLYADDON_MT_romly_add_mesh_menu_parent)
+
+
+
+
+def register():
+	# クラスと翻訳辞書の登録
+	romly_utils.register_classes_and_translations(classes)
+
 	bpy.types.VIEW3D_MT_add.append(menu_func)
 
 
 
 
 
-# クラスの登録解除
 def unregister():
-	try:
-		bpy.utils.unregister_class(ROMLYADDON_OT_add_oloid)
-	except RuntimeError:
-		pass
-	try:
-		bpy.utils.unregister_class(ROMLYADDON_MT_romly_add_mesh_menu_parent)
-	except RuntimeError:
-		pass
-	bpy.types.VIEW3D_MT_add.remove(menu_func)
+	# クラスと翻訳辞書の登録解除
+	romly_utils.unregister_classes_and_translations(classes)
 
-	# 翻訳辞書の登録解除
-	bpy.app.translations.unregister(__name__)
+	bpy.types.VIEW3D_MT_add.remove(menu_func)
 
 
 
@@ -503,7 +493,7 @@ def unregister():
 
 # スクリプトのエントリポイント
 # スクリプト単体のデバッグ用で、 __init__.py でアドオンとして追加したときは呼ばれない。
-if __name__ == "__main__":
+if __name__ == '__main__':
 	# 既に登録されていないかのチェック。テキストエディタから直接実行する時に必要
 	if 'bpy' in locals():
 		unregister()

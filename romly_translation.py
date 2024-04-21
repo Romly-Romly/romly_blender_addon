@@ -272,6 +272,7 @@ TRANSLATION_DICT = {
 			'モデファイアを適用するオブジェクトを選択して下さい',
 		('*', 'The object has no modifiers'):
 			'オブジェクトにはモデファイアがありません',
+		('*', '{count} modifiers were applied'): '{count}個のモデファイアを適用しました',
 
 		# Toggle Viewport Display As
 		('*', 'Toggle Viewport Display As'): 'ビューポート表示を切り替え',
@@ -279,9 +280,19 @@ TRANSLATION_DICT = {
 			'ビューポートでのオブジェクトの表示方法をテクスチャとワイヤーフレームで切り替えます',
 		('*', 'Please select an object to operate'): '対象となるオブジェクトを選択して下さい',
 
+		# Export as STL
+		('*', 'Export Collection as STL'): 'コレクションをSTLファイルとしてエクスポート',
+		('*', 'Export all meshes in this collection as an STL file. The sub collections that were excluded from the layer view will be excluded.'): 'このコレクションのすべてのメッシュをSTLファイルとして出力します。レイヤビューから除外されたブコレクションは含まれません',
+		('*', 'Please save the active file first'): '先に編集中のファイルを保存して下さい',
+		('*', 'The collection {collection} is exported to: {filename}'): 'コレクション {collection} を {filename} にエクスポートしました',
+		('*', 'Export Selection as STL'): '選択項目をSTLファイルとしてエクスポート',
+		('*', 'Export the selected objects as an STL file'): '選択されたオブジェクトをSTLファイルとしてエクスポートします',
+		('*', 'The selection is exported to: {filename}'): '選択されているオブジェクトを {filename} にエクスポートしました',
+
 		# language_panel
 		('*', 'Set blender language to specified language'):
 			'blenderを指定された言語に設定します',
+		('*', 'The language was set to {language}'): '言語が {language} に設定されました',
 
 		# Reload and Run Script
 		('*', 'Reload and Run Script'): '再読み込みして実行',
@@ -292,5 +303,6 @@ TRANSLATION_DICT = {
 		('*', 'Add Oloid'): 'Ajouter Oloïde',
 		('*', 'Oloid'): 'Oloïde',
 		('*', 'Anti-Oloid'): 'Anti-Oloïde',
+		('*', 'The language was set to {language}'): 'La langue a été réglée sur le {language}',
 	},
 }

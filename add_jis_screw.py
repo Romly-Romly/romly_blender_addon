@@ -5,15 +5,11 @@ import bmesh
 from bmesh.types import BMVert
 from bpy.props import *
 from mathutils import Vector, Matrix, Quaternion
-from typing import List, Tuple, NamedTuple, Union
+from typing import NamedTuple
 
 
 
 from . import romly_utils
-
-
-
-
 
 
 
@@ -155,7 +151,7 @@ def calc_angle(peak: Vector, point1: Vector, point2: Vector) -> float:
 
 
 
-def make_arc_vertices(start, center, axis, rotate_degrees: float, segments) -> List[Vector]:
+def make_arc_vertices(start, center, axis, rotate_degrees: float, segments) -> list[Vector]:
 	"""任意の座標を中心とした円または円弧を作る頂点のリストを返す。
 
 	Parameters
@@ -171,7 +167,7 @@ def make_arc_vertices(start, center, axis, rotate_degrees: float, segments) -> L
 		頂点の数。2以上を指定。
 	Returns
 	-------
-	List[Vertex]
+	list[Vertex]
 		[description]
 	"""
 	vertices = []
@@ -192,15 +188,15 @@ def make_arc_vertices(start, center, axis, rotate_degrees: float, segments) -> L
 
 
 
-def add_revolved_surface(vertices: List[Vector], faces: List[List[int]], rotation_vertex_count: int, segments: int, close=False, z_offset: float = 0) -> None:
+def add_revolved_surface(vertices: list[Vector], faces: list[list[int]], rotation_vertex_count: int, segments: int, close=False, z_offset: float = 0) -> None:
 	"""
 	頂点群で表される面を360度回転させて回転体を作る。
 
 	Parameters
 	----------
-	vertices : List[Vector]
+	vertices : list[Vector]
 		頂点リスト。回転させる頂点も含む。新しく作った頂点もここに追加される。
-	faces : List[List[int]]
+	faces : list[list[int]]
 		面のインデックスリスト。新しい面の追加用で、読み取りはされない。
 	rotation_vertex_count : int
 		回転させる頂点の数。この数だけの頂点が回転軸周りで回転される。
@@ -250,13 +246,13 @@ def add_revolved_surface(vertices: List[Vector], faces: List[List[int]], rotatio
 
 
 
-def create_combined_object(objects: List[bpy.types.Object], obj_name: str, mesh_name: str = None) -> bpy.types.Object:
+def create_combined_object(objects: list[bpy.types.Object], obj_name: str, mesh_name: str = None) -> bpy.types.Object:
 	"""
 	複数のオブジェクトを統合して一つのオブジェクトにまとめる。
 
 	Parameters
 	----------
-	objects : List[bpy.types.Object]
+	objects : list[bpy.types.Object]
 		結合するオブジェクトのリスト。先頭のオブジェクトの位置が維持される。
 	obj_name : str
 		生成するメッシュにつける名前。
@@ -653,7 +649,7 @@ def create_phillips_shape(diameter: float, depth: float) -> bpy.types.Object:
 
 
 
-def make_hexagon_beveled_vertices(radius: float, bevel_radius: float, bevel_segments: int) -> List[Vector]:
+def make_hexagon_beveled_vertices(radius: float, bevel_radius: float, bevel_segments: int) -> list[Vector]:
 	"""六角形（ナット）の頂点一箇所分の断面図をベベルありで作った時の頂点群（回転体の元）を作成する。"""
 	# 六角形の頂点
 	hexagon_pt = Vector((0, radius, 0))
@@ -1172,7 +1168,7 @@ class ROMLYADDON_OT_add_jis_screw(bpy.types.Operator):
 
 		# ねじ切り無しの長さの方が全体より長い場合はエラー
 		if self.val_unthreaded_length > self.val_length:
-			self.report({'WARNING'}, 'The length of the unthreaded part cannot be longer than the total length')
+			romly_utils.report(self, 'WARNING', msg_key='The length of the unthreaded part cannot be longer than the total length')
 			return {'CANCELLED'}
 
 		# ネジの芯の作成
@@ -1340,7 +1336,7 @@ class ROMLYADDON_OT_add_jis_nut(bpy.types.Operator):
 	def execute(self, context):
 		# 穴の直径の方が大きい場合は警告してキャンセル
 		if self.val_diameter >= self.val_nutDiameter:
-			self.report({'WARNING'}, '穴の直径を外径より大きくすることはできません')
+			romly_utils.report(self, 'WARNING', msg_key='The nut hole diameter must be smaller than the diameter')
 			return {'CANCELLED'}
 
 		nutObject = create_nut(diameter=self.val_nutDiameter, thickness=self.val_nutHeight, bevel_segments=self.val_bevelSegments)
@@ -1426,16 +1422,8 @@ classes = [
 
 
 def register():
-	# 翻訳辞書の登録
-	try:
-		bpy.app.translations.register(__name__, romly_translation.TRANSLATION_DICT)
-	except ValueError:
-		bpy.app.translations.unregister(__name__)
-		bpy.app.translations.register(__name__, romly_translation.TRANSLATION_DICT)
-
-	# blenderへのクラス登録処理
-	for cls in classes:
-		bpy.utils.register_class(cls)
+	# クラスと翻訳辞書の登録
+	romly_utils.register_classes_and_translations(classes)
 
 	bpy.types.VIEW3D_MT_add.append(menu_func)
 
@@ -1444,14 +1432,10 @@ def register():
 
 
 def unregister():
-	# クラスの登録解除
-	for cls in classes:
-		bpy.utils.unregister_class(cls)
+	# クラスと翻訳辞書の登録解除
+	romly_utils.unregister_classes_and_translations(classes)
 
 	bpy.types.VIEW3D_MT_add.remove(menu_func)
-
-	# 翻訳辞書の登録解除
-	bpy.app.translations.unregister(__name__)
 
 
 
@@ -1459,5 +1443,5 @@ def unregister():
 
 # スクリプトのエントリポイント
 # スクリプト単体のデバッグ用で、 __init__.py でアドオンとして追加したときは呼ばれない。
-if __name__ == "__main__":
+if __name__ == '__main__':
 	register()

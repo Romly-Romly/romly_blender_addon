@@ -5,7 +5,7 @@ from bpy.props import *
 
 
 
-
+from . import romly_utils
 
 
 
@@ -47,18 +47,22 @@ class ROMLYADDON_OT_apply_all_modifiers(bpy.types.Operator):
 		# 選択されているオブジェクトを取得
 		if len(bpy.context.selected_objects) == 0:
 			# 選択されているオブジェクトがない
-			self.report({'WARNING'}, 'Please select the object to which the modifiers are to be applied')
+			romly_utils.report(self, 'WARNING', msg_key='Please select the object to which the modifiers are to be applied')
 			return {'CANCELLED'}
-		else:
-			obj = obj = bpy.context.active_object
-			if len(obj.modifiers) == 0:
-				# モデファイアが一つもない
-				self.report({'WARNING'}, 'The object has no modifiers')
-				return {'CANCELLED'}
 
-			# すべてのモデファイアを適用
-			for modifier in obj.modifiers:
-				bpy.ops.object.modifier_apply(modifier=modifier.name)
+		obj = obj = bpy.context.active_object
+		if len(obj.modifiers) == 0:
+			# モデファイアが一つもない
+			romly_utils.report(self, 'WARNING', msg_key='The object has no modifiers')
+			return {'CANCELLED'}
+
+		# すべてのモデファイアを適用
+		count = 0
+		for modifier in obj.modifiers:
+			bpy.ops.object.modifier_apply(modifier=modifier.name)
+			count += 1
+		romly_utils.report(self, 'INFO', msg_key='{count} modifiers were applied', params={'count': str(count)})
+
 		return {'FINISHED'}
 
 
@@ -102,16 +106,8 @@ classes = [
 
 
 def register():
-	# 翻訳辞書の登録
-	try:
-		bpy.app.translations.register(__name__, romly_translation.TRANSLATION_DICT)
-	except ValueError:
-		bpy.app.translations.unregister(__name__)
-		bpy.app.translations.register(__name__, romly_translation.TRANSLATION_DICT)
-
-	# blenderへのクラス登録処理
-	for cls in classes:
-		bpy.utils.register_class(cls)
+	# クラスと翻訳辞書の登録
+	romly_utils.register_classes_and_translations(classes)
 
 	# オブジェクトのコンテキストメニューに追加
 	bpy.types.VIEW3D_MT_object_context_menu.append(object_context_menu_func)
@@ -119,13 +115,9 @@ def register():
 
 
 
-# クラスの登録解除
 def unregister():
-	bpy.types.VIEW3D_MT_object_context_menu.remove(object_context_menu_func)
-
-	# クラスの登録解除
-	for cls in classes:
-		bpy.utils.unregister_class(cls)
+	# クラスと翻訳辞書の登録解除
+	romly_utils.unregister_classes_and_translations(classes)
 
 	# 翻訳辞書の登録解除
 	bpy.app.translations.unregister(__name__)
@@ -136,5 +128,5 @@ def unregister():
 
 # スクリプトのエントリポイント
 # スクリプト単体のデバッグ用で、 __init__.py でアドオンとして追加したときは呼ばれない。
-if __name__ == "__main__":
+if __name__ == '__main__':
 	register()

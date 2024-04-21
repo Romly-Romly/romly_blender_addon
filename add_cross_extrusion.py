@@ -10,6 +10,10 @@ from . import romly_utils
 
 
 
+
+
+
+
 def create_cross_extrusion(hLineLength, hLineThickness, vLineLength, vLineThickness, height):
 	"""十字を掃引したオブジェクトを生成して返す
 
@@ -172,20 +176,29 @@ def menu_func(self, context):
 
 
 
-# blenderへのクラス登録処理
+classes = [
+	ROMLYADDON_OT_add_cross_extrusion,
+	ROMLYADDON_MT_romly_add_mesh_menu_parent,
+]
+
+
+
+
+
 def register():
-	bpy.utils.register_class(ROMLYADDON_OT_add_cross_extrusion)
-	bpy.utils.register_class(ROMLYADDON_MT_romly_add_mesh_menu_parent)
+	# クラスと翻訳辞書の登録
+	romly_utils.register_classes_and_translations(classes)
+
 	bpy.types.VIEW3D_MT_add.append(menu_func)
 
 
 
 
 
-# クラスの登録解除
 def unregister():
-	bpy.utils.unregister_class(ROMLYADDON_OT_add_cross_extrusion)
-	bpy.utils.unregister_class(ROMLYADDON_MT_romly_add_mesh_menu_parent)
+	# クラスと翻訳辞書の登録解除
+	romly_utils.unregister_classes_and_translations(classes)
+
 	bpy.types.VIEW3D_MT_add.remove(menu_func)
 
 
@@ -194,5 +207,5 @@ def unregister():
 
 # スクリプトのエントリポイント
 # スクリプト単体のデバッグ用で、 __init__.py でアドオンとして追加したときは呼ばれない。
-if __name__ == "__main__":
+if __name__ == '__main__':
 	register()

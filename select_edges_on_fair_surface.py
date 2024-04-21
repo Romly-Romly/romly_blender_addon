@@ -15,10 +15,6 @@ from . import romly_utils
 
 
 
-
-
-
-
 class ROMLYADDON_OT_select_edges_on_fair_surface(bpy.types.Operator):
 	"""選択されたオブジェクトの平面上にある全ての辺を選択するBlenderオペレータ。"""
 	bl_idname = "romlyaddon.select_edges_on_fair_surface"
@@ -97,8 +93,8 @@ classes = [
 
 
 def register():
-	for cls in classes:
-		bpy.utils.register_class(cls)
+	# クラスと翻訳辞書の登録
+	romly_utils.register_classes_and_translations(classes)
 
 	# 編集モードのエッジメニューに追加
 	bpy.types.VIEW3D_MT_edit_mesh_edges.append(view3d_edit_mesh_edges_menu_func)
@@ -110,13 +106,14 @@ def register():
 
 
 def unregister():
+	# クラスと翻訳辞書の登録解除
+	romly_utils.unregister_classes_and_translations(classes)
+
 	bpy.types.VIEW3D_MT_edit_mesh_edges.remove(view3d_edit_mesh_edges_menu_func)
-	for cls in classes:
-		bpy.utils.unregister_class(cls)
 
 
 
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
 	register()
