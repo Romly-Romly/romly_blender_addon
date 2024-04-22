@@ -263,6 +263,7 @@ TRANSLATION_DICT = {
 			'固定オフセットの配列モデファイアを追加',
 		('*', 'Add an array modifier set to a constant offset'):
 			'固定オフセットに設定された配列モデファイアを追加します',
+		('*', 'Constant Offset Array'): '一定のオフセットの配列',
 
 		# Apply All Modifiers
 		('*', 'Apply All Modifiers'): 'すべてのモデファイアを適用',

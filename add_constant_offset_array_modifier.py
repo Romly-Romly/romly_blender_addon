@@ -17,14 +17,14 @@ from . import romly_utils
 
 
 class ROMLYADDON_OT_add_constant_offset_array_modifier(bpy.types.Operator):
-	bl_idname = "romlyaddon.add_constant_offset_array_modifier"
+	bl_idname = 'romlyaddon.add_constant_offset_array_modifier'
 	bl_label = bpy.app.translations.pgettext_iface('Add Constant Offset Array Modifier')
 	bl_description = 'Add an array modifier set to a constant offset'
 	bl_options = {'REGISTER', 'UNDO'}
 
 	# プロパティ
 	val_count: IntProperty(name='Count', description='Number of duplicates to make', default=3, min=2, soft_max=20)
-	val_offset: FloatVectorProperty(name='Distance', description='Value for the distance between arrayed items', default=[10, 0, 0], soft_min=-100.0, soft_max=100.0, size=3, subtype='TRANSLATION', unit='LENGTH')
+	val_offset: FloatVectorProperty(name='Distance', description='Value for the distance between arrayed items', default=[10, 0, 0], soft_min=-300.0, soft_max=300.0, size=3, subtype='TRANSLATION', unit='LENGTH')
 
 
 
@@ -46,7 +46,7 @@ class ROMLYADDON_OT_add_constant_offset_array_modifier(bpy.types.Operator):
 		active_obj = bpy.context.active_object
 
 		# Arrayモデファイアを追加
-		array_modifier = active_obj.modifiers.new(name="Constant Offset Array", type="ARRAY")
+		array_modifier = active_obj.modifiers.new(name=bpy.app.translations.pgettext_data('Constant Offset Array'), type='ARRAY')
 
 		# Arrayモデファイアのパラメータを設定
 		array_modifier.count = self.val_count
