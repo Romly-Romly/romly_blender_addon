@@ -53,7 +53,7 @@ class TetrahedronIndices(NamedTuple):
 
 
 class ROMLYADDON_OT_add_reuleaux_tetrahedron(bpy.types.Operator):
-	bl_idname = "romlyaddon.add_reuleaux_tetrahedron"
+	bl_idname = 'romlyaddon.add_reuleaux_tetrahedron'
 	bl_label = bpy.app.translations.pgettext_iface('Add Reuleaux Tetrahedron')
 	bl_description = 'Construct a Reuleaux Tetrahedron mesh'
 	bl_options = {'REGISTER', 'UNDO'}
@@ -154,14 +154,17 @@ class ROMLYADDON_OT_add_reuleaux_tetrahedron(bpy.types.Operator):
 		else:
 			tetrahedron = create_regular_tetrahedron(radius, origin=origin)
 
-			# 各頂点の位置に球を生成
+			# 頂点[0]の位置に球を生成
 			location = bpy.context.scene.cursor.location + tetrahedron.vertices[0]
 			if build_method == self.BUILD_METHOD_UV_SPHERES:
 				bpy.ops.mesh.primitive_uv_sphere_add(radius=radius, location=location, segments=segments, ring_count=ring_count)
 			else:
 				bpy.ops.mesh.primitive_ico_sphere_add(radius=radius, location=location, subdivisions=ico_subdivisions)
+			bpy.ops.object.origin_set(type='ORIGIN_CURSOR', center='MEDIAN')	# 3Dカーソルの位置に原点を設定。これを忘れると原点設定が反映されないぞ
 			sphere = bpy.context.active_object
 			sphere.name = bpy.app.translations.pgettext_data('Reuleaux Tetrahedron')
+
+			# その他の頂点の位置に球を生成し、ブーリアンモデファイアを使って共通部分のみにしていく
 			for i in range(1, 4):
 				location = bpy.context.scene.cursor.location + tetrahedron.vertices[i]
 				if build_method == self.BUILD_METHOD_UV_SPHERES:
@@ -307,12 +310,13 @@ def create_regular_tetrahedron(radius: float, origin: str) -> int:
 
 	# 原点の設定に従ってオフセットを計算
 	offset = Vector((0, 0, 0))
-	if origin == 'center':
-		offset = (Vector(vertices[0]) + Vector(vertices[1]) + Vector(vertices[2]) + Vector(vertices[3])) / 4
-	elif origin == 'bottom':
-		offset = (Vector(vertices[0]) + Vector(vertices[1]) + Vector(vertices[2])) / 3
-	elif origin == 'apex':
-		offset = Vector(vertices[3])
+	match origin:
+		case 'center':
+			offset = (Vector(vertices[0]) + Vector(vertices[1]) + Vector(vertices[2]) + Vector(vertices[3])) / 4
+		case 'bottom':
+			offset = (Vector(vertices[0]) + Vector(vertices[1]) + Vector(vertices[2])) / 3
+		case 'apex':
+			offset = Vector(vertices[3])
 	for i in range(len(vertices)):
 		vertices[i] -= offset
 
