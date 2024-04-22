@@ -1,6 +1,6 @@
 bl_info = {
 	'name': 'Romly Blender Add-on',
-	'version': (1, 2, 1),
+	'version': (1, 3, 0),
 	'blender': (4, 0, 0),
 	'category': 'Object',
 	'author': 'Romly',
@@ -24,7 +24,7 @@ from .add_jis_screw import ROMLYADDON_OT_add_jis_screw, ROMLYADDON_OT_add_jis_nu
 from .add_aluminum_extrusion import ROMLYADDON_OT_add_aluminum_extrusion
 from .add_pinheader import ROMLYADDON_OT_add_pinheader
 from .export_collection_as_stl import ROMLYADDON_OT_export_collection_as_stl, ROMLYADDON_OT_export_selection_as_stl
-from .select_edges_on_fair_surface import ROMLYADDON_OT_select_edges_on_fair_surface
+from .select_edges_on_fair_surface import ROMLYADDON_OT_select_edges_on_fair_surface, ROMLYADDON_OT_select_edges_along_axis
 from .language_panel import ROMLYADDON_PT_language_panel, ROMLYADDON_OT_change_language
 from .reload_and_run_script import ROMLYADDON_OT_reload_and_run_script
 from .romly_translation import TRANSLATION_DICT
@@ -59,7 +59,8 @@ def outliner_object_menu_func(self, context):
 def view3d_edit_mesh_edges_menu_func(self, context):
 	"""編集モードのエッジメニューに追加する関数。平面上にある辺を選択する項目を追加"""
 	self.layout.separator()
-	self.layout.operator(ROMLYADDON_OT_select_edges_on_fair_surface.bl_idname, text=bpy.app.translations.pgettext_iface(ROMLYADDON_OT_select_edges_on_fair_surface.bl_label), icon='EDGESEL')
+	self.layout.operator(ROMLYADDON_OT_select_edges_on_fair_surface.bl_idname, text=bpy.app.translations.pgettext_iface('Select Edges on Fair Surface'), icon='EDGESEL')
+	self.layout.operator(ROMLYADDON_OT_select_edges_along_axis.bl_idname, text=bpy.app.translations.pgettext_iface('Select Edges along Axis'), icon='EMPTY_ARROWS')
 
 
 
@@ -73,7 +74,8 @@ def view3d_edit_mesh_context_menu_func(self, context):
 	# 辺モードの時のみメニュー項目を追加（0=頂点, 1=辺, 2=面）
 	if bpy.context.tool_settings.mesh_select_mode[1]:
 		self.layout.separator()
-		self.layout.operator(ROMLYADDON_OT_select_edges_on_fair_surface.bl_idname, text=bpy.app.translations.pgettext_iface(ROMLYADDON_OT_select_edges_on_fair_surface.bl_label), icon='EDGESEL')
+		self.layout.operator(ROMLYADDON_OT_select_edges_on_fair_surface.bl_idname, text=bpy.app.translations.pgettext_iface('Select Edges on Fair Surface'), icon='EDGESEL')
+		self.layout.operator(ROMLYADDON_OT_select_edges_along_axis.bl_idname, text=bpy.app.translations.pgettext_iface('Select Edges along Axis'), icon='EMPTY_ARROWS')
 
 
 
@@ -214,6 +216,7 @@ MY_CLASS_LIST = [
 	ROMLYADDON_MT_romly_export_collection_as_stl_menu_parent,
 	ROMLYADDON_MT_romly_export_selection_as_stl_menu_parent,
 	ROMLYADDON_OT_select_edges_on_fair_surface,
+	ROMLYADDON_OT_select_edges_along_axis,
 	ROMLYADDON_PT_language_panel,
 	ROMLYADDON_OT_change_language,
 	ROMLYADDON_OT_reload_and_run_script,

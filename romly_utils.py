@@ -409,6 +409,49 @@ def select_edges_on_fair_surface(obj: bpy.types.Object, threshold_degree: float 
 
 
 
+def select_edges_along_axis(obj: bpy.types.Object, axis: tuple[bool, bool, bool], threshold_degree: float = 0) -> None:
+	"""
+	軸に沿った辺（指定の軸との内積が0）を選択します。
+
+	Parameters
+	----------
+	obj : bpy.types.Object
+		法線を比較して辺を選択する対象のBlenderオブジェクト。
+	axis : tuple[bool, bool, bool]
+		軸を指定するタプル(X, Y, Z)。同時に複数の軸を指定可。
+	"""
+	bpy.ops.mesh.select_mode(type='EDGE')
+	bm = bmesh.from_edit_mesh(obj.data)
+
+	# まず選択を解除
+	bpy.ops.mesh.select_all(action='DESELECT')
+
+	# 閾値値の角度を内積の値に変換
+	threshold_radian = math.radians(threshold_degree)
+	cos_value = math.cos(threshold_radian)
+
+	VECTORS = [Vector((1, 0, 0)), Vector((0, 1, 0)), Vector((0, 0, 1))]
+	for edge in bm.edges:
+		edge_vector = (edge.verts[1].co - edge.verts[0].co).normalized()
+
+		for i in range(3):
+			if axis[i]:
+				dot_abs = abs(edge_vector.dot(VECTORS[i]))
+				if dot_abs >= cos_value:
+					edge.select = True
+
+	# 更新を反映
+	bmesh.update_edit_mesh(obj.data)
+
+
+
+
+
+
+
+
+
+
 def set_bevel_weight(obj: bpy.types.Object, bevel_weight: float = 1.0) -> None:
 	"""
 	アクティブオブジェクトを対象に、選択されている辺に Bevel Weight を設定する。

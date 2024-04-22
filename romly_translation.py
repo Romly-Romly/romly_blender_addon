@@ -258,6 +258,10 @@ TRANSLATION_DICT = {
 		('*', 'Select edges when the angle between normals of the two surfaces sharing the edge is less than or equal to this value'):
 			'辺を共有する2つの面の法線の角度が、この値以下になる時にその辺を選択します。',
 
+		# Select Edges along Axis
+		('*', 'Select Edges along Axis'): '軸に沿った辺を選択',
+		('*', 'Select all edges along the axis'): '指定の軸に沿った全ての辺を選択します',
+
 		# Add Constant Offset Array Modifier
 		('*', 'Add Constant Offset Array Modifier'):
 			'固定オフセットの配列モデファイアを追加',

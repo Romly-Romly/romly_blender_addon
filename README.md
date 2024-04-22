@@ -27,6 +27,7 @@
 	- ビューポート表示のテクスチャ／ワイヤーフレーム切り替え([Toggle Viewport Display As](#toggle-viewport-display-as))
 - オブジェクト／コレクションをSTL形式で簡単にエクスポート([Export Selection as STL](#export-selection-as-stl), [Export Collection as STL](#export-collection-as-stl))
 - 平面上にある辺（溶解可能な辺）を選択([Select edges on Fair Surface](#select-edges-on-fair-surface))
+- 軸に沿った辺を選択([Select edges along Axis](#select-edges-along-axis))
 - 言語設定を切り替えられるパネル([Language Panel](#language-panel))
 - アクティブスクリプトを再読み込みして実行([Reload and Run Script](#reload-and-run-script))
 - 【おまけ】blend1ファイルを再帰的に削除するPythonスクリプト([blend1_cleaner.py](#blend1_cleanerpy))
@@ -259,6 +260,17 @@ Relative OffsetではなくConstant Offsetを設定した状態のArrayモデフ
 編集中のメッシュの、平面上にある辺、つまり溶解しても影響がない辺をまとめて選択できます。STLファイルなどをインポートした時に、無駄な辺を整理するのに使えると思います。blenderの標準機能でありそうなのですが、見つけられないので作っちゃいました。
 
 処理としてはすべての辺について、その辺を共有する2つの面の法線を求め、その内積が閾値の角度以下なら辺を選択します。閾値は変更可能で、0度なら平面にある辺のみを選択しますが、大きくすることで平面ではない面の辺も選択できるようになります。
+
+-----
+
+### Select Edges along Axis
+
+**軸に沿った辺を選択**
+
+*Edge Menu*（編集モード）
+*Edit Mesh Context Menu*（編集モード・辺選択時に右クリック）
+
+編集中のメッシュの、XYZ各軸に沿った辺をまとめて選択します。例えば、立方体の縦方向の縁だけ選択してベベルを設定したいなどの用途に使えるかなと思います。『[平面上にある面を選択](#select-edges-on-fair-surface)』同様、閾値角度を変更できます。
 
 -----
 
