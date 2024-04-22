@@ -134,7 +134,7 @@ class ROMLYADDON_OT_add_pinheader(bpy.types.Operator):
 	# プロパティ
 	val_pitch: EnumProperty(name='Pitch', description='ピッチ', default=PIN_PITCH_254, items=PIN_PITCHES, update=on_pitch_update)
 
-	val_block_size: FloatVectorProperty(name='Block Size', size=3, min=0.1, soft_max=2.54, description='プラスチック部分のサイズ', subtype='TRANSLATION', unit='LENGTH')
+	val_block_size: FloatVectorProperty(name='Block Size', size=3, min=0.1, soft_max=2.54, description='プラスチック部分のサイズ', subtype='TRANSLATION', unit='LENGTH', precision=3)
 	val_pin_thickness: FloatProperty(name='Pin Thickness', min=0.1, soft_max=1, description='ピンの太さ', unit='LENGTH')
 	val_pin_length_top: FloatProperty(name='Pin Length (Top)', min=0.1, soft_max=10, description='ピンの長さ（上部）', unit='LENGTH')
 	val_pin_length_bottom: FloatProperty(name='Pin Length (Bottom)', min=0.1, soft_max=10, description='ピンの長さ（下部）', unit='LENGTH')
@@ -179,9 +179,9 @@ class ROMLYADDON_OT_add_pinheader(bpy.types.Operator):
 		col.separator()
 
 		col.label(text="Pins")
-		col.prop(self, 'val_num_cols')
-		col.prop(self, 'val_num_rows')
-		col.separator()
+		row = col.row(align=True)
+		row.prop(self, 'val_num_cols')
+		row.prop(self, 'val_num_rows')
 
 
 
