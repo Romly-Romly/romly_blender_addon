@@ -3,7 +3,7 @@ import bmesh
 import mathutils
 import math
 from mathutils import Vector, Matrix
-from typing import Literal
+from typing import Literal, NamedTuple
 from collections.abc import Callable
 
 
@@ -13,6 +13,73 @@ import romly_translation
 # romly_translationの再読み込み（Blenderを再起動しなくてもよくなる）
 import importlib
 importlib.reload(romly_translation)
+
+
+
+
+
+
+
+
+
+
+# MARK: ScrewSpec
+class ScrewSpec(NamedTuple):
+	"""
+	ネジ（またはナット）の寸法を格納するタプル
+
+	Attributes
+	----------
+	nut_height_thin : float
+		3種ナットの厚み
+	"""
+	diameter: float
+	pitch: float
+	head_diameter: float
+	panhead_height: float
+	phillips_size: float
+	phillips_depth: float
+	flathead_diameter: float
+	flathead_edge_thickness: float
+	bolthead_across_flats: float	# 六角頭またはナットの二面幅
+	bolthead_height: float
+	nut_height: float	# ナットの厚み（高さ）
+	nut_height_thin: float	# 3種ナットの厚み
+
+	def bolthead_diameter(self) -> float:
+		"""六角頭またはナットの対角距離を返す。"""
+		return self.bolthead_across_flats / math.cos(math.radians(30))
+
+	def thread_depth(self) -> float:
+		"""
+		ねじ山の高さをピッチから算出する。
+
+		Returns
+		-------
+		float
+			ねじ山の高さ(mm)。
+		"""
+		return self.pitch * 0.866025 * 2
+
+
+
+
+
+
+
+
+
+
+# M2〜M8のネジの寸法
+SCREW_SPECS = {
+	'm2': ScrewSpec(diameter=2, pitch=0.4, head_diameter=3.5, panhead_height=1.3, phillips_size=2.2, phillips_depth=1.01, flathead_diameter=4.0, flathead_edge_thickness=0.2, bolthead_across_flats=4, bolthead_height=1.3, nut_height=1.6, nut_height_thin=1.2),
+	'm2_5': ScrewSpec(diameter=2.5, pitch=0.45, head_diameter=4.5, panhead_height=1.7, phillips_size=2.6, phillips_depth=1.42, flathead_diameter=5, flathead_edge_thickness=0.2, bolthead_across_flats=5, bolthead_height=1.7, nut_height=2.0, nut_height_thin=1.6),
+	'm3': ScrewSpec(diameter=3, pitch=0.5, head_diameter=5.5, panhead_height=2.0, phillips_size=3.6, phillips_depth=1.43, flathead_diameter=6, flathead_edge_thickness=0.25, bolthead_across_flats=5.5, bolthead_height=2.0, nut_height=2.4, nut_height_thin=1.8),
+	'm4': ScrewSpec(diameter=4, pitch=0.7, head_diameter=7.0, panhead_height=2.6, phillips_size=4.2, phillips_depth=2.03, flathead_diameter=8, flathead_edge_thickness=0.3, bolthead_across_flats=7, bolthead_height=2.8, nut_height=3.2, nut_height_thin=2.4),
+	'm5': ScrewSpec(diameter=5, pitch=0.8, head_diameter=9.0, panhead_height=3.3, phillips_size=4.9, phillips_depth=2.73, flathead_diameter=10, flathead_edge_thickness=0.3, bolthead_across_flats=8, bolthead_height=3.5, nut_height=4.0, nut_height_thin=3.2),
+	'm6': ScrewSpec(diameter=6, pitch=1.0, head_diameter=10.5, panhead_height=3.9, phillips_size=6.3, phillips_depth=2.86, flathead_diameter=12, flathead_edge_thickness=0.4, bolthead_across_flats=10, bolthead_height=4.0, nut_height=5.0, nut_height_thin=3.6),
+	'm8': ScrewSpec(diameter=8, pitch=1.25, head_diameter=14.0, panhead_height=5.2, phillips_size=7.8, phillips_depth=4.36, flathead_diameter=16, flathead_edge_thickness=0.4, bolthead_across_flats=13, bolthead_height=5.5, nut_height=6.5, nut_height_thin=5.0),
+}
 
 
 
@@ -182,15 +249,15 @@ def cleanup_mesh(object: bpy.types.Object, remove_doubles=True, recalc_normals=T
 
 
 
-def extrude_face(vertices, faces, extrude_vertex_indices: list[int], z_offset: float, cap=True):
+def extrude_face(vertices: list[Vector], faces: list[list[int]], extrude_vertex_indices: list[int], z_offset: float, cap=True):
 	"""
 	指定された面を掃引して、新しくできた頂点と面を追加する。
 
 	Parameters
 	----------
-	vertices : list of Vector
+	vertices : list[Vector]
 		頂点のリスト
-	faces : list of list of int
+	faces : list[list[int]]
 		面を構成する頂点インデックスのリスト
 	extrude_vertex_indices : list[int]
 		掃引する頂点のインデックスのリスト。頂点(Vector)のリストじゃないので注意してね。
@@ -201,7 +268,11 @@ def extrude_face(vertices, faces, extrude_vertex_indices: list[int], z_offset: f
 	"""
 	# 各頂点を掃引した位置に複製する
 	for i in extrude_vertex_indices:
-		v = vertices[i].copy()
+		print(i)
+		if isinstance(vertices[i], Vector):
+			v = vertices[i].copy()
+		else:
+			v = Vector((vertices[i][0], vertices[i][1], vertices[i][2]))
 		v.z += z_offset
 		vertices.append(v)
 
@@ -343,15 +414,14 @@ def apply_boolean_object(object, boolObject, operation='DIFFERENCE', use_self=Fa
 		ブーリアンモデファイアを適用するかどうか。デフォルトはTrue。
 	"""
 	bpy.context.view_layer.objects.active = object
-	mod_name = 'Boolean'
-	mod = bpy.context.object.modifiers.new(type='BOOLEAN', name=mod_name)
+	mod = bpy.context.object.modifiers.new(type='BOOLEAN', name='Boolean')
 	mod.operation = operation
 	mod.object = boolObject
 	mod.use_self = use_self
 	if fast_solver:
 		mod.solver = 'FAST'
 	if apply:
-		bpy.ops.object.modifier_apply(modifier=mod_name)
+		bpy.ops.object.modifier_apply(modifier=mod.name)
 	if unlink:
 		bpy.context.collection.objects.unlink(boolObject)
 
@@ -541,7 +611,7 @@ def is_edge_along_z_axis(edge: bmesh.types.BMEdge) -> bool:
 
 
 
-def create_circle_vertices(radius: float, num_vertices: int, center: tuple[float, float, float] = (0, 0, 0), start_angle_degree: float = 0, angle_degree: float = 360, normal_vector: tuple[float, float, float] = (0, 0, 1)) -> list[tuple[float, float, float]]:
+def make_circle_vertices(radius: float, num_vertices: int, center: tuple[float, float, float] = (0, 0, 0), start_angle_degree: float = 0, angle_degree: float = 360, normal_vector: tuple[float, float, float] = (0, 0, 1)) -> list[tuple[float, float, float]]:
 	"""
 	円周上の頂点群を生成する。指定された半径を持つ円を外接円とする多角形の作成にも使えるよ。頂点はディフォルトではXY平面上に配置され、Z座標はすべて0だけど、法線ベクトルを指定することで任意の平面に配置できるよ。
 

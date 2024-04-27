@@ -83,7 +83,7 @@ def create_rotation_base_object(radius: float, num_vertices: int) -> bpy.types.O
 		_description_
 	"""
 	# YZ平面上に円の頂点群を作成
-	vertices = romly_utils.create_circle_vertices(radius=radius, num_vertices=num_vertices, start_angle_degree=0, normal_vector=(1, 0, 0))
+	vertices = romly_utils.make_circle_vertices(radius=radius, num_vertices=num_vertices, start_angle_degree=0, normal_vector=(1, 0, 0))
 
 	# 多角形になるよう辺を作成
 	edges = []

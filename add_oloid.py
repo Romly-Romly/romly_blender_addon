@@ -150,10 +150,10 @@ def create_two_circle_oloid_base(radius: float, num_vertices: int, make_edges: b
 	bpy.types.Object
 		作成されたオロイドベースのオブジェクト。
 	"""
-	circle_vertices1 = romly_utils.create_circle_vertices(radius=radius, num_vertices=num_vertices, start_angle_degree=180)
+	circle_vertices1 = romly_utils.make_circle_vertices(radius=radius, num_vertices=num_vertices, start_angle_degree=180)
 
 	# 2個目の円はx軸で90度回転させて半径分右に移動
-	circle_vertices2 = romly_utils.create_circle_vertices(radius=radius, num_vertices=num_vertices, start_angle_degree=0)
+	circle_vertices2 = romly_utils.make_circle_vertices(radius=radius, num_vertices=num_vertices, start_angle_degree=0)
 	for i in range(len(circle_vertices2)):
 		v = rotate_vertex_90_degrees_x_axis(circle_vertices2[i])
 		circle_vertices2[i] = (v[0] + radius, v[1], v[2])

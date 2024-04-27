@@ -1,6 +1,6 @@
 bl_info = {
 	'name': 'Romly Blender Add-on',
-	'version': (1, 3, 0),
+	'version': (1, 5, 0),
 	'blender': (4, 0, 0),
 	'category': 'Object',
 	'author': 'Romly',
@@ -11,6 +11,7 @@ bl_info = {
 import bpy
 from .apply_all_modifiers import ROMLYADDON_OT_apply_all_modifiers
 from .add_constant_offset_array_modifier import ROMLYADDON_OT_add_constant_offset_array_modifier
+from .add_weight_bevel_modifier import ROMLYADDON_OT_add_weight_bevel_modifier
 from .toggle_viewport_display_as import ROMLYADDON_OT_toggle_viewport_display_as
 from .add_box import ROMLYADDON_OT_add_box
 from .add_donut_cylinder import ROMLYADDON_OT_add_donut_cylinder
@@ -23,6 +24,7 @@ from .add_clothoid_curve import ROMLYADDON_OT_add_clothoid_curve, ROMLYADDON_OT_
 from .add_jis_screw import ROMLYADDON_OT_add_jis_screw, ROMLYADDON_OT_add_jis_nut
 from .add_aluminum_extrusion import ROMLYADDON_OT_add_aluminum_extrusion
 from .add_pinheader import ROMLYADDON_OT_add_pinheader
+from .add_nut_hole import ROMLYADDON_OT_add_nut_hole
 from .export_collection_as_stl import ROMLYADDON_OT_export_collection_as_stl, ROMLYADDON_OT_export_selection_as_stl
 from .select_edges_on_fair_surface import ROMLYADDON_OT_select_edges_on_fair_surface, ROMLYADDON_OT_select_edges_along_axis
 from .language_panel import ROMLYADDON_PT_language_panel, ROMLYADDON_OT_change_language
@@ -104,6 +106,7 @@ class ROMLYADDON_MT_romly_tool_menu_parent(bpy.types.Menu):
 	def draw(self, context):
 		layout = self.layout
 		layout.operator(ROMLYADDON_OT_add_constant_offset_array_modifier.bl_idname, text=bpy.app.translations.pgettext_iface('Add Constant Offset Array Modifier'), icon='MOD_ARRAY')
+		layout.operator(ROMLYADDON_OT_add_weight_bevel_modifier.bl_idname, text=bpy.app.translations.pgettext_iface('Add Weight Bevel Modifier'), icon='MOD_BEVEL')
 		layout.operator(ROMLYADDON_OT_apply_all_modifiers.bl_idname, text=bpy.app.translations.pgettext_iface('Apply All Modifiers'), icon='CHECKMARK')
 		layout.operator(ROMLYADDON_OT_toggle_viewport_display_as.bl_idname, text=bpy.app.translations.pgettext_iface('Toggle Viewport Display As'), icon='SHADING_WIRE')
 
@@ -146,6 +149,8 @@ class ROMLYADDON_MT_romly_add_mesh_menu_parent(bpy.types.Menu):
 			(ROMLYADDON_OT_add_jis_nut, 'Add JIS Nut', 'SEQ_CHROMA_SCOPE'),
 			(ROMLYADDON_OT_add_aluminum_extrusion, 'Add Aluminium Extrusion', 'FIXED_SIZE'),
 			(ROMLYADDON_OT_add_pinheader, 'Add Pinheader', 'EMPTY_SINGLE_ARROW'),
+			(None, None, None),
+			(ROMLYADDON_OT_add_nut_hole, 'Add Nut Hole', 'SEQ_CHROMA_SCOPE'),
 		]
 		for operator, text, icon in OPERATORS:
 			if operator is None:
@@ -196,6 +201,7 @@ def collection_menu_func(self, context):
 MY_CLASS_LIST = [
 	ROMLYADDON_OT_apply_all_modifiers,
 	ROMLYADDON_OT_add_constant_offset_array_modifier,
+	ROMLYADDON_OT_add_weight_bevel_modifier,
 	ROMLYADDON_OT_toggle_viewport_display_as,
 	ROMLYADDON_MT_romly_tool_menu_parent,
 	ROMLYADDON_OT_add_box,
@@ -211,6 +217,7 @@ MY_CLASS_LIST = [
 	ROMLYADDON_OT_add_jis_nut,
 	ROMLYADDON_OT_add_aluminum_extrusion,
 	ROMLYADDON_OT_add_pinheader,
+	ROMLYADDON_OT_add_nut_hole,
 	ROMLYADDON_MT_romly_add_mesh_menu_parent,
 	ROMLYADDON_OT_export_collection_as_stl,
 	ROMLYADDON_MT_romly_export_collection_as_stl_menu_parent,

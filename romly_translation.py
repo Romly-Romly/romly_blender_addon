@@ -252,6 +252,33 @@ TRANSLATION_DICT = {
 		('*', 'Bevel Segments'): 'アールのセグメント数',
 		('*', 'The number of segments in the corner bevels'): '角のアールのセグメント数',
 
+		# Add Nut Hole
+		('*', 'Add Nut Hole'): 'ナット穴を作成',
+		('*', 'Construct a hole for a nut for 3D printing'): '3Dプリント用のナットの穴を作成します',
+		('*', 'Create Method'): '作成方法',
+		('*', 'Nut Hole'): 'ナット穴',
+		('*', 'Surplus'): '余長',
+		('*', 'Screw Hole Diameter'): 'ネジ穴の直径',
+		('*', 'Screw Hole Length'): 'ネジ穴の長さ',
+		('*', 'Only Tool Object'): 'ツールオブジェクトのみ',
+		('*', 'Create a nut hole object for boolean modifier'):
+			'ブーリアンモデファイア用のナット穴オブジェクトを作成します',
+		('*', 'Create a nut hole for the selected object'):
+			'選択されたオブジェクトにナットの穴を開けます',
+		('*', 'Layer Thickness'): 'レイヤーの厚み',
+		('*', 'Clearances'): '遊び',
+		('*', 'Nut Diameter Clearance'): 'ナット外径の遊び',
+		('*', 'Screw Hole Clearance'): 'ネジ穴の遊び',
+		('*', 'Screw Hole Segments'): 'ネジ穴のセグメント数',
+		('*', 'Seam Avoidance Slit'): 'シーム避けスリット',
+		('*', 'Seam Avoidance Slit Depth'): 'シーム避けスリットの深さ',
+		('*', 'Seam Avoidance Slit Thickness'): 'シーム避けスリットの厚み',
+		('*', 'Seam Avoidance Slit Count'): 'シーム避けスリットの数',
+		('*', 'Single Point'): '一箇所',
+		('*', '6 Points'): '六箇所',
+		('*', 'Sacrificial Layer'): '犠牲レイヤー',
+		('*', 'Bridge Layer'): 'ブリッジ',
+
 		# Select Edges on Fair Surface
 		('*', 'Select Edges on Fair Surface'): '平面上にある辺を選択',
 		('*', 'Select all edges on fair surface plane'): '平面上にある全ての辺を選択します',
@@ -268,6 +295,13 @@ TRANSLATION_DICT = {
 		('*', 'Add an array modifier set to a constant offset'):
 			'固定オフセットに設定された配列モデファイアを追加します',
 		('*', 'Constant Offset Array'): '一定のオフセットの配列',
+
+		# Add Weight Bevel Modifier
+		('*', 'Add Weight Bevel Modifier'):
+			'ウェイト制限のベベルモデファイアを追加',
+		('*', 'Add a bevel modifier with its Limit Method set to Weight'):
+			'制限方法をウェイトに設定したベベルモデファイアを追加します',
+		('*', 'Weight Bevel'): 'ウェイト制限のベベル',
 
 		# Apply All Modifiers
 		('*', 'Apply All Modifiers'): 'すべてのモデファイアを適用',

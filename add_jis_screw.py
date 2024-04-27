@@ -34,63 +34,6 @@ AXIS_Z = 'Z'
 
 
 
-# MARK: ScrewSpec
-class ScrewSpec(NamedTuple):
-	"""
-	ネジ（またはナット）の寸法を格納するタプル
-
-	Attributes
-	----------
-	nut_height_thin : float
-		3種ナットの厚み
-	"""
-	diameter: float
-	pitch: float
-	head_diameter: float
-	panhead_height: float
-	phillips_size: float
-	phillips_depth: float
-	flathead_diameter: float
-	flathead_edge_thickness: float
-	bolthead_across_flats: float	# 六角頭またはナットの二面幅
-	bolthead_height: float
-	nut_height: float	# ナットの厚み（高さ）
-	nut_height_thin: float	# 3種ナットの厚み
-
-	def bolthead_diameter(self) -> float:
-		"""六角頭またはナットの対角距離を返す。"""
-		return self.bolthead_across_flats / math.cos(math.radians(30))
-
-	def thread_depth(self) -> float:
-		"""
-		ねじ山の高さをピッチから算出する。
-
-		Returns
-		-------
-		float
-			ねじ山の高さ(mm)。
-		"""
-		return self.pitch * 0.866025 * 2
-
-
-
-
-
-
-
-
-
-
-# M2〜M8のネジの寸法
-SCREW_SPECS = {
-	'm2': ScrewSpec(diameter=2, pitch=0.4, head_diameter=3.5, panhead_height=1.3, phillips_size=2.2, phillips_depth=1.01, flathead_diameter=4.0, flathead_edge_thickness=0.2, bolthead_across_flats=4, bolthead_height=1.3, nut_height=1.6, nut_height_thin=1.2),
-	'm2_5': ScrewSpec(diameter=2.5, pitch=0.45, head_diameter=4.5, panhead_height=1.7, phillips_size=2.6, phillips_depth=1.42, flathead_diameter=5, flathead_edge_thickness=0.2, bolthead_across_flats=5, bolthead_height=1.7, nut_height=2.0, nut_height_thin=1.6),
-	'm3': ScrewSpec(diameter=3, pitch=0.5, head_diameter=5.5, panhead_height=2.0, phillips_size=3.6, phillips_depth=1.43, flathead_diameter=6, flathead_edge_thickness=0.25, bolthead_across_flats=5.5, bolthead_height=2.0, nut_height=2.4, nut_height_thin=1.8),
-	'm4': ScrewSpec(diameter=4, pitch=0.7, head_diameter=7.0, panhead_height=2.6, phillips_size=4.2, phillips_depth=2.03, flathead_diameter=8, flathead_edge_thickness=0.3, bolthead_across_flats=7, bolthead_height=2.8, nut_height=3.2, nut_height_thin=2.4),
-	'm5': ScrewSpec(diameter=5, pitch=0.8, head_diameter=9.0, panhead_height=3.3, phillips_size=4.9, phillips_depth=2.73, flathead_diameter=10, flathead_edge_thickness=0.3, bolthead_across_flats=8, bolthead_height=3.5, nut_height=4.0, nut_height_thin=3.2),
-	'm6': ScrewSpec(diameter=6, pitch=1.0, head_diameter=10.5, panhead_height=3.9, phillips_size=6.3, phillips_depth=2.86, flathead_diameter=12, flathead_edge_thickness=0.4, bolthead_across_flats=10, bolthead_height=4.0, nut_height=5.0, nut_height_thin=3.6),
-	'm8': ScrewSpec(diameter=8, pitch=1.25, head_diameter=14.0, panhead_height=5.2, phillips_size=7.8, phillips_depth=4.36, flathead_diameter=16, flathead_edge_thickness=0.4, bolthead_across_flats=13, bolthead_height=5.5, nut_height=6.5, nut_height_thin=5.0),
-}
 
 
 
@@ -910,7 +853,7 @@ def update_properties(self, context):
 	"""プロパティのパネルでM2〜M8などのボタンを押した時の処理。プロパティの値を押したボタンに合わせてセットする。"""
 
 	# 指定されたスクリューサイズに基づいて直径とピッチを設定
-	spec = SCREW_SPECS.get(self.val_ms)
+	spec = romly_utils.SCREW_SPECS.get(self.val_ms)
 	if spec:
 		self.val_diameter, self.val_pitch = spec.diameter, spec.pitch
 		self.val_lead = 1
@@ -1024,32 +967,32 @@ class ROMLYADDON_OT_add_jis_screw(bpy.types.Operator):
 	val_head_shape: EnumProperty(name='Head Shape', items=HeadShape, default=SCREW_HEAD_SHAPE_PAN)
 
 	# なべネジのサイズ
-	val_head_diameter: FloatProperty(name='Head Diameter', description='Head Diameter', default=SCREW_SPECS[DEFAULT_SIZE].head_diameter, min=1, max=55, subtype='DISTANCE', unit=bpy.utils.units.categories.LENGTH)
-	val_panhead_height: FloatProperty(name='Head Height', description='Head Height', default=SCREW_SPECS[DEFAULT_SIZE].panhead_height, min=0.1, max=50, subtype='DISTANCE', unit=bpy.utils.units.categories.LENGTH)
+	val_head_diameter: FloatProperty(name='Head Diameter', description='Head Diameter', default=romly_utils.SCREW_SPECS[DEFAULT_SIZE].head_diameter, min=1, max=55, subtype='DISTANCE', unit=bpy.utils.units.categories.LENGTH)
+	val_panhead_height: FloatProperty(name='Head Height', description='Head Height', default=romly_utils.SCREW_SPECS[DEFAULT_SIZE].panhead_height, min=0.1, max=50, subtype='DISTANCE', unit=bpy.utils.units.categories.LENGTH)
 
 	# 皿ネジのサイズ
-	val_flatHeadDiameter: FloatProperty(name='Flat Head Diameter', default=SCREW_SPECS[DEFAULT_SIZE].flathead_diameter, min=1, max=55, subtype='DISTANCE', unit=bpy.utils.units.categories.LENGTH)
-	val_flathead_edge_thickness: FloatProperty(name='Thickness of Flat Head Screw Edge', description='Thickness of Flat Head Screw Edge', default=SCREW_SPECS[DEFAULT_SIZE].flathead_edge_thickness, min=0, max=50, subtype='DISTANCE', unit=bpy.utils.units.categories.LENGTH)
+	val_flatHeadDiameter: FloatProperty(name='Flat Head Diameter', default=romly_utils.SCREW_SPECS[DEFAULT_SIZE].flathead_diameter, min=1, max=55, subtype='DISTANCE', unit=bpy.utils.units.categories.LENGTH)
+	val_flathead_edge_thickness: FloatProperty(name='Thickness of Flat Head Screw Edge', description='Thickness of Flat Head Screw Edge', default=romly_utils.SCREW_SPECS[DEFAULT_SIZE].flathead_edge_thickness, min=0, max=50, subtype='DISTANCE', unit=bpy.utils.units.categories.LENGTH)
 
 	# 六角ボルトのサイズ
-	val_boltHeadDiameter: FloatProperty(name='Head Diameter', description="Hexagon head's diagonal length", default=SCREW_SPECS[DEFAULT_SIZE].bolthead_diameter(), min=1, max=55, subtype='DISTANCE', unit=bpy.utils.units.categories.LENGTH)
-	val_boltHeadHeight: FloatProperty(name='Head Height', description='Head Height', default=SCREW_SPECS[DEFAULT_SIZE].bolthead_height, min=0.1, max=50, subtype='DISTANCE', unit=bpy.utils.units.categories.LENGTH)
+	val_boltHeadDiameter: FloatProperty(name='Head Diameter', description="Hexagon head's diagonal length", default=romly_utils.SCREW_SPECS[DEFAULT_SIZE].bolthead_diameter(), min=1, max=55, subtype='DISTANCE', unit=bpy.utils.units.categories.LENGTH)
+	val_boltHeadHeight: FloatProperty(name='Head Height', description='Head Height', default=romly_utils.SCREW_SPECS[DEFAULT_SIZE].bolthead_height, min=0.1, max=50, subtype='DISTANCE', unit=bpy.utils.units.categories.LENGTH)
 
 	# 十字穴のサイズ
-	val_phillips_size: FloatProperty(name='Phillips Width', description='Phillips Width', default=SCREW_SPECS[DEFAULT_SIZE].phillips_size, min=0, max=50, subtype='DISTANCE', unit=bpy.utils.units.categories.LENGTH)
-	val_phillips_depth: FloatProperty(name='Phillips Slit Depth', description='Phillips Slit Depth', default=SCREW_SPECS[DEFAULT_SIZE].phillips_depth, min=0, max=50, subtype='DISTANCE', unit=bpy.utils.units.categories.LENGTH)
+	val_phillips_size: FloatProperty(name='Phillips Width', description='Phillips Width', default=romly_utils.SCREW_SPECS[DEFAULT_SIZE].phillips_size, min=0, max=50, subtype='DISTANCE', unit=bpy.utils.units.categories.LENGTH)
+	val_phillips_depth: FloatProperty(name='Phillips Slit Depth', description='Phillips Slit Depth', default=romly_utils.SCREW_SPECS[DEFAULT_SIZE].phillips_depth, min=0, max=50, subtype='DISTANCE', unit=bpy.utils.units.categories.LENGTH)
 	val_phillips_rotation: FloatProperty(name='Phillips Rotation', description='Phillips Rotation', min=0, max=math.pi / 2, default=math.pi / 4, subtype='ANGLE', unit='ROTATION')
 
-	val_diameter: FloatProperty(name='Shaft Diameter', description='Shaft Diameter', default=SCREW_SPECS[DEFAULT_SIZE].diameter, min=1, max=55, subtype='DISTANCE', unit=bpy.utils.units.categories.LENGTH)
+	val_diameter: FloatProperty(name='Shaft Diameter', description='Shaft Diameter', default=romly_utils.SCREW_SPECS[DEFAULT_SIZE].diameter, min=1, max=55, subtype='DISTANCE', unit=bpy.utils.units.categories.LENGTH)
 
 	# ネジの長さ
 	val_lengths: EnumProperty(name='Lengths', items=LENGTH_ITEMS, default='l10', update=update_properties)
 	val_length: FloatProperty(name='Length', description='Screw Length', default=10.0, min=0, max=300, subtype='DISTANCE', unit=bpy.utils.units.categories.LENGTH)
 
 	# ねじ切りのサイズ設定
-	val_pitch: FloatProperty(name='Pitch', description='The distance between two adjacent threads', default=SCREW_SPECS[DEFAULT_SIZE].pitch, min=0.25, max=5, subtype='DISTANCE', unit=bpy.utils.units.categories.LENGTH)
+	val_pitch: FloatProperty(name='Pitch', description='The distance between two adjacent threads', default=romly_utils.SCREW_SPECS[DEFAULT_SIZE].pitch, min=0.25, max=5, subtype='DISTANCE', unit=bpy.utils.units.categories.LENGTH)
 	val_lead: IntProperty(name='Thread Lead', description='How many times the pitch distance does the screw advance when turned once', min=1, max=10, default=1)
-	val_thread_depth: FloatProperty(name='Thread Depth', description='The depth of each thread', default=SCREW_SPECS[DEFAULT_SIZE].thread_depth(), min=0.1, soft_max=5, subtype='DISTANCE', unit=bpy.utils.units.categories.LENGTH, precision=4)
+	val_thread_depth: FloatProperty(name='Thread Depth', description='The depth of each thread', default=romly_utils.SCREW_SPECS[DEFAULT_SIZE].thread_depth(), min=0.1, soft_max=5, subtype='DISTANCE', unit=bpy.utils.units.categories.LENGTH, precision=4)
 
 	# 半ねじ設定
 	val_thread_type: EnumProperty(name='Thread Type', items=SCREW_THREAD_TYPE, update=update_properties)
@@ -1273,14 +1216,14 @@ class ROMLYADDON_OT_add_jis_nut(bpy.types.Operator):
 	]
 	val_nut_type_number: EnumProperty(name='types', items=NUT_TYPE_NUMBERS, default='1', update=update_properties)
 
-	val_nutDiameter: FloatProperty(name='Nut Diameter', description='Nut Diameter', default=SCREW_SPECS[DEFAULT_SIZE].bolthead_diameter(), min=0.1, max=55, subtype='DISTANCE', unit=bpy.utils.units.categories.LENGTH)
-	val_diameter: FloatProperty(name='Hole Diameter', description='Hole Diameter', default=SCREW_SPECS[DEFAULT_SIZE].diameter, min=0, max=50, subtype='DISTANCE', unit=bpy.utils.units.categories.LENGTH)
-	val_nutHeight: FloatProperty(name='Thickness', description='The thickness of the nut', default=SCREW_SPECS[DEFAULT_SIZE].nut_height, min=0.1, max=50, subtype='DISTANCE', unit=bpy.utils.units.categories.LENGTH)
+	val_nutDiameter: FloatProperty(name='Nut Diameter', description='Nut Diameter', default=romly_utils.SCREW_SPECS[DEFAULT_SIZE].bolthead_diameter(), min=0.1, max=55, subtype='DISTANCE', unit=bpy.utils.units.categories.LENGTH)
+	val_diameter: FloatProperty(name='Hole Diameter', description='Hole Diameter', default=romly_utils.SCREW_SPECS[DEFAULT_SIZE].diameter, min=0, max=50, subtype='DISTANCE', unit=bpy.utils.units.categories.LENGTH)
+	val_nutHeight: FloatProperty(name='Thickness', description='The thickness of the nut', default=romly_utils.SCREW_SPECS[DEFAULT_SIZE].nut_height, min=0.1, max=50, subtype='DISTANCE', unit=bpy.utils.units.categories.LENGTH)
 
 	# ねじ切りのサイズ設定
-	val_pitch: FloatProperty(name='Pitch', description='The distance between two adjacent threads', default=SCREW_SPECS[DEFAULT_SIZE].pitch, min=0.25, max=5, subtype='DISTANCE', unit=bpy.utils.units.categories.LENGTH)
+	val_pitch: FloatProperty(name='Pitch', description='The distance between two adjacent threads', default=romly_utils.SCREW_SPECS[DEFAULT_SIZE].pitch, min=0.25, max=5, subtype='DISTANCE', unit=bpy.utils.units.categories.LENGTH)
 	val_lead: IntProperty(name='Thread Lead', description='How many times the pitch distance does the screw advance when turned once', min=1, max=10, default=1)
-	val_thread_depth: FloatProperty(name='Thread Depth', description='The depth of each thread', default=SCREW_SPECS[DEFAULT_SIZE].thread_depth(), min=0.1, soft_max=5, subtype='DISTANCE', unit=bpy.utils.units.categories.LENGTH, precision=4)
+	val_thread_depth: FloatProperty(name='Thread Depth', description='The depth of each thread', default=romly_utils.SCREW_SPECS[DEFAULT_SIZE].thread_depth(), min=0.1, soft_max=5, subtype='DISTANCE', unit=bpy.utils.units.categories.LENGTH, precision=4)
 
 	val_topChamfering: BoolProperty(name='Top Chamfering', description='Top Chamfering', default=False)
 	val_bottomChamfering: BoolProperty(name='Bottom Chamfering', description='Bottom Chamfering', default=True)

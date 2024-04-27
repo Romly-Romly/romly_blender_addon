@@ -54,7 +54,7 @@ class ROMLYADDON_OT_add_reuleaux_polygon(bpy.types.Operator):
 		segments = self.val_segments
 
 		# まず多角形の頂点リストを作る
-		polygon_vertices = romly_utils.create_circle_vertices(radius=radius, num_vertices=num_sides)
+		polygon_vertices = romly_utils.make_circle_vertices(radius=radius, num_vertices=num_sides)
 
 		# ルーローの多角形にするために各辺の始点と終点を始点、終点とする円弧を描いていく
 		reuleaux_polygon_vertices = []

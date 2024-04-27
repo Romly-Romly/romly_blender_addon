@@ -297,7 +297,7 @@ def create_clothoid_and_arc_corner_vertices(clothoid_param_A: float, curve_lengt
 		# 円弧部
 		# クロソイド区間の終点での角度（X軸と接線との角度、Y軸マイナス方向と垂線の角度）が、45度未満なら円弧部を作成
 		if arc_angle > 0:
-			arc_vertices = romly_utils.create_circle_vertices(
+			arc_vertices = romly_utils.make_circle_vertices(
 				radius=clothoid_vertices.osculating_circle_radius,
 				num_vertices=num_arc_vertices, center=(0, 0, 0),
 				start_angle_degree=270 + math.degrees(clothoid_vertices.angle_radians),
