@@ -21,9 +21,11 @@
 	- ねじ／ナット([Add JIS Screw](#add-jis-screw), [Add JIS Nut](#add-jis-nut))
 	- アルミフレーム([Add Aluminum Extrusion](#add-aluminum-extrusion))
 	- ピンヘッダー([Add Pin Header](#add-pin-header))
+	- 3Dプリント用ナット穴([Add Nut Hole](#add-nut-hole))
 - オブジェクトのコンテキストメニュー
 	- すべてのモデファイアを適用([Apply All Modifiers](#apply-all-modifiers))
-	- 固定距離のArrayモデファイアを追加([Add Constant Offset Array Modifier](#add-constant-offset-array-modifier))
+	- 固定距離の配列モデファイアを追加([Add Constant Offset Array Modifier](#add-constant-offset-array-modifier))
+	- ウェイト制限のベベルモデファイアを追加([Add Weight Bevel Modifier](#add-weight-bevel-modifier))
 	- ビューポート表示のテクスチャ／ワイヤーフレーム切り替え([Toggle Viewport Display As](#toggle-viewport-display-as))
 - オブジェクト／コレクションをSTL形式で簡単にエクスポート([Export Selection as STL](#export-selection-as-stl), [Export Collection as STL](#export-collection-as-stl))
 - 平面上にある辺（溶解可能な辺）を選択([Select edges on Fair Surface](#select-edges-on-fair-surface))
@@ -198,6 +200,23 @@ L型のも作れるといいんだけどとりあえずストレートのみで�
 
 -----
 
+### Add Nut Hole
+
+*Add Menu*(<kbd>Shift+A</kbd>) → *Romly*
+
+3Dプリントで印刷方向に対して下からナットを入れる時の穴を作るためのブーリアンモデファイア用オブジェクトを作成します。サポート無しで空中に作れるよう、犠牲レイヤーを使った方法とブリッジを使った方法のための形状を作成できます。
+また、ネジ穴、ナット穴の周囲にシームを避けるためのスリットや、一層目を一筆書きにするためのスリットも作れます。機能を呼び出す時に選択されているオブジェクトがあれば、そのオブジェクトに対してブーリアンモデファイアを設定済みの状態にも出来ます。3Dカーソルをナット穴を開けたいオブジェクトの表面に設定してから機能を呼び出すと正しく穴を作れます。
+
+![Add Nut Hole](images/add_nut_hole.jpg)
+作成できるオブジェクト（左）と、ブーリアンモデファイアで削った様子（右）。
+
+<video controls>
+	<source src="images/add_nut_hole_slice.mov" type="video/mp4">
+</video>
+穴を開けたオブジェクトをスライスした様子。積層ピッチとレイヤーの厚みを適切に設定すれば犠牲レイヤー／ブリッジを使ってサポート無しで空中にネジ穴が作れます。
+
+-----
+
 ### Apply All Modifiers
 
 *Object Context Menu*（オブジェクトを右クリック） → *Romly Tools*
@@ -213,6 +232,14 @@ L型のも作れるといいんだけどとりあえずストレートのみで�
 
 Relative OffsetではなくConstant Offsetを設定した状態のArrayモデファイアを追加します。<br>
 自分の用途的にはRelative Offsetを指定することは極めて稀で、毎回毎回Constant Offsetにチェックを入れ直してオフセット距離を指定するのが面倒なのでスクリプトにまとめました。
+
+-----
+
+### Add Weight Bevel Modifier
+
+*Object Context Menu*（オブジェクトを右クリック） → *Romly Tools*
+
+Limit MethodにWeightを設定済みのベベルモデファイアを追加します。自分の場合、ベベルモデファイアは九割方ウェイト制限設定で使うので、ディフォルトのNoneからいちいち変更するのが面倒くさいので機能としてまとめました。
 
 -----
 
