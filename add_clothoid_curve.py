@@ -462,11 +462,23 @@ class ROMLYADDON_OT_add_clothoid_curve(bpy.types.Operator):
 	bl_options = {'REGISTER', 'UNDO'}
 
 	val_elements: EnumProperty(name='Curve Specification Method', items=CURVE_SPECIFICATION_ITEMS, default=CURVE_SPECIFICATION_BY_RL)
-	val_curve_radius: FloatProperty(name='R: ' + bpy.app.translations.pgettext_iface('Curve Radius'), default=1.0, min=0.1, max=100.0, step=10, precision=3, unit='LENGTH')
-	val_curve_length: FloatProperty(name='L: ' + bpy.app.translations.pgettext_iface('Curve Length'), default=10.0, min=0.1, soft_max=100.0, step=1, precision=3, unit='LENGTH')
+	val_curve_radius: FloatProperty(name='R: ' + bpy.app.translations.pgettext_iface('Curve Radius'), default=1.0, min=0.1, max=100.0, step=10, precision=3, unit=bpy.utils.units.categories.LENGTH)
+	val_curve_length: FloatProperty(name='L: ' + bpy.app.translations.pgettext_iface('Curve Length'), default=10.0, min=0.1, soft_max=100.0, step=1, precision=3, unit=bpy.utils.units.categories.LENGTH)
 	val_clothoid_param: FloatProperty(name='A: ' + bpy.app.translations.pgettext_iface('Clothoid Parameter'), default=1.0, min=0.1, max=100.0, step=1, precision=3)
 
 	val_num_vertices: IntProperty(name='Curve Vertices', default=64, min=3, soft_max=128, max=1024, step=1)
+
+	# スケーリング
+	val_scale: FloatVectorProperty(name='Scale', size=2, default=[1.0, 1.0])
+
+	# 整列（作成する平面）
+	ALIGN_PLANE_ITEMS = [
+		('xy', 'XY Plane', 'Cunstructs a curve on the XY Plane'),
+		('xz', 'XZ Plane', 'Cunstructs a curve on the XZ Plane'),
+		('yz', 'YZ Plane', 'Cunstructs a curve on the YZ Plane'),
+		('view', 'View Plane', 'Cunstructs a curve on the View Plane'),
+	]
+	val_align_plane: EnumProperty(name='Construct on', items=ALIGN_PLANE_ITEMS, default='xy')
 
 
 
@@ -481,6 +493,11 @@ class ROMLYADDON_OT_add_clothoid_curve(bpy.types.Operator):
 		col.separator()
 
 		col.prop(self, 'val_num_vertices')
+		col.separator()
+
+		row = col.row(align=True)
+		row.prop(self, 'val_scale')
+		col.prop(self, 'val_align_plane')
 
 
 
@@ -513,6 +530,21 @@ class ROMLYADDON_OT_add_clothoid_curve(bpy.types.Operator):
 
 		# オブジェクトの原点を3Dカーソル位置に設定
 		obj.location = bpy.context.scene.cursor.location
+
+		# スケーリング
+		obj.scale = Vector((self.val_scale[0], self.val_scale[1], 1.0))
+
+		# 整列
+		match self.val_align_plane:
+			case 'yz':
+				obj.rotation_euler[1] = -math.radians(90)
+			case 'xz':
+				obj.rotation_euler = Vector(math.radians(-90), math.radians(180), math.radians(-90))
+			case 'view':
+				# 現在のコンテキストからビュー行列を取得
+				view_matrix = bpy.context.space_data.region_3d.view_matrix
+				# オブジェクトの回転をビュー行列の逆行列に設定
+				obj.rotation_euler = view_matrix.to_3x3().normalized().transposed().to_euler()
 
 		return {'FINISHED'}
 
