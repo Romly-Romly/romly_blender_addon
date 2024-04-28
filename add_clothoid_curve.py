@@ -472,13 +472,7 @@ class ROMLYADDON_OT_add_clothoid_curve(bpy.types.Operator):
 	val_scale: FloatVectorProperty(name='Scale', size=2, default=[1.0, 1.0])
 
 	# 整列（作成する平面）
-	ALIGN_PLANE_ITEMS = [
-		('xy', 'XY Plane', 'Cunstructs a curve on the XY Plane'),
-		('xz', 'XZ Plane', 'Cunstructs a curve on the XZ Plane'),
-		('yz', 'YZ Plane', 'Cunstructs a curve on the YZ Plane'),
-		('view', 'View Plane', 'Cunstructs a curve on the View Plane'),
-	]
-	val_align_plane: EnumProperty(name='Construct on', items=ALIGN_PLANE_ITEMS, default='xy')
+	val_align_plane: EnumProperty(name='Construct on', items=romly_utils.ALIGN_PLANE_ITEMS, default='xy')
 
 
 
@@ -535,16 +529,7 @@ class ROMLYADDON_OT_add_clothoid_curve(bpy.types.Operator):
 		obj.scale = Vector((self.val_scale[0], self.val_scale[1], 1.0))
 
 		# 整列
-		match self.val_align_plane:
-			case 'yz':
-				obj.rotation_euler[1] = -math.radians(90)
-			case 'xz':
-				obj.rotation_euler = Vector(math.radians(-90), math.radians(180), math.radians(-90))
-			case 'view':
-				# 現在のコンテキストからビュー行列を取得
-				view_matrix = bpy.context.space_data.region_3d.view_matrix
-				# オブジェクトの回転をビュー行列の逆行列に設定
-				obj.rotation_euler = view_matrix.to_3x3().normalized().transposed().to_euler()
+		romly_utils.set_object_rotation_to_plane(obj, plane=self.val_align_plane)
 
 		return {'FINISHED'}
 

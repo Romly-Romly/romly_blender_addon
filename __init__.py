@@ -1,6 +1,6 @@
 bl_info = {
 	'name': 'Romly Blender Add-on',
-	'version': (1, 5, 1),
+	'version': (1, 5, 2),
 	'blender': (4, 0, 0),
 	'category': 'Object',
 	'author': 'Romly',

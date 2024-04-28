@@ -5,6 +5,8 @@ import bmesh
 from bpy.props import *
 from mathutils import Vector
 
+
+
 from . import romly_utils
 
 
@@ -15,22 +17,26 @@ from . import romly_utils
 
 
 
+# MARK: Class
 class ROMLYADDON_OT_add_reuleaux_polygon(bpy.types.Operator):
-	bl_idname = "romlyaddon.add_reuleaux_polygon"
-	bl_label = "Add Reuleaux Polygon"
-	bl_description = 'ルーローの多角形のメッシュを追加します'
+	bl_idname = 'romlyaddon.add_reuleaux_polygon'
+	bl_label = bpy.app.translations.pgettext_iface('Add Reuleaux Polygon')
+	bl_description = 'Construct a Reuleaux Polygon mesh'
 	bl_options = {'REGISTER', 'UNDO'}
 
 	# プロパティ
 
 	# 何角形か
-	val_num_sides: IntProperty(name='Sides', description='何角形にするか', default=3, min=3, soft_max=20, max=100, step=1)
+	val_num_sides: IntProperty(name='Sides', description='Number of sides for the polygon', default=3, min=3, soft_max=20, max=100, step=1)
 
 	# 外接円の半径
-	val_radius: FloatProperty(name='Radius', description='半径', default=1.0, soft_min=0.01, soft_max=100.0, step=1, precision=2, unit='LENGTH')
+	val_radius: FloatProperty(name='Radius', description='The radius of the circumradius', default=1.0, soft_min=0.01, soft_max=100.0, step=1, precision=2, unit=bpy.utils.units.categories.LENGTH)
 
 	# 円弧部のセグメント数
-	val_segments: IntProperty(name='Segments', description='円弧部の分割数', default=16, min=1, max=128, step=1)
+	val_segments: IntProperty(name='Segments', description='Number of segments in each arc', default=16, min=1, max=128, step=1)
+
+	# 整列（作成する平面）
+	val_align_plane: EnumProperty(name='Construct on', items=romly_utils.ALIGN_PLANE_ITEMS, default='xy')
 
 
 
@@ -44,6 +50,7 @@ class ROMLYADDON_OT_add_reuleaux_polygon(bpy.types.Operator):
 		col.prop(self, 'val_num_sides')
 		col.prop(self, 'val_radius')
 		col.prop(self, 'val_segments')
+		col.prop(self, 'val_align_plane')
 
 
 
@@ -91,6 +98,9 @@ class ROMLYADDON_OT_add_reuleaux_polygon(bpy.types.Operator):
 
 		# オブジェクトを3Dカーソル位置へ移動
 		obj.location = bpy.context.scene.cursor.location
+
+		# 整列
+		romly_utils.set_object_rotation_to_plane(obj, plane=self.val_align_plane)
 
 		# 現在の選択を解除
 		bpy.ops.object.select_all(action='DESELECT')
@@ -153,7 +163,7 @@ def get_polygon_name(num_sides):
 	else:
 		result = 'Reuleaux-ish ' + result
 
-	return result
+	return bpy.app.translations.pgettext_data(result)
 
 
 
@@ -196,15 +206,15 @@ def create_arc(center: Vector, start: Vector, end: Vector, segments):
 
 # 親となるメニュー
 class ROMLYADDON_MT_romly_add_mesh_menu_parent(bpy.types.Menu):
-	bl_idname = "ROMLYADDON_MT_romly_add_mesh_menu_parent"
-	bl_label = "Romly"
-	bl_description = "Romly Addon Menu"
+	bl_idname = 'ROMLYADDON_MT_romly_add_mesh_menu_parent'
+	bl_label = 'Romly'
+	bl_description = 'Romly Addon Menu'
 
 
 
 	def draw(self, context):
 		layout = self.layout
-		layout.operator(ROMLYADDON_OT_add_reuleaux_polygon.bl_idname, icon='MESH_CIRCLE')
+		layout.operator(ROMLYADDON_OT_add_reuleaux_polygon.bl_idname, text=bpy.app.translations.pgettext_iface('Add Reuleaux Polygon'), icon='MESH_CIRCLE')
 
 
 
