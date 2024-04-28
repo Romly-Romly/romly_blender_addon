@@ -27,9 +27,10 @@
 	- 固定距離の配列モデファイアを追加([Add Constant Offset Array Modifier](#add-constant-offset-array-modifier))
 	- ウェイト制限のベベルモデファイアを追加([Add Weight Bevel Modifier](#add-weight-bevel-modifier))
 	- ビューポート表示のテクスチャ／ワイヤーフレーム切り替え([Toggle Viewport Display As](#toggle-viewport-display-as))
+- 編集モードの辺メニュー
+	- 平面上にある辺（溶解可能な辺）を選択([Select edges on Fair Surface](#select-edges-on-fair-surface))
+	- 軸に沿った辺を選択([Select edges along Axis](#select-edges-along-axis))
 - オブジェクト／コレクションをSTL形式で簡単にエクスポート([Export Selection as STL](#export-selection-as-stl), [Export Collection as STL](#export-collection-as-stl))
-- 平面上にある辺（溶解可能な辺）を選択([Select edges on Fair Surface](#select-edges-on-fair-surface))
-- 軸に沿った辺を選択([Select edges along Axis](#select-edges-along-axis))
 - 言語設定を切り替えられるパネル([Language Panel](#language-panel))
 - アクティブスクリプトを再読み込みして実行([Reload and Run Script](#reload-and-run-script))
 - 【おまけ】blend1ファイルを再帰的に削除するPythonスクリプト([blend1_cleaner.py](#blend1_cleanerpy))
