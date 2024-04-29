@@ -564,6 +564,9 @@ class ROMLYADDON_OT_add_clothoid_corner_plate(bpy.types.Operator):
 	corner_width: float = 0
 	corner_scale: float = 1
 
+	# 整列（作成する平面）
+	val_align_plane: EnumProperty(name='Construct on', items=romly_utils.ALIGN_PLANE_ITEMS, default='xy')
+
 
 
 	def invoke(self, context, event):
@@ -596,6 +599,7 @@ class ROMLYADDON_OT_add_clothoid_corner_plate(bpy.types.Operator):
 
 		col.prop(self, 'val_num_vertices')
 		col.prop(self, 'val_num_arc_vertices')
+		col.prop(self, 'val_align_plane')
 
 
 
@@ -638,6 +642,9 @@ class ROMLYADDON_OT_add_clothoid_corner_plate(bpy.types.Operator):
 
 		# オブジェクトの原点を3Dカーソル位置に設定
 		obj.location = bpy.context.scene.cursor.location
+
+		# 整列
+		romly_utils.set_object_rotation_to_plane(obj, plane=self.val_align_plane)
 
 		return {'FINISHED'}
 
