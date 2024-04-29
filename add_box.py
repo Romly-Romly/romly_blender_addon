@@ -1,7 +1,9 @@
 import bpy
-import mathutils
+from mathutils import Vector
 import bmesh
 from bpy.props import *
+
+
 
 from . import romly_utils
 
@@ -67,31 +69,10 @@ class ROMLYADDON_OT_add_box(bpy.types.Operator):
 
 
 	def execute(self, context):
-		vertices = [
-			mathutils.Vector([-0.5, -0.5, -0.5]),	# 0 正面 左下
-			mathutils.Vector([-0.5, -0.5, 0.5]),	# 1 正面 左上
-			mathutils.Vector([-0.5, 0.5, -0.5]),	# 2 奥 左下
-			mathutils.Vector([-0.5, 0.5, 0.5]),		# 3 奥 左上
-			mathutils.Vector([0.5, -0.5, -0.5]),	# 4 正面 右下
-			mathutils.Vector([0.5, -0.5, 0.5]),		# 5 正面 右上
-			mathutils.Vector([0.5, 0.5, -0.5]),		# 6 奥 右下
-			mathutils.Vector([0.5, 0.5, 0.5])		# 7 奥 右上
-		]
-		faces = [
-			(1, 5, 4, 0),	# 正面
-			(3, 7, 6, 2),	# 背面
-			(1, 3, 2, 0),	# 左側面
-			(5, 7, 6, 4),	# 右側面
-			(0, 4, 6, 2),	# 底面
-			(1, 5, 7, 3),	# 上面
-		]
-
-		# 設定に従った頂点を生成
-		offset = mathutils.Vector([float(self.val_origin_x), float(self.val_origin_y), float(self.val_origin_z)])
-		box_vertices = [(v + offset) * self.val_size for v in vertices]
-
+		offset = Vector([float(self.val_origin_x), float(self.val_origin_y), float(self.val_origin_z)]) * self.val_size
 		obj_name = 'Cube' if self.val_size[0] == self.val_size[1] and self.val_size[1] == self.val_size[2] else 'Cuboid'
-		obj = romly_utils.cleanup_mesh(romly_utils.create_object(box_vertices, faces, name=bpy.app.translations.pgettext_data(obj_name)))
+		obj = romly_utils.create_box(size=self.val_size, offset=offset)
+		obj.name = bpy.app.translations.pgettext_data(obj_name)
 		bpy.context.collection.objects.link(obj)
 
 		# オブジェクトを3Dカーソル位置へ移動
@@ -105,6 +86,11 @@ class ROMLYADDON_OT_add_box(bpy.types.Operator):
 		bpy.context.view_layer.objects.active = obj
 
 		return {'FINISHED'}
+
+
+
+
+
 
 
 

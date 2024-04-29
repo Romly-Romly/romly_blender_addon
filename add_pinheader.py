@@ -3,73 +3,14 @@ import mathutils
 import bmesh
 from bpy.props import *
 
+
+
 from . import romly_utils
 
 
 
 
 
-
-def create_box(size: mathutils.Vector, offset: mathutils.Vector):
-	vertices = [
-		mathutils.Vector([-0.5, -0.5, -0.5]),	# 0 正面 左下
-		mathutils.Vector([-0.5, -0.5, 0.5]),	# 1 正面 左上
-		mathutils.Vector([-0.5, 0.5, -0.5]),	# 2 奥 左下
-		mathutils.Vector([-0.5, 0.5, 0.5]),		# 3 奥 左上
-		mathutils.Vector([0.5, -0.5, -0.5]),	# 4 正面 右下
-		mathutils.Vector([0.5, -0.5, 0.5]),		# 5 正面 右上
-		mathutils.Vector([0.5, 0.5, -0.5]),		# 6 奥 右下
-		mathutils.Vector([0.5, 0.5, 0.5])		# 7 奥 右上
-	]
-	faces = [
-		(1, 5, 4, 0),	# 正面
-		(3, 7, 6, 2),	# 背面
-		(1, 3, 2, 0),	# 左側面
-		(5, 7, 6, 4),	# 右側面
-		(0, 4, 6, 2),	# 底面
-		(1, 5, 7, 3),	# 上面
-	]
-
-	actual_vertices = [(v * size) + offset for v in vertices]
-	return romly_utils.cleanup_mesh(romly_utils.create_object(vertices=actual_vertices, faces=faces))
-
-
-
-
-
-def create_combined_object(objects, obj_name: str, mesh_name: str = None):
-	"""
-	2つのオブジェクトを統合する。
-
-	Parameters
-	----------
-	objects : list
-		結合するオブジェクトのリスト。先頭のオブジェクトの位置が維持される。
-	obj_name : str
-		生成するメッシュにつける名前。
-	mesh_name : str
-		生成するメッシュにつける名前。
-	"""
-	vertices = []
-	faces = []
-	vertexIndexOffset = 0
-	for obj in objects:
-		for v in obj.data.vertices:
-			vertices.append(obj.location + v.co - objects[0].location)
-		for f in obj.data.polygons:
-			faces.append([])
-			for v in f.vertices:
-				faces[len(faces) - 1].append(v + vertexIndexOffset)
-		vertexIndexOffset += len(obj.data.vertices)
-
-	if mesh_name is None:
-		mesh_name = obj_name + '_mesh'
-	mesh = bpy.data.meshes.new(mesh_name)
-	mesh.from_pydata(vertices, [], faces)
-
-	combinedObject = bpy.data.objects.new(obj_name, mesh)
-	combinedObject.location = objects[0].location
-	return combinedObject
 
 
 
@@ -193,7 +134,7 @@ class ROMLYADDON_OT_add_pinheader(bpy.types.Operator):
 		# プラスチック部分の作成
 
 		# 設定に従った頂点を生成
-		obj_plastic = create_box(size=self.val_block_size, offset=mathutils.Vector([0, 0, self.val_block_size[2] / 2]))
+		obj_plastic = romly_utils.create_box(size=self.val_block_size, offset=mathutils.Vector([0, 0, self.val_block_size[2] / 2]))
 
 		bpy.context.collection.objects.link(obj_plastic)
 
@@ -216,7 +157,7 @@ class ROMLYADDON_OT_add_pinheader(bpy.types.Operator):
 		# プラスチックの下部を削る
 
 		if self.val_block_concave_size[0] > 0 and self.val_block_concave_size[1] > 0 and self.val_block_concave_size[2] > 0:
-			obj_plastic_concave = create_box(size=self.val_block_concave_size, offset=mathutils.Vector([0, 0, self.val_block_concave_size[2] / 2]))
+			obj_plastic_concave = romly_utils.create_box(size=self.val_block_concave_size, offset=mathutils.Vector([0, 0, self.val_block_concave_size[2] / 2]))
 			bpy.context.collection.objects.link(obj_plastic_concave)
 			boolean_modifier = obj_plastic.modifiers.new(type='BOOLEAN', name='bool')
 			boolean_modifier.object = obj_plastic_concave
@@ -234,7 +175,7 @@ class ROMLYADDON_OT_add_pinheader(bpy.types.Operator):
 
 		pin_length = self.val_pin_length_top + self.val_block_size[2] + self.val_pin_length_bottom
 		pin_scale = mathutils.Vector([self.val_pin_thickness, self.val_pin_thickness, pin_length])
-		obj_pin = create_box(size=pin_scale, offset=mathutils.Vector([0, 0, pin_length / 2 - self.val_pin_length_bottom]))
+		obj_pin = romly_utils.create_box(size=pin_scale, offset=mathutils.Vector([0, 0, pin_length / 2 - self.val_pin_length_bottom]))
 
 		# Z方向に伸びる辺を選択し、Bevel Weightを設定
 		bpy.context.collection.objects.link(obj_pin)
@@ -257,7 +198,7 @@ class ROMLYADDON_OT_add_pinheader(bpy.types.Operator):
 		# ----------------------------------------
 		# プラスチック部分とピン部分の結合、配列作成
 
-		obj = create_combined_object(objects=(obj_plastic, obj_pin), obj_name=f"Pin Header {pin_pitch}mm {self.val_num_rows}x{self.val_num_cols}")
+		obj = romly_utils.create_combined_object(objects=(obj_plastic, obj_pin), obj_name=f"Pin Header {pin_pitch}mm {self.val_num_rows}x{self.val_num_cols}")
 		bpy.context.collection.objects.link(obj)
 
 		# 配列を追加

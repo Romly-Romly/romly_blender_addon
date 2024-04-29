@@ -189,55 +189,6 @@ def add_revolved_surface(vertices: list[Vector], faces: list[list[int]], rotatio
 
 
 
-def create_combined_object(objects: list[bpy.types.Object], obj_name: str, mesh_name: str = None) -> bpy.types.Object:
-	"""
-	複数のオブジェクトを統合して一つのオブジェクトにまとめる。
-
-	Parameters
-	----------
-	objects : list[bpy.types.Object]
-		結合するオブジェクトのリスト。先頭のオブジェクトの位置が維持される。
-	obj_name : str
-		生成するメッシュにつける名前。
-	mesh_name : str
-		生成するメッシュにつける名前。
-	"""
-
-	# 結合するオブジェクトが1つだけの場合はそのまま返す。ただし名前は変更する。
-	if len(objects) == 1:
-		objects[0].name = obj_name
-		return objects[0]
-
-	vertices = []
-	faces = []
-	vertex_index_offset = 0
-	for obj in objects:
-		for v in obj.data.vertices:
-			vertices.append(obj.location + v.co - objects[0].location)
-		for f in obj.data.polygons:
-			faces.append([])
-			for v in f.vertices:
-				faces[len(faces) - 1].append(v + vertex_index_offset)
-		vertex_index_offset += len(obj.data.vertices)
-
-	if mesh_name is None:
-		mesh_name = obj_name + '_mesh'
-	mesh = bpy.data.meshes.new(mesh_name)
-	mesh.from_pydata(vertices, [], faces)
-
-	combined_obj = bpy.data.objects.new(obj_name, mesh)
-	combined_obj.location = objects[0].location
-	return combined_obj
-
-
-
-
-
-
-
-
-
-
 def create_threaded_cylinder(diameter: float, length: float, pitch: float, lead: int, thread_depth: float, segments: int, bevel_segments: int) -> bpy.types.Object:
 	"""
 	ねじ切りの入った円柱を生成する。
@@ -790,7 +741,7 @@ def create_screw_shaft(length: float, unthreaded_length: float, diameter: float,
 		bpy.context.collection.objects.unlink(cylinderObject)
 
 	# ねじ切り部分とねじ切りのない部分を結合
-	obj = create_combined_object(objects, obj_name='shaft')
+	obj = romly_utils.create_combined_object(objects, obj_name='shaft')
 	bpy.context.collection.objects.link(obj)
 
 	# 皿ネジの場合は十字の深さだけくなる
@@ -1165,7 +1116,7 @@ class ROMLYADDON_OT_add_jis_screw(bpy.types.Operator):
 
 		# 芯と頭部をひとつのオブジェクトに統合する
 		if len(objects) > 0:
-			obj = create_combined_object(objects=objects, obj_name=f"{self.base_object_name()} M{remove_decimal_trailing_zeros(self.val_diameter)}x{remove_decimal_trailing_zeros(self.val_length)}mm")
+			obj = romly_utils.create_combined_object(objects=objects, obj_name=f"{self.base_object_name()} M{remove_decimal_trailing_zeros(self.val_diameter)}x{remove_decimal_trailing_zeros(self.val_length)}mm")
 			bpy.context.collection.objects.link(obj)
 			obj.select_set(state=True)
 
