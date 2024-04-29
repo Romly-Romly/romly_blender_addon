@@ -138,7 +138,7 @@ class ROMLYADDON_MT_romly_add_mesh_menu_parent(bpy.types.Menu):
 			(ROMLYADDON_OT_add_box, 'Add Box', 'MESH_CUBE'),
 			(ROMLYADDON_OT_add_donut_cylinder, 'Add Donut Cylinder', 'MESH_CYLINDER'),
 			(ROMLYADDON_OT_add_cross_extrusion, None, 'ADD'),
-			(ROMLYADDON_OT_add_reuleaux_polygon, None, 'MESH_CIRCLE'),
+			(ROMLYADDON_OT_add_reuleaux_polygon, 'Add Reuleaux Polygon', 'MESH_CIRCLE'),
 			(ROMLYADDON_OT_add_reuleaux_tetrahedron, 'Add Reuleaux Tetrahedron', 'MESH_CONE'),
 			(ROMLYADDON_OT_add_sphericon, 'Add Sphericon', 'MESH_CAPSULE'),
 			(ROMLYADDON_OT_add_oloid, 'Add Oloid', 'MESH_CAPSULE'),
