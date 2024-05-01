@@ -62,288 +62,6 @@ def remove_decimal_trailing_zeros(value: float) -> str:
 
 
 
-def project_to_xy(v: Vector) -> Vector:
-	"""ベクトルのZ成分を0にしてXY平面に投影する。"""
-	return Vector((v.x, v.y, 0))
-
-def project_to_xz(v: Vector) -> Vector:
-	"""ベクトルのY成分を0にしてXZ平面に投影する。"""
-	return Vector((v.x, 0, v.z))
-
-
-
-
-
-
-
-
-
-
-def calc_angle(peak: Vector, point1: Vector, point2: Vector) -> float:
-	"""peakからpoint1へのベクトルと、peakからpoint2へのベクトルのなす角度を計算する。"""
-	v1 = point1 - peak
-	v2 = point2 - peak
-	return math.acos(v1.dot(v2) / (v1.magnitude * v2.magnitude))
-
-
-
-
-
-
-
-
-
-
-def make_arc_vertices(start, center, axis, rotate_degrees: float, segments) -> list[Vector]:
-	"""任意の座標を中心とした円または円弧を作る頂点のリストを返す。
-
-	Parameters
-	----------
-	start : Vertex
-		円弧の開始座標
-	center : Vertex
-		円の中心。円の半径はstartとの差となる。
-	axis : ['X', 'Y', 'Z']
-	rotate_degrees : float
-		[description]
-	segments : int
-		頂点の数。2以上を指定。
-	Returns
-	-------
-	list[Vertex]
-		[description]
-	"""
-	vertices = []
-
-	for i in range(segments + 1):
-		v = romly_utils.rotated_vector(vector=start - center, angle_radians=math.radians(rotate_degrees / segments * i), axis=axis)
-		v += center
-		vertices.append(v)
-
-	return vertices
-
-
-
-
-
-
-
-
-
-
-def add_revolved_surface(vertices: list[Vector], faces: list[list[int]], rotation_vertex_count: int, segments: int, close=False, z_offset: float = 0) -> None:
-	"""
-	頂点群で表される面を360度回転させて回転体を作る。
-
-	Parameters
-	----------
-	vertices : list[Vector]
-		頂点リスト。回転させる頂点も含む。新しく作った頂点もここに追加される。
-	faces : list[list[int]]
-		面のインデックスリスト。新しい面の追加用で、読み取りはされない。
-	rotation_vertex_count : int
-		回転させる頂点の数。この数だけの頂点が回転軸周りで回転される。
-	segments : int
-		回転体を構成するセグメントの数。360度をこの数で割った角度で頂点が回転される。
-	close : bool, optional
-		回転体の両端を閉じるかどうか。Trueの場合、端の面が作成される。
-	z_offset : float, optional
-		頂点のZ座標に加算されるオフセット。このオフセットは全セグメントに渡って線形に加算される。ねじ切りはこの値を使うことで軸方向にずらしている。
-
-	Notes
-	-----
-	この関数は`vertices`と`faces`を直接変更します。メッシュデータは呼び出し元で管理する必要があります。
-	"""
-	rot = mathutils.Matrix.Rotation(-math.radians(360.0 / segments), 4, AXIS_Z)
-	for i in range(segments):
-		temp_vertices = []
-		for j in range(rotation_vertex_count):
-			v = vertices[len(vertices) - rotation_vertex_count + j].copy()
-			v.z += z_offset / segments
-			v.rotate(rot)
-			temp_vertices.append(v)
-		for j in range(len(temp_vertices)):
-			vertices.append(temp_vertices[j])
-
-		# 面を貼る
-		n = len(vertices)
-		for j in range(rotation_vertex_count - 1):
-			faces.append([
-				n - rotation_vertex_count * 2 + j,
-				n - rotation_vertex_count * 2 + 1 + j,
-				n - rotation_vertex_count + 1 + j,
-				n - rotation_vertex_count + j])
-		if close:
-			faces.append([
-				n - rotation_vertex_count * 2 + rotation_vertex_count - 1,
-				n - rotation_vertex_count * 2,
-				n - rotation_vertex_count,
-				n - rotation_vertex_count + rotation_vertex_count - 1])
-
-
-
-
-
-
-
-
-
-
-def create_threaded_cylinder(diameter: float, length: float, pitch: float, lead: int, thread_depth: float, segments: int, bevel_segments: int) -> bpy.types.Object:
-	"""
-	ねじ切りの入った円柱を生成する。
-
-	Parameters
-	----------
-	diameter : float
-		円柱の直径。
-	length : float
-		円柱の長さ。
-	pitch : float
-		ねじ山のピッチ（隣接するねじ山の谷の中心間の距離）。
-	lead : int
-		ねじのリード（一回のねじ山で進む距離）。ピッチの倍数で指定。
-	thread_depth : float
-		ねじ山の深さ。
-	segments : int
-		円柱の周りのセグメント数。
-	bevel_segments : int
-		ねじ山の先端のセグメント数。
-
-	Returns
-	-------
-	bpy.types.Object
-		作成されたねじ山付き円柱のBlenderオブジェクト。
-	"""
-	# 谷径、山と谷のベベルの半径を決める
-	minor_diameter = diameter - thread_depth
-	major_radius = diameter / 2
-	minor_radius = minor_diameter / 2
-
-	vertices = []
-	faces = []
-
-	# --------------------------------------------------------------------------------
-
-	# 蓋のエッジになる頂点のインデックスを保存しておく
-	lid_edge_vertex_index = 0
-
-	# bevelSegmentsが0より大きい場合はネジの山と谷にベベルを作る
-	if bevel_segments > 0:
-		H = major_radius - minor_radius
-
-		z = (lead * pitch) - pitch
-		for i in range(lead):
-			temp_vertices = []
-			rh = math.tan(math.radians(30)) * (H / 4)
-			start_point = mathutils.Vector([-minor_radius - H / 4, 0, z + pitch - rh])
-			end_point = mathutils.Vector([start_point.x, 0, z + pitch + rh])
-			temp_vertices.append(start_point)
-
-			pt = start_point.copy()
-			da = 120 / (bevel_segments + 1)
-			angle = 30 + da
-			dz = abs(end_point.z - start_point.z) / bevel_segments
-			for i in range(bevel_segments - 1):
-				dx = dz / math.tan(math.radians(angle))
-				pt.x += dx if (i < bevel_segments) else -dx
-				pt.z += dz
-				temp_vertices.append(mathutils.Vector([pt.x, pt.y, pt.z]))
-				angle += da
-
-			temp_vertices.append(end_point)
-
-			for i in reversed(range(len(temp_vertices))):
-				vertices.append(temp_vertices[i])
-
-			# --------------------------------------------------------------------------------
-
-			# 山の頂点と麓2箇所からなす角を求める
-			base1 = mathutils.Vector([-minor_radius, 0, z + pitch])
-			peak = mathutils.Vector([-major_radius, 0, z + pitch / 2])
-			base2 = mathutils.Vector([-minor_radius, 0, z])
-			angle = calc_angle(peak=peak, point1=base1, point2=base2)
-
-			# アールの開始座標
-			rh = math.tan(angle / 2) * (H / 8)
-			bevel_start = mathutils.Vector([-major_radius + H / 8, 0, z + pitch / 2 + rh])
-
-			# アールの開始位置から適当に伸ばした垂線
-			perpendicular_point = romly_utils.rotated_vector(vector=peak - bevel_start, angle_radians=math.radians(-90), axis=AXIS_Y)
-			perpendicular_point += bevel_start
-
-			# アール（ベベル）の中心を求める
-			bevel_center = romly_utils.find_intersection(
-				line1_start=project_to_xz(bevel_start), line1_end=project_to_xz(perpendicular_point),
-				line2_start=project_to_xz(peak), line2_end=Vector((0, 0, z + pitch / 2)))
-
-			# 円弧を構成する頂点郡を返す
-			vertices.extend(make_arc_vertices(start=bevel_start, center=bevel_center, axis=AXIS_Y, rotate_degrees=-(90 - math.degrees(angle) / 2) * 2, segments=bevel_segments))
-
-			# --------------------------------------------------------------------------------
-
-			rh = math.tan(math.radians(30)) * (H / 4)
-			v = mathutils.Vector([-minor_radius - H / 4, 0, z + rh])
-			vertices.append(v)
-
-			z -= pitch
-
-	else:
-		# 山と谷のベベルのセグメントが0の場合は鋭利な山と谷になる
-		vertices.append(mathutils.Vector([0, 0, lead * pitch]))
-		z = (lead * pitch) - pitch
-		for i in range(lead):
-			vertices.append(mathutils.Vector([-minor_radius, 0, z + pitch]))
-			vertices.append(mathutils.Vector([-major_radius, 0, z + pitch / 2]))
-			vertices.append(mathutils.Vector([-minor_radius, 0, z]))
-			z -= pitch
-		vertices.append(mathutils.Vector([0, 0, 0]))
-
-	# 回転体の頂点数を取得しておく
-	revolution_vertex_count = len(vertices)
-
-	# --------------------------------------------------------------------------------
-
-	# 回してスクリューを作る
-	pitch_iteration = math.ceil(length / (lead * pitch)) + 2
-	for _ in range(pitch_iteration):
-		add_revolved_surface(vertices=vertices, faces=faces, rotation_vertex_count=revolution_vertex_count, segments=segments, z_offset=-lead * pitch)
-
-	# ----------------------------------------------------------------------
-
-	num_last_vertex_index_ecluding_lid_and_bottom = len(vertices) - 1
-	bottomZ = vertices[-1].z
-
-	# 蓋を作る
-	vertices.append(mathutils.Vector([0, 0, vertices[lid_edge_vertex_index].z]))
-	lid_center_vertex_index = len(vertices) - 1
-	for i in range(segments):
-		faces.append([lid_center_vertex_index, lid_edge_vertex_index + revolution_vertex_count * i, lid_edge_vertex_index + 	revolution_vertex_count * i + revolution_vertex_count])
-
-	# 最初の回転体の側面兼蓋となる面を作る
-	lid_face = []
-	lid_face.extend(range(0, revolution_vertex_count))
-	lid_face.append(lid_center_vertex_index)
-	faces.append(lid_face)
-
-	vertices.append(mathutils.Vector([0, 0, bottomZ]))
-	bottom_center_vertex_index = len(vertices) - 1
-	for i in range(segments):
-		faces.append([bottom_center_vertex_index,
-			num_last_vertex_index_ecluding_lid_and_bottom - revolution_vertex_count * i,
-			num_last_vertex_index_ecluding_lid_and_bottom - revolution_vertex_count * (i + 1)])
-
-	# 最後の回転体の側面兼底となる面を作る
-	bottom_face = []
-	bottom_face.extend(range(num_last_vertex_index_ecluding_lid_and_bottom - revolution_vertex_count + 1, num_last_vertex_index_ecluding_lid_and_bottom + 1))
-	bottom_face.append(bottom_center_vertex_index)
-	faces.append(bottom_face)
-
-	# ----------------------------------------------------------------------
-
-	obj = romly_utils.create_object(vertices=vertices, faces=faces, name='screw')
-	romly_utils.cleanup_mesh(object=obj)
-	return obj
 
 
 
@@ -390,13 +108,13 @@ def create_panhead(diameter: float, height: float, segments: int, r_segments: in
 
 	if r_segments > 0:
 		# 下部のアール
-		vertices.extend(make_arc_vertices(
+		vertices.extend(romly_utils.make_arc_vertices(
 			start=Vector((-diameter / 2 + bottom_r, 0, 0)),
 			center=Vector((-diameter / 2 + bottom_r, 0, bottom_r)),
 			axis=AXIS_Y, rotate_degrees=90, segments=r_segments))
 
 		# 上部のアール
-		vertices.extend(make_arc_vertices(
+		vertices.extend(romly_utils.make_arc_vertices(
 			start=Vector((-diameter / 2, 0, height - top_r)),
 			center=Vector((-diameter / 2 + top_r, 0, height - top_r)),
 			axis=AXIS_Y, rotate_degrees=90, segments=r_segments))
@@ -407,7 +125,7 @@ def create_panhead(diameter: float, height: float, segments: int, r_segments: in
 	vertices.append(Vector((0, 0, height)))
 
 	# 回転させて立体に
-	add_revolved_surface(vertices=vertices, faces=faces, rotation_vertex_count=len(vertices), segments=segments)
+	romly_utils.add_revolved_surface(vertices=vertices, faces=faces, rotation_vertex_count=len(vertices), segments=segments)
 
 	obj = romly_utils.create_object(vertices=vertices, faces=faces, name='Pan Head')
 	romly_utils.cleanup_mesh(object=obj)
@@ -466,7 +184,7 @@ def create_flathead(diameter: float, edge_thickness: float, segments: int, r_seg
 
 	# 回転させて立体に
 	rotation_vertex_count = len(vertices)
-	add_revolved_surface(vertices=vertices, faces=faces, rotation_vertex_count=rotation_vertex_count, segments=segments)
+	romly_utils.add_revolved_surface(vertices=vertices, faces=faces, rotation_vertex_count=rotation_vertex_count, segments=segments)
 
 	# 蓋となる面
 	faces.append(range(0, rotation_vertex_count * segments, rotation_vertex_count))
@@ -558,11 +276,11 @@ def make_hexagon_beveled_vertices(radius: float, bevel_radius: float, bevel_segm
 
 	# アール（ベベル）の中心を求める
 	bevel_center = romly_utils.find_intersection(
-		line1_start=project_to_xy(bevel_start), line1_end=project_to_xy(bevel_perpendicular_pt),
-		line2_start=project_to_xy(hexagon_pt), line2_end=Vector((0, 0, 0)))
+		line1_start=romly_utils.project_to_xy(bevel_start), line1_end=romly_utils.project_to_xy(bevel_perpendicular_pt),
+		line2_start=romly_utils.project_to_xy(hexagon_pt), line2_end=Vector((0, 0, 0)))
 
 	# 円弧を構成する頂点郡を返す
-	return make_arc_vertices(start=bevel_start, center=bevel_center, axis=AXIS_Z, rotate_degrees=60, segments=bevel_segments)
+	return romly_utils.make_arc_vertices(start=bevel_start, center=bevel_center, axis=AXIS_Z, rotate_degrees=60, segments=bevel_segments)
 
 
 
@@ -598,7 +316,7 @@ def create_nut(diameter: float, thickness: float, bevel_segments: int) -> bpy.ty
 			romly_utils.rotate_vertices(object=temp_vertices, degrees=60 * i, axis=AXIS_Z)
 			vertices.extend(temp_vertices)
 	else:
-		hexagon_vertices = make_arc_vertices(start=mathutils.Vector([0, diameter / 2, 0]), center=mathutils.Vector([0, 0, 0]), axis=AXIS_Z, rotate_degrees=360, segments=6)
+		hexagon_vertices = romly_utils.make_arc_vertices(start=mathutils.Vector([0, diameter / 2, 0]), center=mathutils.Vector([0, 0, 0]), axis=AXIS_Z, rotate_degrees=360, segments=6)
 		del hexagon_vertices[-1]	# 最後の頂点は最初の頂点と同じ位置になるので削除
 		vertices.extend(hexagon_vertices)
 
@@ -652,7 +370,7 @@ def create_nut_chamfering_object(diameter: float, segments: int, z: float, botto
 	vertices.append(mathutils.Vector([v1.x, 0, v2.z]))
 	vertices.append(v2)
 
-	add_revolved_surface(vertices=vertices, faces=faces, rotation_vertex_count=3, segments=segments, close=True)
+	romly_utils.add_revolved_surface(vertices=vertices, faces=faces, rotation_vertex_count=3, segments=segments, close=True)
 
 	obj = romly_utils.create_object(vertices=vertices, faces=faces, name='Nut Chamfering')
 	romly_utils.cleanup_mesh(object=obj)
@@ -704,10 +422,9 @@ def create_screw_shaft(length: float, unthreaded_length: float, diameter: float,
 
 	# ねじ切り部分のオブジェクトを生成
 	if thread_length > 0:
-		obj = create_threaded_cylinder(diameter=diameter, length=thread_length,
+		obj = romly_utils.create_threaded_cylinder(diameter=diameter, length=thread_length,
 			pitch=pitch, lead=lead, thread_depth=thread_depth,
 			segments=segments, bevel_segments=thread_bevel_segments)
-		bpy.context.collection.objects.link(obj)
 
 		# モデファイアを使って上部をカットする
 		# この時、ネジの座標がぴったり0だとブーリアンできないので、ごく僅かにずらす
@@ -1238,10 +955,10 @@ class ROMLYADDON_OT_add_jis_nut(bpy.types.Operator):
 
 		# ネジ切り
 		if self.val_diameter > 0:
-			threadObject = create_threaded_cylinder(diameter=self.val_diameter, length=self.val_nutHeight,
+			threadObject = romly_utils.create_threaded_cylinder(diameter=self.val_diameter, length=self.val_nutHeight,
 				pitch=self.val_pitch, lead=self.val_lead, thread_depth=self.val_thread_depth,
 				segments=self.val_segments, bevel_segments=self.val_thread_bevel_segments)
-			romly_utils.apply_boolean_object(object=nutObject, boolObject=threadObject, unlink=False)
+			romly_utils.apply_boolean_object(object=nutObject, boolObject=threadObject)
 
 		# 面取り（ブーリアンできない事があるので、ごく僅かにずらす）
 		if self.val_topChamfering:

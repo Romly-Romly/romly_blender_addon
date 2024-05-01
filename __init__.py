@@ -1,6 +1,6 @@
 bl_info = {
 	'name': 'Romly Blender Add-on',
-	'version': (1, 6, 0),
+	'version': (1, 7, 0),
 	'blender': (4, 0, 0),
 	'category': 'Object',
 	'author': 'Romly',
@@ -23,7 +23,7 @@ from .add_oloid import ROMLYADDON_OT_add_oloid
 from .add_clothoid_curve import ROMLYADDON_OT_add_clothoid_curve, ROMLYADDON_OT_add_clothoid_corner_plate
 from .add_jis_screw import ROMLYADDON_OT_add_jis_screw, ROMLYADDON_OT_add_jis_nut
 from .add_aluminum_extrusion import ROMLYADDON_OT_add_aluminum_extrusion
-from .add_linear_guide import ROMLYADDON_OT_add_linear_guide_rail
+from .add_linear_guide import ROMLYADDON_OT_add_linear_guide_rail, ROMLYADDON_OT_add_linear_guide_block
 from .add_pinheader import ROMLYADDON_OT_add_pinheader
 from .add_nut_hole import ROMLYADDON_OT_add_nut_hole
 from .export_collection_as_stl import ROMLYADDON_OT_export_collection_as_stl, ROMLYADDON_OT_export_selection_as_stl
@@ -38,9 +38,9 @@ from .romly_translation import TRANSLATION_DICT
 
 # アウトライナーのオブジェクトの右クリックに追加するメニュー
 class ROMLYADDON_MT_romly_export_selection_as_stl_menu_parent(bpy.types.Menu):
-	bl_idname = "ROMLYADDON_MT_romly_export_selection_as_stl_menu_parent"
-	bl_label = "Romly Tools"
-	bl_description = "Romly Addon Menu"
+	bl_idname = 'ROMLYADDON_MT_romly_export_selection_as_stl_menu_parent'
+	bl_label = 'Romly Tools'
+	bl_description = 'Romly Addon Menu'
 
 	def draw(self, context):
 		layout = self.layout
@@ -50,8 +50,8 @@ class ROMLYADDON_MT_romly_export_selection_as_stl_menu_parent(bpy.types.Menu):
 
 
 
-# オブジェクトの右クリックメニューに登録
 def outliner_object_menu_func(self, context):
+	"""アウトライナーのオブジェクトの右クリックに追加する関数。"""
 	self.layout.separator()
 	self.layout.menu(ROMLYADDON_MT_romly_export_selection_as_stl_menu_parent.bl_idname, icon='NONE')
 
@@ -150,6 +150,7 @@ class ROMLYADDON_MT_romly_add_mesh_menu_parent(bpy.types.Menu):
 			(ROMLYADDON_OT_add_jis_nut, 'Add JIS Nut', 'SEQ_CHROMA_SCOPE'),
 			(ROMLYADDON_OT_add_aluminum_extrusion, 'Add Aluminium Extrusion', 'FIXED_SIZE'),
 			(ROMLYADDON_OT_add_linear_guide_rail, 'Add Linear Guide Rail', 'FIXED_SIZE'),
+			(ROMLYADDON_OT_add_linear_guide_block, 'Add Linear Guide Block', 'SNAP_MIDPOINT'),
 			(ROMLYADDON_OT_add_pinheader, 'Add Pinheader', 'EMPTY_SINGLE_ARROW'),
 			(None, None, None),
 			(ROMLYADDON_OT_add_nut_hole, 'Add Nut Hole', 'SEQ_CHROMA_SCOPE'),
@@ -192,7 +193,7 @@ class ROMLYADDON_MT_romly_export_collection_as_stl_menu_parent(bpy.types.Menu):
 
 
 # コレクションメニューに登録
-def collection_menu_func(self, context):
+def outliner_collection_menu_func(self, context):
 	self.layout.separator()
 	self.layout.menu(ROMLYADDON_MT_romly_export_collection_as_stl_menu_parent.bl_idname, icon='NONE')
 
@@ -219,10 +220,12 @@ MY_CLASS_LIST = [
 	ROMLYADDON_OT_add_jis_nut,
 	ROMLYADDON_OT_add_aluminum_extrusion,
 	ROMLYADDON_OT_add_linear_guide_rail,
+	ROMLYADDON_OT_add_linear_guide_block,
 	ROMLYADDON_OT_add_pinheader,
 	ROMLYADDON_OT_add_nut_hole,
 	ROMLYADDON_MT_romly_add_mesh_menu_parent,
 	ROMLYADDON_OT_export_collection_as_stl,
+	ROMLYADDON_OT_export_selection_as_stl,
 	ROMLYADDON_MT_romly_export_collection_as_stl_menu_parent,
 	ROMLYADDON_MT_romly_export_selection_as_stl_menu_parent,
 	ROMLYADDON_OT_select_edges_on_fair_surface,
@@ -250,7 +253,7 @@ def register():
 	# それぞれのメニューに独自メニューを登録
 	bpy.types.VIEW3D_MT_object_context_menu.append(object_menu_func)
 	bpy.types.VIEW3D_MT_add.append(add_menu_func)
-	bpy.types.OUTLINER_MT_collection.append(collection_menu_func)
+	bpy.types.OUTLINER_MT_collection.append(outliner_collection_menu_func)
 	bpy.types.OUTLINER_MT_object.append(outliner_object_menu_func)
 	bpy.types.VIEW3D_MT_edit_mesh_edges.append(view3d_edit_mesh_edges_menu_func)
 	bpy.types.VIEW3D_MT_edit_mesh_context_menu.append(view3d_edit_mesh_context_menu_func)
@@ -263,7 +266,7 @@ def register():
 def unregister():
 	bpy.types.VIEW3D_MT_object_context_menu.remove(object_menu_func)
 	bpy.types.VIEW3D_MT_add.remove(add_menu_func)
-	bpy.types.OUTLINER_MT_collection.remove(collection_menu_func)
+	bpy.types.OUTLINER_MT_collection.remove(outliner_collection_menu_func)
 	bpy.types.OUTLINER_MT_object.remove(outliner_object_menu_func)
 	bpy.types.VIEW3D_MT_edit_mesh_edges.remove(view3d_edit_mesh_edges_menu_func)
 	bpy.types.VIEW3D_MT_edit_mesh_context_menu.remove(view3d_edit_mesh_context_menu_func)

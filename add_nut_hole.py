@@ -326,8 +326,8 @@ class ROMLYADDON_OT_add_nut_hole(bpy.types.Operator):
 	CREATE_METHOD_ONLY_OBJECT = 'object_only'
 	CREATE_METHOD_BOOLEAN = 'boolean'
 	CREATE_METHOD_ITEMS = [
-		(CREATE_METHOD_ONLY_OBJECT, 'Only Object', 'Create a nut hole object for boolean modifier only'),
-		(CREATE_METHOD_BOOLEAN, 'Boolean', 'Add boolean modifier to the selected object'),
+		(CREATE_METHOD_ONLY_OBJECT, 'Only Tool Object', 'Create a nut hole object for boolean modifier'),
+		(CREATE_METHOD_BOOLEAN, 'Boolean', 'Create a nut hole for the selected object'),
 	]
 
 	val_create_method: EnumProperty(name='Create Method', items=CREATE_METHOD_ITEMS, default=CREATE_METHOD_BOOLEAN)
