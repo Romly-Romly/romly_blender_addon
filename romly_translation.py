@@ -338,7 +338,7 @@ TRANSLATION_DICT = {
 		('*', 'Block Bevel Width'): 'ブロックのベベル幅',
 		('*', 'Width of the block (perpendicular size to the rail)'):
 			'ブロックの幅（レールと垂直方向の大きさ）',
-		('*' 'Length of the block (parallel size to the rail)'):
+		('*', 'Length of the block (parallel size to the rail)'):
 			'ブロックの長さ（レールと平行方向の大きさ）',
 		('*', 'Length of the middle metal part'): '中央の金属部の長さ',
 		('*', 'Height to the block surface from the rail bottom'): 'レール底面からブロック表面までの高さ',

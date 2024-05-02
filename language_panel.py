@@ -71,7 +71,7 @@ class ROMLYADDON_OT_change_language(bpy.types.Operator):
 
 class ROMLYADDON_PT_language_panel(bpy.types.Panel):
 	bl_label = "Language"
-	bl_idname = "romlyaddon.language_panel"
+	bl_idname = 'ROMLYADDON_PT_language_panel'
 	bl_space_type = 'VIEW_3D'
 	bl_region_type = 'UI'
 	bl_category = "View"	# 既存のViewタブに追加
