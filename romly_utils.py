@@ -23,6 +23,45 @@ importlib.reload(romly_translation)
 
 
 
+# メッシュを作成する平面を選択するためのアイテム
+ALIGN_PLANE_ITEMS = [
+	('xy', 'XY Plane', 'Cunstructs a curve on the XY Plane'),
+	('xz', 'XZ Plane', 'Cunstructs a curve on the XZ Plane'),
+	('yz', 'YZ Plane', 'Cunstructs a curve on the YZ Plane'),
+	('view', 'View Plane', 'Cunstructs a curve on the View Plane'),
+]
+
+def set_object_rotation_to_plane(obj: bpy.types.Object, plane: Literal['xy', 'xz', 'yz', 'view']) -> None:
+	"""
+	指定された平面に沿ってオブジェクトの回転を設定する。オブジェクトをディフォルトでxy平面上に展開されている図形として、指定された平面に展開されるよう回転する。
+
+	Parameters
+	----------
+	obj : bpy.types.Object
+		回転を設定するBlenderのオブジェクト。
+	plane : Literal['xy', 'xz', 'yz', 'view']
+		オブジェクトを回転させる目的の平面。'xy'なら回転を設定しない。'view'は現在のビュー方向に合わせる。
+	"""
+	match plane:
+		case 'yz':
+			obj.rotation_euler = Vector((math.radians(-90), math.radians(180), math.radians(-90)))
+		case 'xz':
+			obj.rotation_euler[0] = math.radians(90)
+		case 'view':
+			# 現在のコンテキストからビュー行列を取得
+			view_matrix = bpy.context.space_data.region_3d.view_matrix
+			# オブジェクトの回転をビュー行列の逆行列に設定
+			obj.rotation_euler = view_matrix.to_3x3().normalized().transposed().to_euler()
+
+
+
+
+
+
+
+
+
+
 # MARK: ScrewSpec
 class ScrewSpec(NamedTuple):
 	"""
@@ -118,6 +157,48 @@ def VECTOR_Y_PLUS():
 
 
 
+
+
+
+
+
+def make_arc_vertices(start, center, axis, rotate_degrees: float, segments) -> list[Vector]:
+	"""任意の座標を中心とした円または円弧を作る頂点のリストを返す。
+
+	Parameters
+	----------
+	start : Vertex
+		円弧の開始座標
+	center : Vertex
+		円の中心。円の半径はstartとの差となる。
+	axis : ['X', 'Y', 'Z']
+	rotate_degrees : float
+		[description]
+	segments : int
+		頂点の数。2以上を指定。
+	Returns
+	-------
+	list[Vertex]
+		[description]
+	"""
+	vertices = []
+
+	for i in range(segments + 1):
+		v = rotated_vector(vector=start - center, angle_radians=math.radians(rotate_degrees / segments * i), axis=axis)
+		v += center
+		vertices.append(v)
+
+	return vertices
+
+
+
+
+
+
+
+
+
+
 def create_object(vertices: list[tuple[float, float, float]], faces: list = [], name: str = '', mesh_name: str = None, edges: list[tuple[int, int]] = []) -> bpy.types.Object:
 	"""
 	指定された頂点リストと面リストから新しいオブジェクトを生成する。
@@ -146,6 +227,279 @@ def create_object(vertices: list[tuple[float, float, float]], faces: list = [], 
 	mesh.from_pydata(vertices, edges, faces)
 	obj = bpy.data.objects.new(name, mesh)
 	return obj
+
+
+
+
+
+def create_combined_object(objects: list[bpy.types.Object], obj_name: str, mesh_name: str = None) -> bpy.types.Object:
+	"""
+	複数のオブジェクトを統合して一つのオブジェクトにまとめる。
+
+	Parameters
+	----------
+	objects : list[bpy.types.Object]
+		結合するオブジェクトのリスト。先頭のオブジェクトの位置が維持される。
+	obj_name : str
+		生成するメッシュにつける名前。
+	mesh_name : str
+		生成するメッシュにつける名前。
+	"""
+
+	# 結合するオブジェクトが1つだけの場合はそのまま返す。ただし名前は変更する。
+	if len(objects) == 1:
+		objects[0].name = obj_name
+		return objects[0]
+
+	vertices = []
+	faces = []
+	vertex_index_offset = 0
+	for obj in objects:
+		for v in obj.data.vertices:
+			vertices.append(obj.location + v.co - objects[0].location)
+		for f in obj.data.polygons:
+			faces.append([])
+			for v in f.vertices:
+				faces[len(faces) - 1].append(v + vertex_index_offset)
+		vertex_index_offset += len(obj.data.vertices)
+
+	if mesh_name is None:
+		mesh_name = obj_name + '_mesh'
+	mesh = bpy.data.meshes.new(mesh_name)
+	mesh.from_pydata(vertices, [], faces)
+
+	combined_obj = bpy.data.objects.new(obj_name, mesh)
+	combined_obj.location = objects[0].location
+	return combined_obj
+
+
+
+
+
+
+
+
+
+
+def create_box(size: Vector, offset: Vector = Vector((0, 0, 0))) -> bpy.types.Object:
+	"""
+	直方体のオブジェクトを生成する。
+
+	Parameters
+	----------
+	size : Vector
+		直方体の各軸の大きさを表すベクトル。(1.0, 1.0, 1.0)なら大きさ1の立方体を作る。
+	offset : Vector, optional
+		直方体の中心からのオフセットを表すベクトル。直方体の位置を決める。
+
+	Returns
+	-------
+	bpy.types.Object
+		作成されたオブジェクト。Blenderのシーンにはリンクされていない状態なので注意。
+	"""
+	vertices = [
+		mathutils.Vector([-0.5, -0.5, -0.5]),	# 0 正面 左下
+		mathutils.Vector([-0.5, -0.5, 0.5]),	# 1 正面 左上
+		mathutils.Vector([-0.5, 0.5, -0.5]),	# 2 奥 左下
+		mathutils.Vector([-0.5, 0.5, 0.5]),		# 3 奥 左上
+		mathutils.Vector([0.5, -0.5, -0.5]),	# 4 正面 右下
+		mathutils.Vector([0.5, -0.5, 0.5]),		# 5 正面 右上
+		mathutils.Vector([0.5, 0.5, -0.5]),		# 6 奥 右下
+		mathutils.Vector([0.5, 0.5, 0.5])		# 7 奥 右上
+	]
+	faces = [
+		(1, 5, 4, 0),	# 正面
+		(3, 7, 6, 2),	# 背面
+		(1, 3, 2, 0),	# 左側面
+		(5, 7, 6, 4),	# 右側面
+		(0, 4, 6, 2),	# 底面
+		(1, 5, 7, 3),	# 上面
+	]
+
+	actual_vertices = [(v * size) + offset for v in vertices]
+	return cleanup_mesh(create_object(vertices=actual_vertices, faces=faces))
+
+
+
+
+
+
+
+
+
+
+def create_threaded_cylinder(diameter: float, length: float, pitch: float, lead: int, thread_depth: float, segments: int, bevel_segments: int, edge_flat: bool = False) -> bpy.types.Object:
+	"""
+	ねじ切りの入った円柱を生成する。
+
+	Parameters
+	----------
+	diameter : float
+		円柱の直径。
+	length : float
+		円柱の長さ。
+	pitch : float
+		ねじ山のピッチ（隣接するねじ山の谷の中心間の距離）。
+	lead : int
+		ねじのリード（一回のねじ山で進む距離）。ピッチの倍数で指定。
+	thread_depth : float
+		ねじ山の深さ。
+	segments : int
+		円柱の周りのセグメント数。
+	bevel_segments : int
+		ねじ山の先端のセグメント数。
+	edge_flat : bool, optional
+		Trueの場合、上下をまっすぐにカットする。
+
+	Returns
+	-------
+	bpy.types.Object
+		作成されたねじ山付き円柱のオブジェクト。位置は原点からZマイナス方向に配置される。オブジェクトはシーンにリンクされている。
+	"""
+	# 谷径、山と谷のベベルの半径を決める
+	minor_diameter = diameter - thread_depth
+	major_radius = diameter / 2
+	minor_radius = minor_diameter / 2
+
+	vertices = []
+	faces = []
+
+	# --------------------------------------------------------------------------------
+
+	# 蓋のエッジになる頂点のインデックスを保存しておく
+	lid_edge_vertex_index = 0
+
+	# bevelSegmentsが0より大きい場合はネジの山と谷にベベルを作る
+	if bevel_segments > 0:
+		H = major_radius - minor_radius
+
+		z = (lead * pitch) - pitch
+		for i in range(lead):
+			temp_vertices = []
+			rh = math.tan(math.radians(30)) * (H / 4)
+			start_point = mathutils.Vector([-minor_radius - H / 4, 0, z + pitch - rh])
+			end_point = mathutils.Vector([start_point.x, 0, z + pitch + rh])
+			temp_vertices.append(start_point)
+
+			pt = start_point.copy()
+			da = 120 / (bevel_segments + 1)
+			angle = 30 + da
+			dz = abs(end_point.z - start_point.z) / bevel_segments
+			for i in range(bevel_segments - 1):
+				dx = dz / math.tan(math.radians(angle))
+				pt.x += dx if (i < bevel_segments) else -dx
+				pt.z += dz
+				temp_vertices.append(mathutils.Vector([pt.x, pt.y, pt.z]))
+				angle += da
+
+			temp_vertices.append(end_point)
+
+			for i in reversed(range(len(temp_vertices))):
+				vertices.append(temp_vertices[i])
+
+			# --------------------------------------------------------------------------------
+
+			# 山の頂点と麓2箇所からなす角を求める
+			base1 = mathutils.Vector([-minor_radius, 0, z + pitch])
+			peak = mathutils.Vector([-major_radius, 0, z + pitch / 2])
+			base2 = mathutils.Vector([-minor_radius, 0, z])
+			angle = calc_angle(peak=peak, point1=base1, point2=base2)
+
+			# アールの開始座標
+			rh = math.tan(angle / 2) * (H / 8)
+			bevel_start = mathutils.Vector([-major_radius + H / 8, 0, z + pitch / 2 + rh])
+
+			# アールの開始位置から適当に伸ばした垂線
+			perpendicular_point = rotated_vector(vector=peak - bevel_start, angle_radians=math.radians(-90), axis='Y')
+			perpendicular_point += bevel_start
+
+			# アール（ベベル）の中心を求める
+			bevel_center = find_intersection(
+				line1_start=project_to_xz(bevel_start), line1_end=project_to_xz(perpendicular_point),
+				line2_start=project_to_xz(peak), line2_end=Vector((0, 0, z + pitch / 2)))
+
+			# 円弧を構成する頂点郡を返す
+			vertices.extend(make_arc_vertices(start=bevel_start, center=bevel_center, axis='Y', rotate_degrees=-(90 - math.degrees(angle) / 2) * 2, segments=bevel_segments))
+
+			# ----------------------------------------------------------------------
+
+			rh = math.tan(math.radians(30)) * (H / 4)
+			v = mathutils.Vector([-minor_radius - H / 4, 0, z + rh])
+			vertices.append(v)
+
+			z -= pitch
+
+	else:
+		# 山と谷のベベルのセグメントが0の場合は鋭利な山と谷になる
+		vertices.append(mathutils.Vector([0, 0, lead * pitch]))
+		z = (lead * pitch) - pitch
+		for i in range(lead):
+			vertices.append(mathutils.Vector([-minor_radius, 0, z + pitch]))
+			vertices.append(mathutils.Vector([-major_radius, 0, z + pitch / 2]))
+			vertices.append(mathutils.Vector([-minor_radius, 0, z]))
+			z -= pitch
+		vertices.append(mathutils.Vector([0, 0, 0]))
+
+	# 回転体の頂点数を取得しておく
+	revolution_vertex_count = len(vertices)
+
+	# ----------------------------------------------------------------------
+
+	# 回してスクリューを作る
+	pitch_iteration = math.ceil(length / (lead * pitch)) + 2
+	for _ in range(pitch_iteration):
+		add_revolved_surface(vertices=vertices, faces=faces, rotation_vertex_count=revolution_vertex_count, segments=segments, z_offset=-lead * pitch)
+
+	# ----------------------------------------------------------------------
+
+	num_last_vertex_index_ecluding_lid_and_bottom = len(vertices) - 1
+	bottomZ = vertices[-1].z
+
+	# 蓋を作る
+	vertices.append(mathutils.Vector([0, 0, vertices[lid_edge_vertex_index].z]))
+	lid_center_vertex_index = len(vertices) - 1
+	for i in range(segments):
+		faces.append([lid_center_vertex_index, lid_edge_vertex_index + revolution_vertex_count * i, lid_edge_vertex_index + 	revolution_vertex_count * i + revolution_vertex_count])
+
+	# 最初の回転体の側面兼蓋となる面を作る
+	lid_face = []
+	lid_face.extend(range(0, revolution_vertex_count))
+	lid_face.append(lid_center_vertex_index)
+	faces.append(lid_face)
+
+	vertices.append(mathutils.Vector([0, 0, bottomZ]))
+	bottom_center_vertex_index = len(vertices) - 1
+	for i in range(segments):
+		faces.append([bottom_center_vertex_index,
+			num_last_vertex_index_ecluding_lid_and_bottom - revolution_vertex_count * i,
+			num_last_vertex_index_ecluding_lid_and_bottom - revolution_vertex_count * (i + 1)])
+
+	# 最後の回転体の側面兼底となる面を作る
+	bottom_face = []
+	bottom_face.extend(range(num_last_vertex_index_ecluding_lid_and_bottom - revolution_vertex_count + 1, num_last_vertex_index_ecluding_lid_and_bottom + 1))
+	bottom_face.append(bottom_center_vertex_index)
+	faces.append(bottom_face)
+
+	# ----------------------------------------------------------------------
+
+	obj = cleanup_mesh(object=create_object(vertices=vertices, faces=faces, name='screw'))
+	bpy.context.collection.objects.link(obj)
+
+	# 上下のカット
+	if edge_flat:
+		cutter = create_box(size=Vector((diameter * 2, diameter * 2, length)), offset=Vector((0, 0, -length - length / 2)))
+		bpy.context.collection.objects.link(cutter)
+		apply_boolean_object(obj, cutter)
+		cutter = create_box(size=Vector((diameter * 2, diameter * 2, length)), offset=Vector((0, 0, length / 2)))
+		bpy.context.collection.objects.link(cutter)
+		apply_boolean_object(obj, cutter)
+
+	return obj
+
+
+
+
+
 
 
 
@@ -216,6 +570,69 @@ def translate_vertices(object, vector):
 
 
 
+
+
+
+
+
+def add_revolved_surface(vertices: list[Vector], faces: list[list[int]], rotation_vertex_count: int, segments: int, close=False, z_offset: float = 0) -> None:
+	"""
+	頂点群で表される面を360度回転させて回転体を作る。
+
+	Parameters
+	----------
+	vertices : list[Vector]
+		頂点リスト。回転させる頂点も含む。新しく作った頂点もここに追加される。
+	faces : list[list[int]]
+		面のインデックスリスト。新しい面の追加用で、読み取りはされない。
+	rotation_vertex_count : int
+		回転させる頂点の数。この数だけの頂点が回転軸周りで回転される。
+	segments : int
+		回転体を構成するセグメントの数。360度をこの数で割った角度で頂点が回転される。
+	close : bool, optional
+		回転体の両端を閉じるかどうか。Trueの場合、端の面が作成される。
+	z_offset : float, optional
+		頂点のZ座標に加算されるオフセット。このオフセットは全セグメントに渡って線形に加算される。ねじ切りはこの値を使うことで軸方向にずらしている。
+
+	Notes
+	-----
+	この関数は`vertices`と`faces`を直接変更します。メッシュデータは呼び出し元で管理する必要があります。
+	"""
+	rot = mathutils.Matrix.Rotation(-math.radians(360.0 / segments), 4, 'Z')
+	for i in range(segments):
+		temp_vertices = []
+		for j in range(rotation_vertex_count):
+			v = vertices[len(vertices) - rotation_vertex_count + j].copy()
+			v.z += z_offset / segments
+			v.rotate(rot)
+			temp_vertices.append(v)
+		for j in range(len(temp_vertices)):
+			vertices.append(temp_vertices[j])
+
+		# 面を貼る
+		n = len(vertices)
+		for j in range(rotation_vertex_count - 1):
+			faces.append([
+				n - rotation_vertex_count * 2 + j,
+				n - rotation_vertex_count * 2 + 1 + j,
+				n - rotation_vertex_count + 1 + j,
+				n - rotation_vertex_count + j])
+		if close:
+			faces.append([
+				n - rotation_vertex_count * 2 + rotation_vertex_count - 1,
+				n - rotation_vertex_count * 2,
+				n - rotation_vertex_count,
+				n - rotation_vertex_count + rotation_vertex_count - 1])
+
+
+
+
+
+
+
+
+
+
 def cleanup_mesh(object: bpy.types.Object, remove_doubles=True, recalc_normals=True):
 	"""
 	メッシュオブジェクトの重複する頂点を削除し、法線を再計算することでメッシュをクリーンアップする。
@@ -249,13 +666,18 @@ def cleanup_mesh(object: bpy.types.Object, remove_doubles=True, recalc_normals=T
 
 
 
-def extrude_face(vertices: list[Vector], faces: list[list[int]], extrude_vertex_indices: list[int], z_offset: float, cap=True):
+
+
+
+
+
+def extrude_face(vertices: list[Vector | tuple[float, float, float]], faces: list[list[int]], extrude_vertex_indices: list[int], z_offset: float = 1, offset: Vector = None, cap=True):
 	"""
 	指定された面を掃引して、新しくできた頂点と面を追加する。
 
 	Parameters
 	----------
-	vertices : list[Vector]
+	vertices : list[Vector | tuple[float, float, float]]
 		頂点のリスト
 	faces : list[list[int]]
 		面を構成する頂点インデックスのリスト
@@ -268,12 +690,14 @@ def extrude_face(vertices: list[Vector], faces: list[list[int]], extrude_vertex_
 	"""
 	# 各頂点を掃引した位置に複製する
 	for i in extrude_vertex_indices:
-		print(i)
 		if isinstance(vertices[i], Vector):
 			v = vertices[i].copy()
 		else:
 			v = Vector((vertices[i][0], vertices[i][1], vertices[i][2]))
-		v.z += z_offset
+		if offset:
+			v += offset
+		else:
+			v.z += z_offset
 		vertices.append(v)
 
 	l = len(vertices)
@@ -393,6 +817,52 @@ def rotate_vertices(object: bpy.types.Mesh | list[Vector], degrees: float, axis:
 				vec = Vector(v)
 				vec.rotate(mathutils.Matrix.Rotation(math.radians(degrees), 4, axis))
 				object[i] = vec.to_tuple()
+
+
+
+
+
+
+
+
+
+
+def project_to_xy(v: Vector) -> Vector:
+	"""ベクトルのZ成分を0にしてXY平面に投影する。"""
+	return Vector((v.x, v.y, 0))
+
+
+
+
+
+
+
+
+
+
+def project_to_xz(v: Vector) -> Vector:
+	"""ベクトルのY成分を0にしてXZ平面に投影する。"""
+	return Vector((v.x, 0, v.z))
+
+
+
+
+
+
+
+
+
+
+def calc_angle(peak: Vector, point1: Vector, point2: Vector) -> float:
+	"""peakからpoint1へのベクトルと、peakからpoint2へのベクトルのなす角度を計算する。"""
+	v1 = point1 - peak
+	v2 = point2 - peak
+	return math.acos(v1.dot(v2) / (v1.magnitude * v2.magnitude))
+
+
+
+
+
 
 
 

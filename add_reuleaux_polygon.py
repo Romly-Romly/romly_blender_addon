@@ -129,39 +129,36 @@ def get_polygon_name(num_sides):
 	Returns:
 		str: 指定された辺の数に基づく多角形の名前。
 	"""
-	# 辺の数に基づいて基本の名前を決定
+	# 辺の数に基づいて基本の名前を決定。辺の数が偶数の場合はルーローの多角形ではないので、 Reuleaux-ish とする。
 	polygon_names = {
-		3: 'Triangle',
-		4: 'Square',
-		5: 'Pentagon',
-		6: 'Hexagon',
-		7: 'Heptagon',
-		8: 'Octagon',
-		9: 'Nonagon',
-		10: 'Decagon',
-		11: 'Hendecagon',
-		12: 'Dodecagon',
-		13: 'Tridecagon',
-		14: 'Tetradecagon',
-		15: 'Pentadecagon',
-		16: 'Hexadecagon',
-		17: 'Heptadecagon',
-		18: 'Octadecagon',
-		19: 'Enneadecagon',
-		20: 'Icosagon'
+		3: 'Reuleaux Triangle',
+		4: 'Reuleaux-ish Square',
+		5: 'Reuleaux Pentagon',
+		6: 'Reuleaux-ish Hexagon',
+		7: 'Reuleaux Heptagon',
+		8: 'Reuleaux-ish Octagon',
+		9: 'Reuleaux Nonagon',
+		10: 'Reuleaux-ish Decagon',
+		11: 'Reuleaux Hendecagon',
+		12: 'Reuleaux-ish Dodecagon',
+		13: 'Reuleaux Tridecagon',
+		14: 'Reuleaux-ish Tetradecagon',
+		15: 'Reuleaux Pentadecagon',
+		16: 'Reuleaux-ish Hexadecagon',
+		17: 'Reuleaux Heptadecagon',
+		18: 'Reuleaux-ish Octadecagon',
+		19: 'Reuleaux Enneadecagon',
+		20: 'Reuleaux-ish Icosagon'
 	}
 
 	# 辺の数が奇数か偶数かに応じて名前を修正
 	if num_sides in polygon_names:
 		result = polygon_names[num_sides]
 	else:
-		result = 'Polygon'
-
-	# 辺の数が偶数の場合はルーローの多角形ではないので、 Reuleaux-ish とする
-	if num_sides % 2 == 1:
-		result = 'Reuleaux ' + result
-	else:
-		result = 'Reuleaux-ish ' + result
+		if num_sides % 2 == 1:
+			result = 'Reuleaux Polygon'
+		else:
+			result = 'Reuleaux-ish Polygon'
 
 	return bpy.app.translations.pgettext_data(result)
 

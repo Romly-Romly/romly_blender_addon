@@ -39,6 +39,31 @@ TRANSLATION_DICT = {
 			'穴の直径をマイナスにすることはできません',
 		('*', 'Donut Cylinder'): '中空の円柱',
 
+		# ルーローの多角形
+		('*', 'Add Reuleaux Polygon'): 'ルーローの多角形を作成',
+		('*', 'Construct a Reuleaux Polygon mesh'): 'ルーローの多角形のメッシュを作成します',
+		('*', 'Number of sides for the polygon'): '多角形の辺の数',
+		('*', 'The radius of the circumradius'): '外接円の半径',
+		('*', 'Number of segments in each arc'): '円弧部の分割数',
+		('*', 'Reuleaux Triangle'): 'ルーローの三角形',
+		('*', 'Reuleaux-ish Square'): 'ルーローもどきの四角形',
+		('*', 'Reuleaux Pentagon'): 'ルーローの五角形',
+		('*', 'Reuleaux-ish Hexagon'): 'ルーローもどきの六角形',
+		('*', 'Reuleaux Heptagon'): 'ルーローの七角形',
+		('*', 'Reuleaux-ish Octagon'): 'ルーローもどきの八角形',
+		('*', 'Reuleaux Nonagon'): 'ルーローの九角形',
+		('*', 'Reuleaux-ish Decagon'): 'ルーローもどきの十角形',
+		('*', 'Reuleaux Hendecagon'): 'ルーローの十一角形',
+		('*', 'Reuleaux-ish Dodecagon'): 'ルーローもどきの十二角形',
+		('*', 'Reuleaux Tridecagon'): 'ルーローの十三角形',
+		('*', 'Reuleaux-ish Tetradecagon'): 'ルーローもどきの十四角形',
+		('*', 'Reuleaux Pentadecagon'): 'ルーローの十五角形',
+		('*', 'Reuleaux-ish Hexadecagon'): 'ルーローもどきの十六角形',
+		('*', 'Reuleaux Heptadecagon'): 'ルーローの十七角形',
+		('*', 'Reuleaux-ish Octadecagon'): 'ルーローもどきの十八角形',
+		('*', 'Reuleaux Enneadecagon'): 'ルーローの十九角形',
+		('*', 'Reuleaux-ish Icosagon'): 'ルーローもどきの二十角形',
+
 		# ルーローの四面体関連
 		('*', 'Add Reuleaux Tetrahedron'): 'ルーローの四面体を作成',
 		('*', 'Construct a Reuleaux Tetrahedron mesh'): 'ルーローの四面体のメッシュを作成します',
@@ -119,6 +144,11 @@ TRANSLATION_DICT = {
 		('*', 'Total width(height) of rounded corner'): '角丸部全体の幅（高さ）',
 		('*', 'Clothoid Curve'): 'クロソイド曲線',
 		('*', 'Clothoid Corner Plate'): 'クロソイド角丸板',
+		('*', 'Construct on'): '作成する平面',
+		('*', 'Cunstructs a curve on the XY Plane'): '曲線をXY平面に作成します',
+		('*' ,'Cunstructs a curve on the XZ Plane'): '曲線をXZ平面に作成します',
+		('*', 'Cunstructs a curve on the YZ Plane'): '曲線をYZ平面に作成します',
+		('*', 'Cunstructs a curve on the View Plane'): '曲線をビュー平面に作成します',
 
 		# ねじ関連
 		('*', 'Add JIS Screw'): 'ねじを作成',
@@ -170,7 +200,6 @@ TRANSLATION_DICT = {
 		('*', 'Shaft Diameter'): '芯の直径',
 		('*', 'Screw Length'): 'ネジの長さ',
 		('*', 'Threading'): 'ねじ切り',
-		('*', 'Thread Pitch'): 'ピッチ',
 		('*', 'The distance between two adjacent threads'): 'ネジの山と山の間の距離',
 		('*', 'Thread Lead'): 'リード',
 		('*', 'How many times the pitch distance does the screw advance when turned once'):
@@ -252,6 +281,94 @@ TRANSLATION_DICT = {
 		('*', 'Bevel Segments'): 'アールのセグメント数',
 		('*', 'The number of segments in the corner bevels'): '角のアールのセグメント数',
 
+		# Add Linear Guide Rail
+		('*', 'Add Linear Guide Rail'): 'リニアガイドレールを追加',
+		('*', 'Construct a Rail for Linear Guide'): 'リニアガイドのレールを作成します',
+		('*', 'Set specs to MGN05 size'): '各寸法をMGN05サイズに設定します',
+		('*', 'Set specs to MGN07 size'): '各寸法をMGN07サイズに設定します',
+		('*', 'Set specs to MGN09 size'): '各寸法をMGN09サイズに設定します',
+		('*', 'Set specs to MGN12 size'): '各寸法をMGN12サイズに設定します',
+		('*', 'Set specs to MGN15 size'): '各寸法をMGN15サイズに設定します',
+		('*', 'Set specs to MGW05 size'): '各寸法をMGW05サイズに設定します',
+		('*', 'Set specs to MGW07 size'): '各寸法をMGW07サイズに設定します',
+		('*', 'Set specs to MGW09 size'): '各寸法をMGW09サイズに設定します',
+		('*', 'Set specs to MGW12 size'): '各寸法をMGW12サイズに設定します',
+		('*', 'Set specs to MGW15 size'): '各寸法をMGW15サイズに設定します',
+		('*', 'Outer Hole Depth'): '外側の穴の深さ',
+		('*', 'Hole Pitch'): '穴の間隔',
+		('*', 'First Hole Offset'): '最初の穴のオフセット',
+		('*', 'Slit'): '溝',
+		('*', 'Slit Diameter'): '溝の直径',
+		('*', 'Slit Segments'): '溝のセグメント数',
+		('*', 'Width of the rail'): 'レールの幅',
+		('*', 'Height (Thickness) of the rail'): 'レールの高さ（厚み）',
+		('*', 'Outer Diameter of each hole'): '各穴の外側の直径',
+		('*', 'Inner Diameter of each hole'): '各穴の内側の直径',
+		('*', 'Depth of outer hole'): '外側の穴の深さ',
+		('*', 'Full length of the rail'): 'レールの全長',
+		('*', 'Position of the slits (from the surface)'): '溝の位置（表面からの距離）',
+		('*', 'Linear Guide Rail'): 'リニアガイドレール',
+		('*', 'Weight'): '重量',
+
+		# Add Linear Guide Block
+		('*', 'Add Linear Guide Block'): 'リニアガイドブロックを追加',
+		('*', 'Construct a Block for Linear Guide'): 'リニアガイドのブロックを作成します',
+		('*', 'W Width'): 'W 幅',
+		('*', 'L Length'): 'L 長さ',
+		('*', 'L1 Metal Part Length'): 'L1 金属部長さ',
+		('*', 'H Total Height'): 'H 全高',
+		('*', 'H1 Bottom Space'): 'H1 下部スペース',
+		('*', 'N Rail Side Width'): 'N レール脇幅',
+		('*', 'l Depth'): 'l 深さ',
+		('*', 'Screw Holes'): 'ネジ穴',
+		('*', 'Horizontal Distance'): '水平距離',
+		('*', '[B] Horizontal distance (perpendicular to the rail) between the screw holes'):
+			'[B] ネジ穴の水平（レールと垂直）方向の距離',
+		('*', 'Vertical Distance'): '垂直距離',
+		('*', '[C] Vertical distance (parallel to the rail) between the screw holes'):
+			'[C] ネジ穴の垂直（レールと並行）方向の距離',
+		('*', 'Rail Height'): 'レール高',
+		('*', '[HR] Height of the linear guide rail. Used to create indentations in the block'):
+			'[HR] リニアガイドレールの高さ。ブロックのくぼみを作るために使用される',
+		('*', 'Rail Clearance'): 'レールとブロック間の遊び',
+		('*', 'Clearance between the block and linear guide rail. The height of indentation of the block will be the total of this value and Rail Height'):
+			'ブロックとリニアガイドレール間の遊び。ブロックのくぼみの高さはこの値とレールの高さの合計になります',
+		('*', 'End Seal Thickness'): 'エンドシールの厚み',
+		('*', 'Thickness of the end seal (the red part on top and bottom)'): 'エンドシール（上下の赤い部分）の厚み',
+		('*', 'Block Bevel Width'): 'ブロックのベベル幅',
+		('*', 'Width of the block (perpendicular size to the rail)'):
+			'ブロックの幅（レールと垂直方向の大きさ）',
+		('*' 'Length of the block (parallel size to the rail)'):
+			'ブロックの長さ（レールと平行方向の大きさ）',
+		('*', 'Length of the middle metal part'): '中央の金属部の長さ',
+		('*', 'Height to the block surface from the rail bottom'): 'レール底面からブロック表面までの高さ',
+		('*', 'Height to the block bottom from the rail bottom'): 'レール底面からブロック底面までの高さ',
+		('*', 'Width of the both sides part of the rail'): 'レールの両脇の部分の幅',
+		('*', 'Depth of the screw holes'): 'ネジ穴の深さ',
+		('*', "Thread screw holes if it's checked"): 'チェックすると、ネジ穴にねじ切り加工します',
+		('*', 'Pitch of the screw threads'): 'ネジ穴のねじ切りのピッチ',
+		('*', 'Depth of threads of screw holes'): 'ネジ穴のねじ切りの深さ',
+		('*', 'Grease Holes'): 'グリース穴',
+		('*', '[H2] Distance to the grease hole on the end seal (the red part) from the block surface'): '[H2] エンドシール（赤い部分）のグリース穴の中心までのブロック表面からの距離',
+		('*', '[Gn] Diameter of the grease hole in the end seal (the red part)'): '[GN] エンドシール（赤い部分）のグリース穴の直径',
+		('*', 'Set specs to MGN05C size'): '各寸法をMGN05Cサイズに設定します',
+		('*', 'Set specs to MGN05H size'): '各寸法をMGN05Hサイズに設定します',
+		('*', 'Set specs to MGN07C size'): '各寸法をMGN07Cサイズに設定します',
+		('*', 'Set specs to MGN07H size'): '各寸法をMGN07Hサイズに設定します',
+		('*', 'Set specs to MGN12C size'): '各寸法をMGN12Cサイズに設定します',
+		('*', 'Set specs to MGN12H size'): '各寸法をMGN12Hサイズに設定します',
+		('*', 'Set specs to MGN15C size'): '各寸法をMGN15Cサイズに設定します',
+		('*', 'Set specs to MGN15H size'): '各寸法をMGN15Hサイズに設定します',
+		('*', 'Set specs to MGW05C size'): '各寸法をMGW05Cサイズに設定します',
+		('*', 'Set specs to MGW05CL size'): '各寸法をMGW05CLサイズに設定します',
+		('*', 'Set specs to MGW07C size'): '各寸法をMGW07Cサイズに設定します',
+		('*', 'Set specs to MGW07H size'): '各寸法をMGW07Hサイズに設定します',
+		('*', 'Set specs to MGW12C size'): '各寸法をMGW12Cサイズに設定します',
+		('*', 'Set specs to MGW12H size'): '各寸法をMGW12Hサイズに設定します',
+		('*', 'Set specs to MGW15C size'): '各寸法をMGW15Cサイズに設定します',
+		('*', 'Set specs to MGW15H size'): '各寸法をMGW15Hサイズに設定します',
+		('*', 'Linear Guide Block'): 'リニアガイドブロック',
+
 		# Add Nut Hole
 		('*', 'Add Nut Hole'): 'ナット穴を作成',
 		('*', 'Construct a hole for a nut for 3D printing'): '3Dプリント用のナットの穴を作成します',
@@ -329,8 +446,7 @@ TRANSLATION_DICT = {
 		('*', 'The selection is exported to: {filename}'): '選択されているオブジェクトを {filename} にエクスポートしました',
 
 		# language_panel
-		('*', 'Set blender language to specified language'):
-			'blenderを指定された言語に設定します',
+		('*', 'Set blender language to specified language'): 'blenderを指定された言語に設定します',
 		('*', 'The language was set to {language}'): '言語が {language} に設定されました',
 
 		# Reload and Run Script
@@ -339,9 +455,42 @@ TRANSLATION_DICT = {
 	},
 
 	'fr_FR': {
+		# ルーローの多角形
+		('*', 'Add Reuleaux Polygon'): 'Ajouter Polygone de Reuleaux',
+		('*', 'Reuleaux Triangle'): 'Triangle de Reuleaux',
+		('*', 'Reuleaux-ish Square'): 'Carré de Reuleauxâtre',
+		('*', 'Reuleaux Pentagon'): 'Pentagone de Reuleaux',
+		('*', 'Reuleaux-ish Hexagon'): 'Hexagone de Reuleauxâtre',
+		('*', 'Reuleaux Heptagon'): 'Heptagone de Reuleaux',
+		('*', 'Reuleaux-ish Octagon'): 'Octogone de Reuleauxâtre',
+		('*', 'Reuleaux Nonagon'): 'Ennéagone de Reuleaux',
+		('*', 'Reuleaux-ish Decagon'): 'Décagone de Reuleauxâtre',
+		('*', 'Reuleaux Hendecagon'): 'Hendécagone de Reuleaux',
+		('*', 'Reuleaux-ish Dodecagon'): 'Dodécagone de Reuleauxâtre',
+		('*', 'Reuleaux Tridecagon'): 'Triskaidecagone de Reuleaux',
+		('*', 'Reuleaux-ish Tetradecagon'): 'Tetrakaidecagone de Reuleauxâtre',
+		('*', 'Reuleaux Pentadecagon'): 'Pentakaidecagone de Reuleaux',
+		('*', 'Reuleaux-ish Hexadecagon'): 'Hexakaidecagone de Reuleauxâtre',
+		('*', 'Reuleaux Heptadecagon'): 'Heptakaidecagone de Reuleaux',
+		('*', 'Reuleaux-ish Octadecagon'): 'Octakaidecagone de Reuleauxâtre',
+		('*', 'Reuleaux Enneadecagon'): 'Ennéadécagone de Reuleaux',
+		('*', 'Reuleaux-ish Icosagon'): 'Icosagone de Reuleauxâtre',
+
+		# ルーローの四面体関連
+		('*', 'Add Reuleaux Tetrahedron'): 'Ajouter Tétraèdre de Reuleaux',
+		('*', 'Regular Tetrahedron'): 'Tétraèdre Régulier',
+		('*', 'Reuleaux Tetrahedron'): 'Tétraèdre de Reuleaux',
+
+		# オロイド関連
 		('*', 'Add Oloid'): 'Ajouter Oloïde',
 		('*', 'Oloid'): 'Oloïde',
 		('*', 'Anti-Oloid'): 'Anti-Oloïde',
+
+		# language_panel
+		('*', 'Set blender language to specified language'): 'Régler la langue du blender sur la langue spécifiée',
 		('*', 'The language was set to {language}'): 'La langue a été réglée sur le {language}',
+
+		# Reload and Run Script
+		('*', 'Reload and Run Script'): 'Recharger et Exécuter le Script',
 	},
 }

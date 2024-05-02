@@ -71,7 +71,7 @@ class ROMLYADDON_OT_export_collection_as_stl(bpy.types.Operator):
 		stl_filepath = os.path.splitext(filepath)[0] + " - " + bpy.context.collection.name + ".stl"
 		bpy.ops.export_mesh.stl(filepath=stl_filepath, check_existing=True, use_selection=True, ascii=True)
 
-		msg_key = 'The collection {collection} is exported to the file: {filename}'
+		msg_key = 'The collection {collection} is exported to: {filename}'
 		params = {'collection': bpy.context.view_layer.active_layer_collection.name, 'filename': stl_filepath}
 
 		# ポップアップで表示
@@ -125,7 +125,7 @@ class ROMLYADDON_OT_export_selection_as_stl(bpy.types.Operator):
 		# STLとしてエクスポート
 		bpy.ops.export_mesh.stl(filepath=stl_filepath, check_existing=True, use_selection=True, ascii=True)
 
-		msg_key = 'The selection is exported to the file: {filename}'
+		msg_key = 'The selection is exported to: {filename}'
 		params = {'filename': stl_filepath}
 
 		# ポップアップで表示
