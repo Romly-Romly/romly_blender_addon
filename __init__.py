@@ -1,6 +1,6 @@
 bl_info = {
 	'name': 'Romly Blender Add-on',
-	'version': (1, 7, 0),
+	'version': (1, 8, 0),
 	'blender': (4, 0, 0),
 	'category': 'Object',
 	'author': 'Romly',
@@ -24,6 +24,7 @@ from .add_clothoid_curve import ROMLYADDON_OT_add_clothoid_curve, ROMLYADDON_OT_
 from .add_jis_screw import ROMLYADDON_OT_add_jis_screw, ROMLYADDON_OT_add_jis_nut
 from .add_aluminum_extrusion import ROMLYADDON_OT_add_aluminum_extrusion
 from .add_linear_guide import ROMLYADDON_OT_add_linear_guide_rail, ROMLYADDON_OT_add_linear_guide_block
+from .add_coupling import ROMLYADDON_OT_add_coupling
 from .add_pinheader import ROMLYADDON_OT_add_pinheader
 from .add_nut_hole import ROMLYADDON_OT_add_nut_hole
 from .export_collection_as_stl import ROMLYADDON_OT_export_collection_as_stl, ROMLYADDON_OT_export_selection_as_stl
@@ -151,6 +152,7 @@ class ROMLYADDON_MT_romly_add_mesh_menu_parent(bpy.types.Menu):
 			(ROMLYADDON_OT_add_aluminum_extrusion, 'Add Aluminium Extrusion', 'FIXED_SIZE'),
 			(ROMLYADDON_OT_add_linear_guide_rail, 'Add Linear Guide Rail', 'FIXED_SIZE'),
 			(ROMLYADDON_OT_add_linear_guide_block, 'Add Linear Guide Block', 'SNAP_MIDPOINT'),
+			(ROMLYADDON_OT_add_coupling, 'Add Coupling', 'MESH_CYLINDER'),
 			(ROMLYADDON_OT_add_pinheader, 'Add Pinheader', 'EMPTY_SINGLE_ARROW'),
 			(None, None, None),
 			(ROMLYADDON_OT_add_nut_hole, 'Add Nut Hole', 'SEQ_CHROMA_SCOPE'),
@@ -221,6 +223,7 @@ MY_CLASS_LIST = [
 	ROMLYADDON_OT_add_aluminum_extrusion,
 	ROMLYADDON_OT_add_linear_guide_rail,
 	ROMLYADDON_OT_add_linear_guide_block,
+	ROMLYADDON_OT_add_coupling,
 	ROMLYADDON_OT_add_pinheader,
 	ROMLYADDON_OT_add_nut_hole,
 	ROMLYADDON_MT_romly_add_mesh_menu_parent,

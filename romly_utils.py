@@ -328,6 +328,24 @@ def create_box(size: Vector, offset: Vector = Vector((0, 0, 0))) -> bpy.types.Ob
 
 
 
+def create_cylinder(radius: float, length_z_plus: float, length_z_minus: float = 0, segments: int = 0) -> bpy.types.Object:
+	vertices = make_circle_vertices(radius=radius, num_vertices=segments, center=(0, 0, -length_z_minus))
+	faces = [list(range(len(vertices)))]
+	extrude_face(vertices, faces=faces, extrude_vertex_indices=list(range(len(vertices))), z_offset=length_z_plus + length_z_minus)
+	cylinder = create_object(vertices=vertices, faces=faces)
+	cylinder = cleanup_mesh(cylinder)
+	bpy.context.collection.objects.link(cylinder)
+	return cylinder
+
+
+
+
+
+
+
+
+
+
 def create_threaded_cylinder(diameter: float, length: float, pitch: float, lead: int, thread_depth: float, segments: int, bevel_segments: int, edge_flat: bool = False) -> bpy.types.Object:
 	"""
 	ねじ切りの入った円柱を生成する。
@@ -723,6 +741,29 @@ def extrude_face(vertices: list[Vector | tuple[float, float, float]], faces: lis
 
 
 
+
+
+
+
+
+def remove_decimal_trailing_zeros(value: float) -> str:
+	"""数値を文字列に変換し、小数点以下の右端に0があれば削除する。"""
+	s = f'{value:.3f}'
+	if '.' in s:
+		s = s.rstrip('0')
+		if s[-1] == '.':
+			s = s[0:-1]
+	return s
+
+
+
+
+
+
+
+
+
+
 def units_to_string(value, category=bpy.utils.units.categories.LENGTH, removeSpace=False):
 	"""
 	Blender内の単位を文字列に変換する。
@@ -904,6 +945,77 @@ def apply_boolean_object(object, boolObject, operation='DIFFERENCE', use_self=Fa
 
 
 
+def apply_bevel_modifier(obj: bpy.types.Object, width: float) -> None:
+	bevel_modifier = obj.modifiers.new(name='Bevel', type='BEVEL')
+	bevel_modifier.offset_type = 'OFFSET'
+	bevel_modifier.use_clamp_overlap = True
+	bevel_modifier.limit_method = 'WEIGHT'
+	bevel_modifier.width = width
+	bevel_modifier.segments = 1
+	bevel_modifier.profile = 0.5
+	bpy.ops.object.modifier_apply(modifier=bevel_modifier.name)
+
+
+
+
+
+
+
+
+
+
+def apply_bevel_modifier_to_edges(obj: bpy.types.Object, width: float, edge_select_func: Callable[[bmesh.types.BMEdge], bool]) -> None:
+	# Z軸と平行な辺を選択し、Bevel Weightを設定
+	bpy.context.view_layer.objects.active = obj
+	select_edges_by_condition(lambda edge: edge_select_func(edge))
+	set_bevel_weight(obj)
+
+	# ベベルモディファイアを追加、適用
+	apply_bevel_modifier(obj, width)
+
+
+
+
+
+
+
+
+
+
+def calc_linked_face_dot(edge: bmesh.types.BMEdge) -> float | None:
+	"""
+	辺を共有する2つの面の法線の内積を計算する。辺に対する面が2つでなかった場合はNoneを返す。
+
+	Parameters
+	----------
+	edge : bmesh.types.BMEdge
+		内積を計算する辺。
+
+	Returns
+	-------
+	float
+		法線の内積。
+	"""
+	linked_faces = edge.link_faces
+	if len(linked_faces) == 2:
+		# 両面の法線を取得
+		n1 = linked_faces[0].normal
+		n2 = linked_faces[1].normal
+
+		# 法線の内積を計算
+		return n1.dot(n2)
+	else:
+		return None
+
+
+
+
+
+
+
+
+
+
 def select_edges_on_fair_surface(obj: bpy.types.Object, threshold_degree: float = 0) -> None:
 	"""
 	平面上にある辺（隣接する面の法線が同じ辺）を選択します。
@@ -924,18 +1036,9 @@ def select_edges_on_fair_surface(obj: bpy.types.Object, threshold_degree: float 
 	cos_value = math.cos(threshold_radian)
 
 	for edge in bm.edges:
-		linked_faces = edge.link_faces
-		if len(linked_faces) == 2:
-			# 両面の法線を取得
-			normal1 = linked_faces[0].normal
-			normal2 = linked_faces[1].normal
-
-			# 法線の内積を計算
-			dot = normal1.dot(normal2)
-
-			# ドット積が閾値以上なら、その辺を選択
-			if dot >= cos_value:
-				edge.select = True
+		dot = calc_linked_face_dot(edge)
+		if dot is not None and dot >= cos_value:
+			edge.select = True
 
 	# 更新を反映
 	bmesh.update_edit_mesh(obj.data)

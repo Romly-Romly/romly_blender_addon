@@ -34,44 +34,6 @@ AXIS_Z = 'Z'
 
 
 
-
-
-
-
-
-
-
-
-
-
-def remove_decimal_trailing_zeros(value: float) -> str:
-	"""数値を文字列に変換し、小数点以下の右端に0があれば削除する。"""
-	s = f'{value:.3f}'
-	if '.' in s:
-		s = s.rstrip('0')
-		if s[-1] == '.':
-			s = s[0:-1]
-	return s
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 def create_panhead(diameter: float, height: float, segments: int, r_segments: int) -> bpy.types.Object:
 	"""
 	なべネジの頭を作成する。
@@ -833,7 +795,7 @@ class ROMLYADDON_OT_add_jis_screw(bpy.types.Operator):
 
 		# 芯と頭部をひとつのオブジェクトに統合する
 		if len(objects) > 0:
-			obj = romly_utils.create_combined_object(objects=objects, obj_name=f"{self.base_object_name()} M{remove_decimal_trailing_zeros(self.val_diameter)}x{remove_decimal_trailing_zeros(self.val_length)}mm")
+			obj = romly_utils.create_combined_object(objects=objects, obj_name=f"{self.base_object_name()} M{romly_utils.remove_decimal_trailing_zeros(self.val_diameter)}x{romly_utils.remove_decimal_trailing_zeros(self.val_length)}mm")
 			bpy.context.collection.objects.link(obj)
 			obj.select_set(state=True)
 
@@ -979,7 +941,7 @@ class ROMLYADDON_OT_add_jis_nut(bpy.types.Operator):
 		bpy.context.view_layer.objects.active = nutObject
 
 		# 名前
-		nutObject.name = f"{bpy.app.translations.pgettext_data('Nut')} M{remove_decimal_trailing_zeros(self.val_diameter)}"
+		nutObject.name = f"{bpy.app.translations.pgettext_data('Nut')} M{romly_utils.remove_decimal_trailing_zeros(self.val_diameter)}"
 
 		return {'FINISHED'}
 

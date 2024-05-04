@@ -223,25 +223,6 @@ def create_hole(obj: bpy.types.Object, diameter: float, center: tuple[float, flo
 
 
 
-def apply_bevel_modifier(obj: bpy.types.Object, width: float):
-	bevel_modifier = obj.modifiers.new(name='Bevel', type='BEVEL')
-	bevel_modifier.offset_type = 'OFFSET'
-	bevel_modifier.use_clamp_overlap = True
-	bevel_modifier.limit_method = 'WEIGHT'
-	bevel_modifier.width = width
-	bevel_modifier.segments = 1
-	bevel_modifier.profile = 0.5
-	bpy.ops.object.modifier_apply(modifier=bevel_modifier.name)
-
-
-
-
-
-
-
-
-
-
 def apply_bevel(obj: bpy.types.Object, bevel_width: float) -> None:
 	# Z軸と平行な辺を選択し、Bevel Weightを設定
 	bpy.context.view_layer.objects.active = obj
@@ -249,7 +230,7 @@ def apply_bevel(obj: bpy.types.Object, bevel_width: float) -> None:
 	romly_utils.set_bevel_weight(obj)
 
 	# ベベルモディファイアを追加、適用
-	apply_bevel_modifier(obj, bevel_width)
+	romly_utils.apply_bevel_modifier(obj, bevel_width)
 
 
 
@@ -283,7 +264,7 @@ def create_block(width: float, height: float, length: float, y_offset: float, th
 			bm.free()
 
 			# ベベルモディファイアを追加、適用
-			apply_bevel_modifier(obj, bevel_width)
+			romly_utils.apply_bevel_modifier(obj, bevel_width)
 		else:
 			apply_bevel(obj, bevel_width=bevel_width)
 
@@ -454,7 +435,7 @@ class ROMLYADDON_OT_add_linear_guide_rail(bpy.types.Operator):
 		romly_utils.set_bevel_weight(obj)
 
 		# ベベルモディファイアを追加、適用
-		apply_bevel_modifier(obj, 0.3)
+		romly_utils.apply_bevel_modifier(obj, 0.3)
 
 
 

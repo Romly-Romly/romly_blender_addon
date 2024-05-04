@@ -310,7 +310,7 @@ TRANSLATION_DICT = {
 		('*', 'Linear Guide Rail'): 'リニアガイドレール',
 		('*', 'Weight'): '重量',
 
-		# Add Linear Guide Block
+		# MARK: Add Linear Guide Block
 		('*', 'Add Linear Guide Block'): 'リニアガイドブロックを追加',
 		('*', 'Construct a Block for Linear Guide'): 'リニアガイドのブロックを作成します',
 		('*', 'W Width'): 'W 幅',
@@ -368,6 +368,31 @@ TRANSLATION_DICT = {
 		('*', 'Set specs to MGW15C size'): '各寸法をMGW15Cサイズに設定します',
 		('*', 'Set specs to MGW15H size'): '各寸法をMGW15Hサイズに設定します',
 		('*', 'Linear Guide Block'): 'リニアガイドブロック',
+
+		# MARK: Add Coupling
+		('*', 'Add Coupling'): 'カップリングを追加',
+		('*', 'Construct a Coupling'): 'カップリングを作成',
+		('*', '[D] The outer diameter of the Coupling'): '[D] カップリングの外径',
+		('*', '[L] The length (height) of the Coupling'): '[L] カップリングの長さ（高さ）',
+		('*', 'The inner diameter 1 of the Coupling'): 'カップリングの内径1',
+		('*', 'The inner diameter 2 of the Coupling'): 'カップリングの内径2',
+		('*', 'Set Screw Holes'): 'ネジ穴を作る',
+		('*', 'Make set screw holes on the Coupling.'): 'カップリングに止めネジ穴を作成します',
+		('*', 'The distance to the center of the set screw holes from both ends of the coupling'): 'カップリングの両端からネジ穴の中心までの距離',
+		('*', 'Angle on the Z-axis between each pair of opposing set screws'): '対になる止めネジ同士のZ軸の角度',
+		('*', 'Diameter of the set screw holes'): '止めネジ穴の直径',
+		('*', 'Pitch of the set screw hole threads'): '止めネジ穴のねじ切りのピッチ',
+		('*', 'Depth of the set screw hole threads'): '止めネジ穴のねじ切りの深さ',
+		('*', 'Helical Slit'): '螺旋スリット',
+		('*', 'Make helical slit on the coupling'): 'カップリングに螺旋スリットを作成する',
+		('*', 'The width of the helical slit'): '螺旋スリットの幅',
+		('*', 'The rotation count of the slit'): '螺旋スリットの回転数',
+		('*', 'Distance traveled per rotation of the slit'): '螺旋スリットの回転あたりの移動距離',
+		('*', 'The bevel offset width of the edge of the coupling'): 'カップリングの辺のベベルオフセット幅',
+		('*', 'The number of segments of the coupling'): 'カップリングのセグメント数',
+		('*', 'The number of segments of the set screw holes'): '止めネジ穴のセグメント数',
+		('*', 'The number of segments of the slit'): '螺旋スリットのセグメント数',
+		('*', 'Coupling'): 'カップリング',
 
 		# Add Nut Hole
 		('*', 'Add Nut Hole'): 'ナット穴を作成',
@@ -485,6 +510,18 @@ TRANSLATION_DICT = {
 		('*', 'Add Oloid'): 'Ajouter Oloïde',
 		('*', 'Oloid'): 'Oloïde',
 		('*', 'Anti-Oloid'): 'Anti-Oloïde',
+
+		# ねじ関連
+		('*', 'Add JIS Screw'): 'Ajouter vis JIS',
+		('*', 'Screw'): 'Vis',
+
+		# ナット
+		('*', 'Add JIS Nut'): 'Ajouter écrou JIS',
+		('*', 'Nut'): 'Écrou',
+
+		# MARK: Add Coupling
+		('*', 'Add Coupling'): 'Ajouter Accouplement',
+		('*', 'Coupling'): 'Accouplement',
 
 		# language_panel
 		('*', 'Set blender language to specified language'): 'Régler la langue du blender sur la langue spécifiée',
