@@ -121,7 +121,7 @@ TRANSLATION_DICT = {
 		('*', 'The diagonal length of the Sphericon'): 'スフェリコンの対角線の長さ',
 		('*', 'The number of segments in the conic parts of the Sphericon'): 'スフェリコンの円錐部分のセグメント数',
 
-		# クロソイド曲線関連
+		# MARK: クロソイド曲線関連
 		('*', 'Add Clothoid Curve'): 'クロソイド曲線を作成',
 		('*', 'Construct a Clothoid Curve'): 'クロソイド曲線を作成します',
 		('*', 'Add Clothoid Corner Plate'): 'クロソイド角丸板を作成',
@@ -394,8 +394,37 @@ TRANSLATION_DICT = {
 		('*', 'The number of segments of the slit'): '螺旋スリットのセグメント数',
 		('*', 'Coupling'): 'カップリング',
 
+		# MARK: Add Lead Nut
+		('*', 'Add Lead Nut'): 'リードナットを追加',
+		('*', 'Construct a Lead Nut'): 'リードナットを作成',
+		('*', 'Bevel Width'): 'ベベル幅',
+		('*', 'Flange'): '鍔',
+		('*', "Specify the width of the flange when it is not circular. If it's a complete circle, set this value to zero"): 'プレート部分が円形ではない場合の幅を指定します。円形のプレートの場合は0にして下さい',
+		('*', 'Shaft Length Above'): '芯の長さ（上部）',
+		('*', 'Shaft Length Below'): '芯の長さ（下部）',
+		('*', 'Total Length (Height): {value}'): '全体の長さ（高さ）: {value}',
+
+		# MARK: Add Pin Header
+		('*', 'Add Pin Header'): 'ピンヘッダーを追加',
+		('*', 'Construct a Pin Header'): 'ピンヘッダーを作成します',
+		('*', 'Pin pitch of the pin header'): 'ピンヘッダーのピッチ',
+		('*', 'Block Size'): 'ブロックサイズ',
+		('*', 'Size of the pin header housing'): 'ハウジング部分のサイズ',
+		('*', 'Pin Thickness'): 'ピンの太さ',
+		('*', 'Pin Length (Above)'): 'ピンの長さ（上部）',
+		('*', 'Pin Length (Below)'): 'ピンの長さ（下部）',
+		('*', 'Block Concave Size'): 'ブロックの凹みのサイズ',
+		('*', 'Size of the housing concave'): 'ハウジング部分の凹みのサイズ',
+		('*', 'Number of Pins'): 'ピン数',
+		('*', 'Rows'): '行',
+		('*', 'Pin Total Length: {value}'): 'ピンの全長: {value}',
+		('*', 'Pin Header {pitch}mm {rows}x{cols}'): 'ピンヘッダー {pitch}mm {rows}x{cols}',
+		('*', 'Center Position Diameter'): '中心位置の直径',
+		('*', 'The number of screw holes on one side. The total number of screw holes will be twice this value'): '片面のネジ穴の数。全ネジ穴の数はこの値の2倍になります',
+		('*', 'The angle between each screw hole'): '各ネジ穴の間の角度',
+
 		# Add Nut Hole
-		('*', 'Add Nut Hole'): 'ナット穴を作成',
+		('*', 'Add Nut Hole'): 'ナット穴を追加',
 		('*', 'Construct a hole for a nut for 3D printing'): '3Dプリント用のナットの穴を作成します',
 		('*', 'Create Method'): '作成方法',
 		('*', 'Nut Hole'): 'ナット穴',
@@ -511,6 +540,9 @@ TRANSLATION_DICT = {
 		('*', 'Oloid'): 'Oloïde',
 		('*', 'Anti-Oloid'): 'Anti-Oloïde',
 
+		# クロソイド曲線関連
+		('*', 'Thickness'): 'Épaisseur',
+
 		# ねじ関連
 		('*', 'Add JIS Screw'): 'Ajouter vis JIS',
 		('*', 'Screw'): 'Vis',
@@ -522,6 +554,10 @@ TRANSLATION_DICT = {
 		# MARK: Add Coupling
 		('*', 'Add Coupling'): 'Ajouter Accouplement',
 		('*', 'Coupling'): 'Accouplement',
+
+		# MARK: Add Lead Nut
+		('*', 'Add Lead Nut'): 'Ajouter Écrou à vis mère',
+		('*', 'Flange'): 'Bride',
 
 		# language_panel
 		('*', 'Set blender language to specified language'): 'Régler la langue du blender sur la langue spécifiée',

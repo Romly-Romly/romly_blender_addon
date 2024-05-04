@@ -223,27 +223,8 @@ def create_hole(obj: bpy.types.Object, diameter: float, center: tuple[float, flo
 
 
 
-def apply_bevel(obj: bpy.types.Object, bevel_width: float) -> None:
-	# Z軸と平行な辺を選択し、Bevel Weightを設定
-	bpy.context.view_layer.objects.active = obj
-	romly_utils.select_edges_by_condition(lambda edge: not romly_utils.is_edge_along_z_axis(edge))
-	romly_utils.set_bevel_weight(obj)
-
-	# ベベルモディファイアを追加、適用
-	romly_utils.apply_bevel_modifier(obj, bevel_width)
-
-
-
-
-
-
-
-
-
-
 def create_block(width: float, height: float, length: float, y_offset: float, thickness: float = 0, bevel_width: float = 0, diff: bool = False) -> bpy.types.Object:
 	obj = romly_utils.create_box(size=Vector((width, height, length)), offset=Vector((0, -y_offset - height / 2, 0)))
-	bpy.context.collection.objects.link(obj)
 
 	# ベベル
 	if bevel_width > 0:
@@ -266,12 +247,11 @@ def create_block(width: float, height: float, length: float, y_offset: float, th
 			# ベベルモディファイアを追加、適用
 			romly_utils.apply_bevel_modifier(obj, bevel_width)
 		else:
-			apply_bevel(obj, bevel_width=bevel_width)
+			romly_utils.apply_bevel_modifier_to_edges(obj, bevel_width, lambda edge: not romly_utils.is_edge_along_z_axis(edge))
 
 	# 真ん中を削る
 	if thickness > 0:
 		cutter = romly_utils.create_box(size=Vector((width * 2, height * 2, length - thickness * 2)), offset=Vector((0, -y_offset - height / 2, 0)))
-		bpy.context.collection.objects.link(cutter)
 		romly_utils.apply_boolean_object(obj, cutter)
 
 	return obj
@@ -419,7 +399,6 @@ class ROMLYADDON_OT_add_linear_guide_rail(bpy.types.Operator):
 
 	def execute(self, context):
 		obj = romly_utils.create_box(Vector((self.val_rail_width, self.val_rail_height, self.val_rail_length)), offset=Vector((0, -self.val_rail_height / 2, self.val_rail_length / 2)))
-		bpy.context.collection.objects.link(obj)
 
 		# オブジェクト名を設定
 		obj_name = bpy.app.translations.pgettext_data('Linear Guide Rail')
@@ -429,13 +408,8 @@ class ROMLYADDON_OT_add_linear_guide_rail(bpy.types.Operator):
 
 
 
-		# Z軸と平行な辺を選択し、Bevel Weightを設定
-		bpy.context.view_layer.objects.active = obj
-		romly_utils.select_edges_by_condition(lambda edge: not romly_utils.is_edge_along_z_axis(edge))
-		romly_utils.set_bevel_weight(obj)
-
 		# ベベルモディファイアを追加、適用
-		romly_utils.apply_bevel_modifier(obj, 0.3)
+		romly_utils.apply_bevel_modifier_to_edges(obj, 0.3, lambda edge: not romly_utils.is_edge_along_z_axis(edge))
 
 
 
@@ -643,7 +617,6 @@ class ROMLYADDON_OT_add_linear_guide_block(bpy.types.Operator):
 		h = self.val_rail_height + self.val_rail_clearance
 		w = self.val_width - self.val_side_width * 2
 		rail_obj = romly_utils.create_box(size=Vector((w, h, self.val_length + 0.1 * 2)), offset=Vector((0, -h / 2, 0)))
-		bpy.context.collection.objects.link(rail_obj)
 		romly_utils.apply_boolean_object(obj, rail_obj, fast_solver=True)
 
 

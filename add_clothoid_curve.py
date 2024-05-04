@@ -594,7 +594,7 @@ class ROMLYADDON_OT_add_clothoid_corner_plate(bpy.types.Operator):
 
 		row = col.row(align=True)
 		row.prop(self, 'val_size')
-		col.prop(self, 'val_thickness')
+		col.prop(self, 'val_thickness', text=romly_utils.translate('Thickness', 'IFACE'))	# 'Thickness'はBlender内部の辞書で『幅』に翻訳されてしまうので、自前で翻訳
 		col.separator()
 
 		col.prop(self, 'val_num_vertices')

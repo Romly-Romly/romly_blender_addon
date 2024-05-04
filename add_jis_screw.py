@@ -878,7 +878,7 @@ class ROMLYADDON_OT_add_jis_nut(bpy.types.Operator):
 
 		col.prop(self, 'val_nutDiameter')
 		col.prop(self, 'val_diameter')
-		col.prop(self, 'val_nutHeight')
+		col.prop(self, 'val_nutHeight', text=romly_utils.translate('Thickness', 'IFACE'))	# 'Thickness'はBlender内部の辞書で『幅』に翻訳されてしまうので、自前で翻訳
 
 		col.label(text='Threading')
 		row = col.row(align=True)

@@ -108,14 +108,14 @@ class ROMLYADDON_OT_add_cross_extrusion(bpy.types.Operator):
 		col.label(text="Horizontal Line")
 		row = col.row(align=True)
 		row.prop(self, 'val_hLineLength', text='Length')
-		row.prop(self, 'val_hLineThickness', text='Thickness')
+		row.prop(self, 'val_hLineThickness', text=romly_utils.translate('Thickness', 'IFACE'))	# 'Thickness'はBlender内部の辞書で『幅』に翻訳されてしまうので、自前で翻訳
 
 		col.label(text="Vertical Line")
 		row = col.row(align=True)
 		row.prop(self, 'val_vLineLength', text='Length')
-		row.prop(self, 'val_vLineThickness', text='Thickness')
-
+		row.prop(self, 'val_vLineThickness', text=romly_utils.translate('Thickness', 'IFACE'))	# 'Thickness'はBlender内部の辞書で『幅』に翻訳されてしまうので、自前で翻訳
 		col.separator()
+
 		col.prop(self, 'val_height')
 		row = col.row(align=True)
 		row.label(text='Origin')

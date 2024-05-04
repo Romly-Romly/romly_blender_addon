@@ -57,75 +57,6 @@ class SlitSize(NamedTuple):
 
 
 
-def create_box(corner1: tuple[float, float, float], corner2: tuple[float, float, float]) -> bpy.types.Object:
-	"""
-	corner1、corner2を対角座標とする直方体を生成する。
-
-	Parameters
-	----------
-	corner1 : tuple[float, float, float]
-		直方体の1つ目の角の座標(x, y, z)。
-	corner2 : tuple[float, float, float]
-		corner1の対角位置の座標(x, y, z)。
-
-	Returns
-	-------
-	bpy.types.Object
-	"""
-	# 座標を小さい順と大きい順で整理
-	min_c = [min(corner1[i], corner2[i]) for i in range(3)]
-	max_c = [max(corner1[i], corner2[i]) for i in range(3)]
-
-	# メッシュデータの作成
-	mesh = bpy.data.meshes.new('BoxMesh')
-	bm = bmesh.new()
-
-	# 頂点を追加
-	verts = [
-		bm.verts.new((min_c[0], min_c[1], min_c[2])),
-		bm.verts.new((max_c[0], min_c[1], min_c[2])),
-		bm.verts.new((max_c[0], max_c[1], min_c[2])),
-		bm.verts.new((min_c[0], max_c[1], min_c[2])),
-		bm.verts.new((min_c[0], min_c[1], max_c[2])),
-		bm.verts.new((max_c[0], min_c[1], max_c[2])),
-		bm.verts.new((max_c[0], max_c[1], max_c[2])),
-		bm.verts.new((min_c[0], max_c[1], max_c[2])),
-	]
-
-	# 面を作成
-	faces = [
-		(0, 1, 5, 4),  # 下面
-		(1, 2, 6, 5),  # 側面1
-		(2, 3, 7, 6),  # 上面
-		(3, 0, 4, 7),  # 側面2
-		(0, 3, 2, 1),  # 前面
-		(4, 5, 6, 7)   # 背面
-	]
-
-	for face in faces:
-		bm.faces.new([verts[i] for i in face])
-
-	# メッシュデータをオブジェクトに変換
-	bm.to_mesh(mesh)
-	bm.free()
-
-	# オブジェクトを作成し、メッシュを割り当てる
-	box_object = bpy.data.objects.new('BoxObject', mesh)
-
-	# シーンにオブジェクトを追加
-	bpy.context.collection.objects.link(box_object)
-
-	return box_object
-
-
-
-
-
-
-
-
-
-
 def create_nut_hole_object(type: Literal['sacrificial', 'bridge'], nut_diameter: float, screw_hole_diameter: float, layer_thickness: float, screw_hole_segments: int, nut_hole_depth: float, nut_hole_surplus: float, screw_hole_length: float, seam_slit: SlitSize, seam_slit_count: int, first_layer_slit: SlitSize, first_layer_slit_angle: float) -> bpy.types.Object:
 	"""_summary_
 
@@ -180,7 +111,7 @@ def create_nut_hole_object(type: Literal['sacrificial', 'bridge'], nut_diameter:
 	# 六角柱のシーム避けスリット
 	if seam_slit.has_size():
 		corner2_y = 0 if seam_slit_count == 1 else -nut_diameter / 2 - seam_slit.length
-		tool_object = create_box(corner1=(-seam_slit.thickness / 2, nut_diameter / 2 + seam_slit.length, nut_hole_depth), corner2=(seam_slit.thickness / 2, corner2_y, -(nut_hole_surplus + SURPLUS_LENGTH)))
+		tool_object = romly_utils.create_box_from_corners(corner1=(-seam_slit.thickness / 2, nut_diameter / 2 + seam_slit.length, nut_hole_depth), corner2=(seam_slit.thickness / 2, corner2_y, -(nut_hole_surplus + SURPLUS_LENGTH)))
 		tool_object.select_set(True)
 		bpy.ops.transform.rotate(value=math.pi / 2, orient_axis='Z', orient_type='GLOBAL', orient_matrix=((1, 0, 0), (0, 1, 0), (0, 0, 1)), orient_matrix_type='GLOBAL', center_override=(0, 0, 0))
 		romly_utils.apply_boolean_object(hexagon_cylinder, tool_object, operation='UNION');
@@ -203,33 +134,33 @@ def create_nut_hole_object(type: Literal['sacrificial', 'bridge'], nut_diameter:
 
 		if type == 'bridge':
 			# 直方体を二つ作って左右を削る
-			cutter_object = create_box(corner1=(-nut_diameter, nut_diameter, 0), corner2=(-screw_hole_diameter / 2, -nut_diameter, ENOUGH_HEIGHT))
+			cutter_object = romly_utils.create_box_from_corners(corner1=(-nut_diameter, nut_diameter, 0), corner2=(-screw_hole_diameter / 2, -nut_diameter, ENOUGH_HEIGHT))
 			cutter_object.location += Vector((0, 0, nut_hole_depth - layer_thickness * 2))
 			romly_utils.apply_boolean_object(hexagon_cylinder, cutter_object);
-			cutter_object = create_box(corner1=(nut_diameter, nut_diameter, 0), corner2=(screw_hole_diameter / 2, -nut_diameter, ENOUGH_HEIGHT))
+			cutter_object = romly_utils.create_box_from_corners(corner1=(nut_diameter, nut_diameter, 0), corner2=(screw_hole_diameter / 2, -nut_diameter, ENOUGH_HEIGHT))
 			cutter_object.location += Vector((0, 0, nut_hole_depth - layer_thickness * 2))
 			romly_utils.apply_boolean_object(hexagon_cylinder, cutter_object);
 
 		# 六角柱のシーム避けスリット（2本目以降）
 		if seam_slit.has_size() and seam_slit_count > 1:
 			for i in range(1, 3):
-				tool_object = create_box(corner1=(-seam_slit.thickness / 2, nut_diameter / 2 + seam_slit.length, nut_hole_depth), corner2=(seam_slit.thickness / 2, -nut_diameter / 2 - seam_slit.length, -(nut_hole_surplus + SURPLUS_LENGTH)))
+				tool_object = romly_utils.create_box_from_corners(corner1=(-seam_slit.thickness / 2, nut_diameter / 2 + seam_slit.length, nut_hole_depth), corner2=(seam_slit.thickness / 2, -nut_diameter / 2 - seam_slit.length, -(nut_hole_surplus + SURPLUS_LENGTH)))
 				tool_object.select_set(True)
 				bpy.ops.transform.rotate(value=math.pi / 2 + math.radians(60 * i), orient_axis='Z', orient_type='GLOBAL', orient_matrix=((1, 0, 0), (0, 1, 0), (0, 0, 1)), orient_matrix_type='GLOBAL', center_override=(0, 0, 0))
 				romly_utils.apply_boolean_object(hexagon_cylinder, tool_object, operation='UNION');
 
 		if type == 'bridge':
 			# 直方体2つを使って上下を削る
-			cutter_object = create_box(corner1=(-nut_diameter, nut_diameter, 0), corner2=(nut_diameter, screw_hole_diameter / 2, ENOUGH_HEIGHT))
+			cutter_object = romly_utils.create_box_from_corners(corner1=(-nut_diameter, nut_diameter, 0), corner2=(nut_diameter, screw_hole_diameter / 2, ENOUGH_HEIGHT))
 			cutter_object.location += Vector((0, 0, nut_hole_depth - layer_thickness))
 			romly_utils.apply_boolean_object(hexagon_cylinder, cutter_object);
-			cutter_object = create_box(corner1=(-nut_diameter, -nut_diameter, 0), corner2=(nut_diameter, -screw_hole_diameter / 2, ENOUGH_HEIGHT))
+			cutter_object = romly_utils.create_box_from_corners(corner1=(-nut_diameter, -nut_diameter, 0), corner2=(nut_diameter, -screw_hole_diameter / 2, ENOUGH_HEIGHT))
 			cutter_object.location += Vector((0, 0, nut_hole_depth - layer_thickness))
 			romly_utils.apply_boolean_object(hexagon_cylinder, cutter_object);
 
 	# 円柱のシーム避けスリット
 	if seam_slit.has_size():
-		tool_object = create_box(corner1=(-seam_slit.thickness / 2, screw_hole_diameter / 2 + seam_slit.length, nut_hole_depth), corner2=(seam_slit.thickness / 2, 0, nut_hole_depth + screw_hole_length + SURPLUS_LENGTH))
+		tool_object = romly_utils.create_box_from_corners(corner1=(-seam_slit.thickness / 2, screw_hole_diameter / 2 + seam_slit.length, nut_hole_depth), corner2=(seam_slit.thickness / 2, 0, nut_hole_depth + screw_hole_length + SURPLUS_LENGTH))
 		tool_object.select_set(True)
 		bpy.ops.transform.rotate(value=math.pi / 2, orient_axis='Z', orient_type='GLOBAL', orient_matrix=((1, 0, 0), (0, 1, 0), (0, 0, 1)), orient_matrix_type='GLOBAL', center_override=(0, 0, 0))
 		romly_utils.apply_boolean_object(hexagon_cylinder, tool_object, operation='UNION');
@@ -238,7 +169,7 @@ def create_nut_hole_object(type: Literal['sacrificial', 'bridge'], nut_diameter:
 
 	# 犠牲レイヤーの場合のレイヤー作成
 	if type == 'sacrificial':
-		cutter_object = create_box(corner1=(-enough_size, enough_size, nut_hole_depth + layer_thickness), corner2=(enough_size, -enough_size, nut_hole_depth))
+		cutter_object = romly_utils.create_box_from_corners(corner1=(-enough_size, enough_size, nut_hole_depth + layer_thickness), corner2=(enough_size, -enough_size, nut_hole_depth))
 		romly_utils.apply_boolean_object(hexagon_cylinder, cutter_object);
 
 
@@ -247,7 +178,7 @@ def create_nut_hole_object(type: Literal['sacrificial', 'bridge'], nut_diameter:
 	if first_layer_slit.has_size():
 		x_size = first_layer_slit.thickness / 2
 		y_size = nut_diameter / 2 + first_layer_slit.length
-		cutter_object = create_box(corner1=(-x_size, 0, first_layer_slit.height), corner2=(x_size, y_size, -(nut_hole_surplus + SURPLUS_LENGTH)))
+		cutter_object = romly_utils.create_box_from_corners(corner1=(-x_size, 0, first_layer_slit.height), corner2=(x_size, y_size, -(nut_hole_surplus + SURPLUS_LENGTH)))
 		cutter_object.select_set(True)
 		bpy.ops.transform.rotate(value=math.pi / 2 + first_layer_slit_angle, orient_axis='Z', orient_type='GLOBAL', orient_matrix=((1, 0, 0), (0, 1, 0), (0, 0, 1)), orient_matrix_type='GLOBAL', center_override=(0, 0, 0))
 		romly_utils.apply_boolean_object(hexagon_cylinder, cutter_object, operation='UNION');
@@ -257,11 +188,11 @@ def create_nut_hole_object(type: Literal['sacrificial', 'bridge'], nut_diameter:
 	enough_size_y = nut_diameter / 2 + max(seam_slit.length, first_layer_slit.length) * 2
 
 	# 余分に伸ばした円柱（上部）を削る
-	cutter_object = create_box(corner1=(-enough_size, enough_size, nut_hole_depth + screw_hole_length), corner2=(enough_size, -enough_size, nut_hole_depth + screw_hole_length + SURPLUS_LENGTH * 2))
+	cutter_object = romly_utils.create_box_from_corners(corner1=(-enough_size, enough_size, nut_hole_depth + screw_hole_length), corner2=(enough_size, -enough_size, nut_hole_depth + screw_hole_length + SURPLUS_LENGTH * 2))
 	romly_utils.apply_boolean_object(hexagon_cylinder, cutter_object);
 
 	# 余分に伸ばした下部を削る
-	cutter_object = create_box(corner1=(-enough_size, enough_size_y, -nut_hole_surplus), corner2=(enough_size, -enough_size_y, -nut_hole_surplus - SURPLUS_LENGTH * 2))
+	cutter_object = romly_utils.create_box_from_corners(corner1=(-enough_size, enough_size_y, -nut_hole_surplus), corner2=(enough_size, -enough_size_y, -nut_hole_surplus - SURPLUS_LENGTH * 2))
 	romly_utils.apply_boolean_object(hexagon_cylinder, cutter_object);
 
 	return hexagon_cylinder
@@ -432,7 +363,7 @@ class ROMLYADDON_OT_add_nut_hole(bpy.types.Operator):
 		col.label(text='Seam Avoidance Slit')
 		row = col.row(align=True)
 		row.prop(self, 'val_no_seam_slit_length', text='Depth')
-		row.prop(self, 'val_no_seam_slit_width', text='Thickness')
+		row.prop(self, 'val_no_seam_slit_width', text=romly_utils.translate('Thickness', 'IFACE'))	# 'Thickness'はBlender内部の辞書で『幅』に翻訳されてしまうので、自前で翻訳
 		row = col.row(align=True)
 		row.label(text='Count')
 		row.prop(self, 'val_no_seam_slit_count', expand=True)
@@ -441,7 +372,7 @@ class ROMLYADDON_OT_add_nut_hole(bpy.types.Operator):
 		col.label(text='First Layer Slit')
 		row = col.row(align=True)
 		row.prop(self, 'val_first_layer_slit_length', text='Depth')
-		row.prop(self, 'val_first_layer_slit_width', text='Thickness')
+		row.prop(self, 'val_first_layer_slit_width', text=romly_utils.translate('Thickness', 'IFACE'))	# 'Thickness'はBlender内部の辞書で『幅』に翻訳されてしまうので、自前で翻訳
 		row = col.row(align=True)
 		row.prop(self, 'val_first_layer_slit_height', text='Height')
 		row.prop(self, 'val_first_layer_slit_angle', text='Angle')

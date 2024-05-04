@@ -295,7 +295,7 @@ def create_box(size: Vector, offset: Vector = Vector((0, 0, 0))) -> bpy.types.Ob
 	Returns
 	-------
 	bpy.types.Object
-		作成されたオブジェクト。Blenderのシーンにはリンクされていない状態なので注意。
+		作成されたオブジェクト。Blenderのシーンには既にリンクされた状態。
 	"""
 	vertices = [
 		mathutils.Vector([-0.5, -0.5, -0.5]),	# 0 正面 左下
@@ -317,7 +317,9 @@ def create_box(size: Vector, offset: Vector = Vector((0, 0, 0))) -> bpy.types.Ob
 	]
 
 	actual_vertices = [(v * size) + offset for v in vertices]
-	return cleanup_mesh(create_object(vertices=actual_vertices, faces=faces))
+	obj = cleanup_mesh(create_object(vertices=actual_vertices, faces=faces))
+	bpy.context.collection.objects.link(obj)
+	return obj
 
 
 
@@ -328,7 +330,96 @@ def create_box(size: Vector, offset: Vector = Vector((0, 0, 0))) -> bpy.types.Ob
 
 
 
-def create_cylinder(radius: float, length_z_plus: float, length_z_minus: float = 0, segments: int = 0) -> bpy.types.Object:
+def create_box_from_corners(corner1: tuple[float, float, float], corner2: tuple[float, float, float]) -> bpy.types.Object:
+	"""
+	corner1、corner2を対角座標とする直方体を生成する。
+
+	Parameters
+	----------
+	corner1 : tuple[float, float, float]
+		直方体の1つ目の角の座標(x, y, z)。
+	corner2 : tuple[float, float, float]
+		corner1の対角位置の座標(x, y, z)。
+
+	Returns
+	-------
+	bpy.types.Object
+	"""
+	# 座標を小さい順と大きい順で整理
+	min_c = [min(corner1[i], corner2[i]) for i in range(3)]
+	max_c = [max(corner1[i], corner2[i]) for i in range(3)]
+
+	# メッシュデータの作成
+	mesh = bpy.data.meshes.new('BoxMesh')
+	bm = bmesh.new()
+
+	# 頂点を追加
+	verts = [
+		bm.verts.new((min_c[0], min_c[1], min_c[2])),
+		bm.verts.new((max_c[0], min_c[1], min_c[2])),
+		bm.verts.new((max_c[0], max_c[1], min_c[2])),
+		bm.verts.new((min_c[0], max_c[1], min_c[2])),
+		bm.verts.new((min_c[0], min_c[1], max_c[2])),
+		bm.verts.new((max_c[0], min_c[1], max_c[2])),
+		bm.verts.new((max_c[0], max_c[1], max_c[2])),
+		bm.verts.new((min_c[0], max_c[1], max_c[2])),
+	]
+
+	# 面を作成
+	faces = [
+		(0, 1, 5, 4),  # 下面
+		(1, 2, 6, 5),  # 側面1
+		(2, 3, 7, 6),  # 上面
+		(3, 0, 4, 7),  # 側面2
+		(0, 3, 2, 1),  # 前面
+		(4, 5, 6, 7)   # 背面
+	]
+
+	for face in faces:
+		bm.faces.new([verts[i] for i in face])
+
+	# メッシュデータをオブジェクトに変換
+	bm.to_mesh(mesh)
+	bm.free()
+
+	# オブジェクトを作成し、メッシュを割り当てる
+	box_object = bpy.data.objects.new('BoxObject', mesh)
+
+	# シーンにオブジェクトを追加
+	bpy.context.collection.objects.link(box_object)
+
+	return box_object
+
+
+
+
+
+
+
+
+
+
+# MARK: create_cylinder
+def create_cylinder(radius: float, length_z_plus: float, length_z_minus: float = 0, segments: int = 32) -> bpy.types.Object:
+	"""
+	円柱のオブジェクトを生成する。生成される円柱の長さは `length_z_plus` + `length_z_minus` となる。
+
+	Parameters
+	----------
+	radius : float
+		円柱の半径。
+	length_z_plus : float
+		Z軸プラス方向に伸びる円柱の長さ。
+	length_z_minus : float, optional
+		Z軸マイナス方向に伸びる円柱の長さ（デフォルトは0）。
+	segments : int, optional
+		円柱のセグメントの数。ディフォルトは32。
+
+	Returns
+	-------
+	bpy.types.Object
+		生成された円柱のオブジェクト。Blenderのシーンには既にリンクされた状態。
+	"""
 	vertices = make_circle_vertices(radius=radius, num_vertices=segments, center=(0, 0, -length_z_minus))
 	faces = [list(range(len(vertices)))]
 	extrude_face(vertices, faces=faces, extrude_vertex_indices=list(range(len(vertices))), z_offset=length_z_plus + length_z_minus)
@@ -346,6 +437,7 @@ def create_cylinder(radius: float, length_z_plus: float, length_z_minus: float =
 
 
 
+# MARK: create_threaded_cylinder
 def create_threaded_cylinder(diameter: float, length: float, pitch: float, lead: int, thread_depth: float, segments: int, bevel_segments: int, edge_flat: bool = False) -> bpy.types.Object:
 	"""
 	ねじ切りの入った円柱を生成する。
@@ -506,13 +598,33 @@ def create_threaded_cylinder(diameter: float, length: float, pitch: float, lead:
 	# 上下のカット
 	if edge_flat:
 		cutter = create_box(size=Vector((diameter * 2, diameter * 2, length)), offset=Vector((0, 0, -length - length / 2)))
-		bpy.context.collection.objects.link(cutter)
 		apply_boolean_object(obj, cutter)
 		cutter = create_box(size=Vector((diameter * 2, diameter * 2, length)), offset=Vector((0, 0, length / 2)))
-		bpy.context.collection.objects.link(cutter)
 		apply_boolean_object(obj, cutter)
 
 	return obj
+
+
+
+
+
+
+
+
+
+
+def create_empty_object() -> bpy.types.Object:
+	"""
+	頂点を持たない空のオブジェクトを生成する。
+
+	Returns
+	-------
+	bpy.types.Object
+		生成されたオブジェクト。Blenderのシーンには既にリンクされた状態。
+	"""
+	empty = create_object(vertices=[], faces=[])
+	bpy.context.collection.objects.link(empty)
+	return empty
 
 
 
@@ -953,6 +1065,7 @@ def apply_bevel_modifier(obj: bpy.types.Object, width: float) -> None:
 	bevel_modifier.width = width
 	bevel_modifier.segments = 1
 	bevel_modifier.profile = 0.5
+	bpy.context.view_layer.objects.active = obj
 	bpy.ops.object.modifier_apply(modifier=bevel_modifier.name)
 
 
@@ -965,9 +1078,7 @@ def apply_bevel_modifier(obj: bpy.types.Object, width: float) -> None:
 
 
 def apply_bevel_modifier_to_edges(obj: bpy.types.Object, width: float, edge_select_func: Callable[[bmesh.types.BMEdge], bool]) -> None:
-	# Z軸と平行な辺を選択し、Bevel Weightを設定
-	bpy.context.view_layer.objects.active = obj
-	select_edges_by_condition(lambda edge: edge_select_func(edge))
+	select_edges_by_condition(obj, lambda edge: edge_select_func(edge))
 	set_bevel_weight(obj)
 
 	# ベベルモディファイアを追加、適用
@@ -1095,6 +1206,28 @@ def select_edges_along_axis(obj: bpy.types.Object, axis: tuple[bool, bool, bool]
 
 
 
+def clear_bevel_weight(obj: bpy.types.Object) -> None:
+	"""
+	指定されたオブジェクトのすべての辺の Bevel Weight を 0 に設定する。
+
+	Parameters
+	----------
+	obj : bpy.types.Object
+		_description_
+	"""
+	# Z軸と平行な辺を選択し、Bevel Weightを設定
+	select_edges_by_condition(obj, lambda edge: True)
+	set_bevel_weight(obj, bevel_weight=0.0)
+
+
+
+
+
+
+
+
+
+
 def set_bevel_weight(obj: bpy.types.Object, bevel_weight: float = 1.0) -> None:
 	"""
 	アクティブオブジェクトを対象に、選択されている辺に Bevel Weight を設定する。
@@ -1128,7 +1261,7 @@ def set_bevel_weight(obj: bpy.types.Object, bevel_weight: float = 1.0) -> None:
 
 
 
-def select_edges_by_condition(condition_func: Callable[[bmesh.types.BMEdge], bool]) -> None:
+def select_edges_by_condition(obj: bpy.types.Object, condition_func: Callable[[bmesh.types.BMEdge], bool]) -> None:
 	"""
 	指定された条件に合った全てのエッジを選択する。
 
@@ -1137,21 +1270,18 @@ def select_edges_by_condition(condition_func: Callable[[bmesh.types.BMEdge], boo
 	condition_func : Callable[[bmesh.types.BMEdge], bool]
 		選択の条件となるboolを返す関数。
 	"""
-	# from_edit_mesh は編集モードでないとエラーになるので、必要に応じて編集モードに変更
-	obj = bpy.context.view_layer.objects.active
-	current_mode = bpy.context.object.mode
-	if current_mode != 'EDIT':
-		bpy.ops.object.mode_set(mode='EDIT')
-
-	bpy.ops.mesh.select_all(action='DESELECT')	# 選択をクリア
-
-	bm = bmesh.from_edit_mesh(obj.data)
+	bm = bmesh.new()
+	bm.from_mesh(obj.data)
+	bm.select_flush(True)
 	for edge in bm.edges:
 		edge.select = condition_func(edge)
-	bmesh.update_edit_mesh(obj.data)
 
-	if current_mode != bpy.context.object.mode:
-		bpy.ops.object.mode_set(mode=current_mode)
+	# これがキモで呼ばないと選択状態が変わらない
+	bm.select_flush(False)
+
+	# 更新
+	bm.to_mesh(obj.data)
+	bm.free()
 
 
 
@@ -1321,6 +1451,48 @@ def is_blender_version_at_least(major: int, minor: int) -> bool:
 	"""
 	# blenderのバージョンは bpy.app.version に[メジャー, マイナー, リビジョン]で格納されている
 	return bpy.app.version[0] >= major and bpy.app.version[1] >= minor
+
+
+
+
+
+
+
+
+
+
+def translate(s: str, category: Literal['IFACE', 'TIP', 'DATA', 'RPT']) -> str:
+	"""
+	指定された文字列をBlenderのシステムに頼らず自前で翻訳する処理。'Thickness'という単語が内部辞書で『幅』に翻訳されてしまうので、回避して正しく『厚み』に翻訳できるよう作った。
+
+	Parameters
+	----------
+	s : str
+		翻訳する文字列。
+	category : Literal['IFACE', 'TIP', 'DATA', 'RPT']
+		翻訳のカテゴリ。`RPT`はBlender 4.1以上で対応。
+
+	Returns
+	-------
+	str
+		翻訳後の文字列。`romly_translation.TRANSLATION_DICT`に見つからなかった場合は s をそのまま返す。
+	"""
+
+	# カテゴリがマッチするかのチェック。RPTは4.1以上のみ
+	category_match = ((category == 'IFACE' and bpy.context.preferences.view.use_translate_interface) or
+		(category == 'TIP' and bpy.context.preferences.view.use_translate_tooltips) or
+		(category == 'DATA' and bpy.context.preferences.view.use_translate_new_dataname) or
+		(is_blender_version_at_least(4, 1) and category == 'RPT' and bpy.context.preferences.view.use_translate_reports))
+
+	if category_match:
+		loc = bpy.app.translations.locale
+		dict = romly_translation.TRANSLATION_DICT.get(loc)
+		if dict:
+			for key in dict:
+				if key[1] == s:
+					return dict[key]
+
+	return s
 
 
 

@@ -73,7 +73,6 @@ class ROMLYADDON_OT_add_box(bpy.types.Operator):
 		obj_name = 'Cube' if self.val_size[0] == self.val_size[1] and self.val_size[1] == self.val_size[2] else 'Cuboid'
 		obj = romly_utils.create_box(size=self.val_size, offset=offset)
 		obj.name = bpy.app.translations.pgettext_data(obj_name)
-		bpy.context.collection.objects.link(obj)
 
 		# オブジェクトを3Dカーソル位置へ移動
 		obj.location = bpy.context.scene.cursor.location

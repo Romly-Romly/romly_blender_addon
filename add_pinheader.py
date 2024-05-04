@@ -2,6 +2,8 @@ import bpy
 import mathutils
 import bmesh
 from bpy.props import *
+from typing import NamedTuple
+from mathutils import Vector
 
 
 
@@ -37,10 +39,32 @@ def pin_pitch_to_value(pin_pitch: str):
 
 
 
+
+
+
+
+
+class PinHeaderSpec(NamedTuple):
+	pin_thickness: float
+	pin_length_above: float
+	pin_length_below: float
+	block_size: Vector
+	block_concave_size: Vector
+
+
+
+
+
+
+
+
+
+
+# MARK: ROMLYADDON_OT_add_pinheader
 class ROMLYADDON_OT_add_pinheader(bpy.types.Operator):
-	bl_idname = "romlyaddon.add_pinheader"
-	bl_label = "Add Pin Header"
-	bl_description = 'ピンヘッダのメッシュを追加します'
+	bl_idname = 'romlyaddon.add_pinheader'
+	bl_label = bpy.app.translations.pgettext_iface('Add Pin Header')
+	bl_description = 'Construct a Pin Header'
 	bl_options = {'REGISTER', 'UNDO'}
 
 
@@ -51,38 +75,32 @@ class ROMLYADDON_OT_add_pinheader(bpy.types.Operator):
 
 
 	def on_pitch_update(self, context):
-		if self.val_pitch == PIN_PITCH_127:
-			self.val_block_size = mathutils.Vector([1.27, 2.1, 1.5])
-			self.val_pin_thickness = 0.4
-			self.val_pin_length_top = 3
-			self.val_pin_length_bottom = 2.3
-			self.val_block_concave_size = mathutils.Vector([0, 0, 0])
-		elif self.val_pitch == PIN_PITCH_200:
-			self.val_block_size = mathutils.Vector([2, 2, 2])
-			self.val_pin_thickness = 0.5
-			self.val_pin_length_top = 4
-			self.val_pin_length_bottom = 2.8
-			self.val_block_concave_size = mathutils.Vector([3, 1.4, 0.3])
-		elif self.val_pitch == PIN_PITCH_254:
-			self.val_block_size = mathutils.Vector([2.54, 2.5, 2.5])
-			self.val_pin_thickness = 0.64
-			self.val_pin_length_top = 6.1
-			self.val_pin_length_bottom = 3
-			self.val_block_concave_size = mathutils.Vector([3, 1.6, 0.4])
+		PIN_SPECS = {
+			PIN_PITCH_127: PinHeaderSpec(pin_thickness=0.4, pin_length_above=3, pin_length_below=2.3, block_size=Vector([1.27, 2.1, 1.5]), block_concave_size=Vector([0, 0, 0])),
+			PIN_PITCH_200: PinHeaderSpec(pin_thickness=0.5, pin_length_above=4, pin_length_below=2.8, block_size=Vector([2, 2, 2]), block_concave_size=Vector([3, 1.4, 0.3])),
+			PIN_PITCH_254: PinHeaderSpec(pin_thickness=0.64, pin_length_above=6.1, pin_length_below=3, block_size=Vector([2.54, 2.5, 2.5]), block_concave_size=Vector([3, 1.6, 0.4])),
+		}
+		spec = PIN_SPECS.get(self.val_pitch)
+		if spec:
+			self.val_pin_thickness = spec.pin_thickness
+			self.val_pin_length_top = spec.pin_length_above
+			self.val_pin_length_bottom = spec.pin_length_below
+			self.val_block_size = spec.block_size
+			self.val_block_concave_size = spec.block_concave_size
 
 
 
 	# プロパティ
-	val_pitch: EnumProperty(name='Pitch', description='ピッチ', default=PIN_PITCH_254, items=PIN_PITCHES, update=on_pitch_update)
+	val_pitch: EnumProperty(name='Pitch', description='Pin pitch of the pin header', default=PIN_PITCH_254, items=PIN_PITCHES, update=on_pitch_update)
 
-	val_block_size: FloatVectorProperty(name='Block Size', size=3, min=0.1, soft_max=2.54, description='プラスチック部分のサイズ', subtype='TRANSLATION', unit='LENGTH', precision=3)
-	val_pin_thickness: FloatProperty(name='Pin Thickness', min=0.1, soft_max=1, description='ピンの太さ', unit='LENGTH')
-	val_pin_length_top: FloatProperty(name='Pin Length (Top)', min=0.1, soft_max=10, description='ピンの長さ（上部）', unit='LENGTH')
-	val_pin_length_bottom: FloatProperty(name='Pin Length (Bottom)', min=0.1, soft_max=10, description='ピンの長さ（下部）', unit='LENGTH')
-	val_block_concave_size: FloatVectorProperty(name='Block Concave Size', size=3, min=0, soft_max=2, description='プラスチック部分の凹みのサイズ', subtype='TRANSLATION', unit='LENGTH')
+	val_block_size: FloatVectorProperty(name='Block Size', size=3, min=0.1, soft_max=2.54, description='Size of the pin header housing', subtype='TRANSLATION', unit='LENGTH', precision=3)
+	val_pin_thickness: FloatProperty(name='Pin Thickness', min=0.1, soft_max=1, unit='LENGTH')
+	val_pin_length_top: FloatProperty(name='Pin Length (Above)', min=0.1, soft_max=10, unit='LENGTH')
+	val_pin_length_bottom: FloatProperty(name='Pin Length (Below)', min=0.1, soft_max=10, unit='LENGTH')
+	val_block_concave_size: FloatVectorProperty(name='Block Concave Size', size=3, min=0, soft_max=2, description='Size of the housing concave', subtype='TRANSLATION', unit='LENGTH')
 
-	val_num_cols: IntProperty(name='Columns', description='ピン数', default=4, min=1, soft_max=20)
-	val_num_rows: IntProperty(name='Rows', description='行数', default=1, min=1, soft_max=3)
+	val_num_cols: IntProperty(name='Columns', default=4, min=1, soft_max=20)
+	val_num_rows: IntProperty(name='Rows', default=1, min=1, soft_max=3)
 
 
 
@@ -97,7 +115,7 @@ class ROMLYADDON_OT_add_pinheader(bpy.types.Operator):
 	def draw(self, context):
 		col = self.layout.column()
 
-		col.label(text="Pitch")
+		col.label(text='Pitch')
 		row = col.row(align=True)
 		row.prop(self, 'val_pitch', expand=True)
 		col.separator()
@@ -105,21 +123,24 @@ class ROMLYADDON_OT_add_pinheader(bpy.types.Operator):
 		row = col.row(align=True)
 		row.prop(self, 'val_pin_thickness')
 		row = col.row(align=True)
-		row.prop(self, 'val_pin_length_top')
-		row = col.row(align=True)
-		row.prop(self, 'val_pin_length_bottom')
+		col_pin_length = col.column(align=True)
+		col_pin_length.prop(self, 'val_pin_length_top')
+		col_pin_length.prop(self, 'val_pin_length_bottom')
 		row = col.row(align=True)
 		row.alignment = 'RIGHT'
-		row.label(text=f"Pin Total Length: {romly_utils.units_to_string(self.val_pin_length_top + self.val_pin_length_bottom + self.val_block_size[2])}")
+		text = bpy.app.translations.pgettext_iface('Pin Total Length: {value}')
+		row.label(text=text.format(value=romly_utils.units_to_string(self.val_pin_length_top + self.val_pin_length_bottom + self.val_block_size[2])))
 		col.separator()
 
 		col.label(text='Block Size')
 		row = col.row(align=True)
 		row.prop(self, 'val_block_size', text='')
-		col.prop(self, 'val_block_concave_size')
+		col.label(text='Block Concave Size')
+		row = col.row(align=True)
+		row.prop(self, 'val_block_concave_size', text='')
 		col.separator()
 
-		col.label(text="Pins")
+		col.label(text='Number of Pins')
 		row = col.row(align=True)
 		row.prop(self, 'val_num_cols')
 		row.prop(self, 'val_num_rows')
@@ -136,37 +157,16 @@ class ROMLYADDON_OT_add_pinheader(bpy.types.Operator):
 		# 設定に従った頂点を生成
 		obj_plastic = romly_utils.create_box(size=self.val_block_size, offset=mathutils.Vector([0, 0, self.val_block_size[2] / 2]))
 
-		bpy.context.collection.objects.link(obj_plastic)
-
-		# Z軸と平行でない辺を選択し、Bevel Weightを設定
-		bpy.context.view_layer.objects.active = obj_plastic
-		romly_utils.select_edges_by_condition(lambda edge: not romly_utils.is_edge_along_z_axis(edge))
-		romly_utils.set_bevel_weight(obj_plastic)
-
 		# ベベルモディファイアを追加、適用
-		bevel_modifier = obj_plastic.modifiers.new(name='Bevel', type='BEVEL')
-		bevel_modifier.offset_type = 'OFFSET'
-		bevel_modifier.use_clamp_overlap = True
-		bevel_modifier.limit_method = 'WEIGHT'
-		bevel_modifier.width = self.val_block_size[1] * 0.15
-		bevel_modifier.segments = 1
-		bevel_modifier.profile = 0.5
-		bpy.ops.object.modifier_apply(modifier=bevel_modifier.name)
+		romly_utils.apply_bevel_modifier_to_edges(obj_plastic, self.val_block_size[1] * 0.15, lambda edge: not romly_utils.is_edge_along_z_axis(edge))
 
 		# ----------------------------------------
 		# プラスチックの下部を削る
 
 		if self.val_block_concave_size[0] > 0 and self.val_block_concave_size[1] > 0 and self.val_block_concave_size[2] > 0:
 			obj_plastic_concave = romly_utils.create_box(size=self.val_block_concave_size, offset=mathutils.Vector([0, 0, self.val_block_concave_size[2] / 2]))
-			bpy.context.collection.objects.link(obj_plastic_concave)
-			boolean_modifier = obj_plastic.modifiers.new(type='BOOLEAN', name='bool')
-			boolean_modifier.object = obj_plastic_concave
-			boolean_modifier.operation = 'DIFFERENCE'
-			bpy.context.view_layer.objects.active = obj_plastic
-			bpy.ops.object.modifier_apply(modifier=boolean_modifier.name)
+			romly_utils.apply_boolean_object(obj_plastic, obj_plastic_concave)
 
-			# リンク解除
-			bpy.context.collection.objects.unlink(obj_plastic_concave)
 
 		bpy.context.collection.objects.unlink(obj_plastic)
 
@@ -177,29 +177,17 @@ class ROMLYADDON_OT_add_pinheader(bpy.types.Operator):
 		pin_scale = mathutils.Vector([self.val_pin_thickness, self.val_pin_thickness, pin_length])
 		obj_pin = romly_utils.create_box(size=pin_scale, offset=mathutils.Vector([0, 0, pin_length / 2 - self.val_pin_length_bottom]))
 
-		# Z方向に伸びる辺を選択し、Bevel Weightを設定
-		bpy.context.collection.objects.link(obj_pin)
-		bpy.context.view_layer.objects.active = obj_pin
-		romly_utils.select_edges_by_condition(romly_utils.is_edge_along_z_axis)
-		romly_utils.set_bevel_weight(obj_pin)
-
 		# ベベルモディファイアを追加、適用
-		bevel_modifier = obj_pin.modifiers.new(name='Bevel', type='BEVEL')
-		bevel_modifier.offset_type = 'OFFSET'
-		bevel_modifier.use_clamp_overlap = True
-		bevel_modifier.limit_method = 'WEIGHT'
-		bevel_modifier.width = self.val_pin_thickness * 0.3
-		bevel_modifier.segments = 1
-		bevel_modifier.profile = 0.5
-		bpy.ops.object.modifier_apply(modifier=bevel_modifier.name)
-
-		bpy.context.collection.objects.unlink(obj_pin)
+		romly_utils.apply_bevel_modifier_to_edges(obj_pin, self.val_pin_thickness * 0.3, romly_utils.is_edge_along_z_axis)
 
 		# ----------------------------------------
 		# プラスチック部分とピン部分の結合、配列作成
 
-		obj = romly_utils.create_combined_object(objects=(obj_plastic, obj_pin), obj_name=f"Pin Header {pin_pitch}mm {self.val_num_rows}x{self.val_num_cols}")
+		text = bpy.app.translations.pgettext_iface('Pin Header {pitch}mm {rows}x{cols}')
+		obj_name = text.format(pitch=pin_pitch, rows=self.val_num_rows, cols=self.val_num_cols)
+		obj = romly_utils.create_combined_object(objects=(obj_plastic, obj_pin), obj_name=obj_name)
 		bpy.context.collection.objects.link(obj)
+		bpy.context.collection.objects.unlink(obj_pin)
 
 		# 配列を追加
 
@@ -237,26 +225,10 @@ class ROMLYADDON_OT_add_pinheader(bpy.types.Operator):
 
 
 
-# 親となるメニュー
-class ROMLYADDON_MT_romly_add_mesh_menu_parent(bpy.types.Menu):
-	bl_idname = "ROMLYADDON_MT_romly_add_mesh_menu_parent"
-	bl_label = "Romly"
-	bl_description = "Romly Addon Menu"
-
-
-
-	def draw(self, context):
-		layout = self.layout
-		layout.operator(ROMLYADDON_OT_add_pinheader.bl_idname, icon='EMPTY_SINGLE_ARROW')
-
-
-
-
-
 # 新規作成メニューに登録
 def menu_func(self, context):
 	self.layout.separator()
-	self.layout.menu(ROMLYADDON_MT_romly_add_mesh_menu_parent.bl_idname, icon='NONE')
+	self.layout.operator(ROMLYADDON_OT_add_pinheader.bl_idname, text=bpy.app.translations.pgettext_iface('Add Pin Header'), icon='EMPTY_SINGLE_ARROW')
 
 
 
@@ -264,7 +236,6 @@ def menu_func(self, context):
 
 classes = [
 	ROMLYADDON_OT_add_pinheader,
-	ROMLYADDON_MT_romly_add_mesh_menu_parent,
 ]
 
 

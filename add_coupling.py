@@ -19,7 +19,7 @@ from . import romly_utils
 
 
 
-def is_coupling_bevel_edge(edge: bmesh.types.BMEdge, z1: float, z2) -> bool:
+def is_coupling_bevel_edge(edge: bmesh.types.BMEdge, z1: float, z2: float) -> bool:
 	"""
 	カップリングのオブジェクトの指定された辺がベベルすべき辺ならTrueを返す。
 	カップリングの上面または底面にある辺で、90度の角度にある（平面上にある辺ではない）辺。

@@ -69,7 +69,7 @@ class ROMLYADDON_OT_add_oloid(bpy.types.Operator):
 		col.prop(self, 'val_segments')
 
 		if self.val_type == self.TYPE_ANTI_OLOID:
-			col.prop(self, 'val_thickness')
+			col.prop(self, 'val_thickness', text=romly_utils.translate('Thickness', 'IFACE'))	# 'Thickness'はBlender内部の辞書で『幅』に翻訳されてしまうので、自前で翻訳
 			col.prop(self, 'val_loop_cuts')
 			col.separator()
 

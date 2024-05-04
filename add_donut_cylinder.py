@@ -115,6 +115,8 @@ class ROMLYADDON_OT_add_donut_cylinder(bpy.types.Operator):
 	val_majorSegments: IntProperty(name='Segments', default=32, min=3, max=128, subtype='NONE')
 	val_holeSegments: IntProperty(name='Hole Segments', default=32, min=3, max=128, subtype='NONE')
 
+
+
 	def draw(self, context):
 		col = self.layout.column()
 
@@ -131,13 +133,13 @@ class ROMLYADDON_OT_add_donut_cylinder(bpy.types.Operator):
 			row = col.row()
 			row.alignment = 'RIGHT'
 			row.label(text='Hole Diameter: {value}'.format(value=romly_utils.units_to_string(value=(self.val_majorDiameter - self.val_thickness * 2))))
-			col.prop(self, 'val_thickness')
+			col.prop(self, 'val_thickness', text=romly_utils.translate('Thickness', 'IFACE'))	# 'Thickness'はBlender内部の辞書で『幅』に翻訳されてしまうので、自前で翻訳
 		elif self.val_diameterMethod == DONUT_CYLINDER_DIAMETER_METHOD_HOLE_AND_THICKNESS:
 			row = col.row()
 			row.alignment = 'RIGHT'
 			row.label(text='Diameter: {value}'.format(value=romly_utils.units_to_string(value=(self.val_holeDiameter + self.val_thickness * 2))))
 			col.prop(self, 'val_holeDiameter')
-			col.prop(self, 'val_thickness')
+			col.prop(self, 'val_thickness', text=romly_utils.translate('Thickness', 'IFACE'))	# 'Thickness'はBlender内部の辞書で『幅』に翻訳されてしまうので、自前で翻訳
 		col.separator()
 
 		col.label(text='Height')
