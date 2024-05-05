@@ -1,6 +1,6 @@
 bl_info = {
 	'name': 'Romly Blender Add-on',
-	'version': (1, 9, 0),
+	'version': (1, 9, 5),
 	'blender': (4, 0, 0),
 	'category': 'Object',
 	'author': 'Romly',
@@ -11,7 +11,7 @@ bl_info = {
 import bpy
 from .apply_all_modifiers import ROMLYADDON_OT_apply_all_modifiers
 from .add_constant_offset_array_modifier import ROMLYADDON_OT_add_constant_offset_array_modifier
-from .add_weight_bevel_modifier import ROMLYADDON_OT_add_weight_bevel_modifier
+from .add_weight_bevel_modifier import ROMLYADDON_OT_add_weight_bevel_modifier, ROMLYADDON_OT_clear_bevel_weight
 from .toggle_viewport_display_as import ROMLYADDON_OT_toggle_viewport_display_as
 from .add_box import ROMLYADDON_OT_add_box
 from .add_donut_cylinder import ROMLYADDON_OT_add_donut_cylinder
@@ -110,6 +110,7 @@ class ROMLYADDON_MT_romly_tool_menu_parent(bpy.types.Menu):
 		layout = self.layout
 		layout.operator(ROMLYADDON_OT_add_constant_offset_array_modifier.bl_idname, text=bpy.app.translations.pgettext_iface('Add Constant Offset Array Modifier'), icon='MOD_ARRAY')
 		layout.operator(ROMLYADDON_OT_add_weight_bevel_modifier.bl_idname, text=bpy.app.translations.pgettext_iface('Add Weight Bevel Modifier'), icon='MOD_BEVEL')
+		layout.operator(ROMLYADDON_OT_clear_bevel_weight.bl_idname, text=bpy.app.translations.pgettext_iface('Clear Bevel Weight'), icon='REMOVE')
 		layout.operator(ROMLYADDON_OT_apply_all_modifiers.bl_idname, text=bpy.app.translations.pgettext_iface('Apply All Modifiers'), icon='CHECKMARK')
 		layout.operator(ROMLYADDON_OT_toggle_viewport_display_as.bl_idname, text=bpy.app.translations.pgettext_iface('Toggle Viewport Display As'), icon='SHADING_WIRE')
 
@@ -209,6 +210,7 @@ MY_CLASS_LIST = [
 	ROMLYADDON_OT_apply_all_modifiers,
 	ROMLYADDON_OT_add_constant_offset_array_modifier,
 	ROMLYADDON_OT_add_weight_bevel_modifier,
+	ROMLYADDON_OT_clear_bevel_weight,
 	ROMLYADDON_OT_toggle_viewport_display_as,
 	ROMLYADDON_MT_romly_tool_menu_parent,
 	ROMLYADDON_OT_add_box,

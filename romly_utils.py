@@ -1206,6 +1206,7 @@ def select_edges_along_axis(obj: bpy.types.Object, axis: tuple[bool, bool, bool]
 
 
 
+# MARK: clear_bevel_weight
 def clear_bevel_weight(obj: bpy.types.Object) -> None:
 	"""
 	指定されたオブジェクトのすべての辺の Bevel Weight を 0 に設定する。
@@ -1215,9 +1216,29 @@ def clear_bevel_weight(obj: bpy.types.Object) -> None:
 	obj : bpy.types.Object
 		_description_
 	"""
-	# Z軸と平行な辺を選択し、Bevel Weightを設定
 	select_edges_by_condition(obj, lambda edge: True)
 	set_bevel_weight(obj, bevel_weight=0.0)
+
+
+
+
+
+
+
+
+
+
+def clear_verts_bevel_weight(obj: bpy.types.Object) -> None:
+	"""
+	指定されたオブジェクトのすべての頂点の Bevel Weight を 0 に設定する。
+
+	Parameters
+	----------
+	obj : bpy.types.Object
+		_description_
+	"""
+	select_verts_by_condition(obj, lambda vert: True)
+	set_verts_bevel_weight(obj, bevel_weight=0.0)
 
 
 
@@ -1252,6 +1273,45 @@ def set_bevel_weight(obj: bpy.types.Object, bevel_weight: float = 1.0) -> None:
 	bm.to_mesh(obj.data)
 	bm.free()
 
+	# これも忘れないように実行しないと即時反映されない
+	obj.data.update()
+
+
+
+
+
+
+
+
+
+
+def set_verts_bevel_weight(obj: bpy.types.Object, bevel_weight: float = 1.0) -> None:
+	"""
+	アクティブオブジェクトを対象に、選択されている頂点に Bevel Weight を設定する。
+	オブジェクトモードじゃないと使えないので注意。
+
+	Parameters
+	----------
+	bevel_weight : float, optional
+		設定するベベルウェイトの値。省略した場合は1.0。
+	"""
+	bm = bmesh.new()
+	bm.from_mesh(obj.data)
+
+	# Bevel Weightのレイヤーを取得（存在しない場合は新しく作成）
+	KEY = 'bevel_weight_vert'
+	bevel_layer = bm.verts.layers.float.get(KEY, bm.verts.layers.float.new(KEY))
+	for vert in bm.verts:
+		if vert.select:
+			vert[bevel_layer] = bevel_weight
+
+	# 更新
+	bm.to_mesh(obj.data)
+	bm.free()
+
+	# これも忘れないように実行しないと即時反映されない
+	obj.data.update()
+
 
 
 
@@ -1263,7 +1323,7 @@ def set_bevel_weight(obj: bpy.types.Object, bevel_weight: float = 1.0) -> None:
 
 def select_edges_by_condition(obj: bpy.types.Object, condition_func: Callable[[bmesh.types.BMEdge], bool]) -> None:
 	"""
-	指定された条件に合った全てのエッジを選択する。
+	指定された条件に合った全ての辺を選択する。
 
 	Parameters
 	----------
@@ -1275,6 +1335,37 @@ def select_edges_by_condition(obj: bpy.types.Object, condition_func: Callable[[b
 	bm.select_flush(True)
 	for edge in bm.edges:
 		edge.select = condition_func(edge)
+
+	# これがキモで呼ばないと選択状態が変わらない
+	bm.select_flush(False)
+
+	# 更新
+	bm.to_mesh(obj.data)
+	bm.free()
+
+
+
+
+
+
+
+
+
+
+def select_verts_by_condition(obj: bpy.types.Object, condition_func: Callable[[bmesh.types.BMVert], bool]) -> None:
+	"""
+	指定された条件に合った全ての頂点を選択する。
+
+	Parameters
+	----------
+	condition_func : Callable[[bmesh.types.BMVert], bool]
+		選択の条件となるboolを返す関数。
+	"""
+	bm = bmesh.new()
+	bm.from_mesh(obj.data)
+	bm.select_flush(True)
+	for vert in bm.verts:
+		vert.select = condition_func(vert)
 
 	# これがキモで呼ばないと選択状態が変わらない
 	bm.select_flush(False)

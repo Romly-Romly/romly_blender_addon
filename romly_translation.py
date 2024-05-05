@@ -474,6 +474,12 @@ TRANSLATION_DICT = {
 			'制限方法をウェイトに設定したベベルモデファイアを追加します',
 		('*', 'Weight Bevel'): 'ウェイト制限のベベル',
 
+		# Clear Bevel Weight
+		('*', 'Clear Bevel Weight'): 'ベベルウェイトをクリア',
+		('*', 'Set the Bevel Weight of the all edges and vertices to zero'): '全ての辺と頂点のベベルウェイトを0にします',
+		('*', 'Set the Bevel Weight of all edges to zero'): '全ての辺のベベルウェイトを0にします',
+		('*', 'Set the Bevel Weight of all vertices to zero'): '全ての頂点のベベルウェイトを0にします',
+
 		# Apply All Modifiers
 		('*', 'Apply All Modifiers'): 'すべてのモデファイアを適用',
 		('*', 'Apply all modifiers on the active object'):
