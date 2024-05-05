@@ -1,4 +1,5 @@
 import bpy
+import bmesh
 import math
 from bpy.props import *
 
@@ -88,6 +89,56 @@ class ROMLYADDON_OT_select_edges_along_axis(bpy.types.Operator):
 
 
 
+# MARK: toggle_edge_bevel_weight
+class ROMLYADDON_OT_toggle_edge_bevel_weight(bpy.types.Operator):
+	"""選択されている辺のBevel Weightを0/1切り替えするオペレーター。"""
+	bl_idname = 'romlyaddon.toggle_edge_bevel_weight'
+	bl_label = bpy.app.translations.pgettext_iface('Toggle Edges Bevel Weight')
+	bl_description = "Toggle selected edges' bevel weight to 0 or 1"
+	bl_options = {'REGISTER', 'UNDO'}
+
+
+
+	def invoke(self, context, event):
+		return self.execute(context)
+
+
+
+	def execute(self, context):
+		obj = context.view_layer.objects.active
+		if obj:
+			# 選択されているすべての辺のベベルウェイトが0なら、それらの辺のベベルウェイトを1にする。またはその逆の処理。
+			bm = bmesh.from_edit_mesh(obj.data)
+
+			KEY = 'bevel_weight_edge'
+			bevel_layer = bm.edges.layers.float.get(KEY, bm.edges.layers.float.new(KEY))
+
+			new_value = 1.0
+			for edge in bm.edges:
+				if edge.select:
+					if not math.isclose(edge[bevel_layer], 0, abs_tol=0.01):
+						new_value = 0.0
+						break
+			for edge in bm.edges:
+				if edge.select:
+					edge[bevel_layer] = new_value
+
+			# 更新を反映
+			bmesh.update_edit_mesh(obj.data)
+
+
+
+		return {'FINISHED'}
+
+
+
+
+
+
+
+
+
+
 class ROMLYADDON_MT_romly_select_edges_on_fair_surface_menu_parent(bpy.types.Menu):
 	bl_idname = "romlyaddon.select_edges_on_fair_surface_menu_parent"
 	bl_label = "Romly Tools"
@@ -97,6 +148,7 @@ class ROMLYADDON_MT_romly_select_edges_on_fair_surface_menu_parent(bpy.types.Men
 		layout = self.layout
 		layout.operator(ROMLYADDON_OT_select_edges_on_fair_surface.bl_idname, text=bpy.app.translations.pgettext_iface('Select Edges on Fair Surface'), icon='EDGESEL')
 		layout.operator(ROMLYADDON_OT_select_edges_along_axis.bl_idname, text=bpy.app.translations.pgettext_iface('Select Edges along Axis'), icon='EMPTY_ARROWS')
+		layout.operator(ROMLYADDON_OT_toggle_edge_bevel_weight.bl_idname, text=bpy.app.translations.pgettext_iface('Toggle Edges Bevel Weight'), icon='MOD_BEVEL')
 
 
 
@@ -112,8 +164,9 @@ def view3d_edit_mesh_context_menu_func(self, context):
 	# 辺モードの時のみメニュー項目を追加（0=頂点, 1=辺, 2=面）
 	if bpy.context.tool_settings.mesh_select_mode[1]:
 		self.layout.separator()
-		self.layout.menu(ROMLYADDON_MT_romly_select_edges_on_fair_surface_menu_parent.bl_idname, text=bpy.app.translations.pgettext_iface('Select Edges on Fair Surface'), icon='NONE')
+		self.layout.menu(ROMLYADDON_OT_select_edges_on_fair_surface.bl_idname, text=bpy.app.translations.pgettext_iface('Select Edges on Fair Surface'), icon='EDGESEL')
 		self.layout.operator(ROMLYADDON_OT_select_edges_along_axis.bl_idname, text=bpy.app.translations.pgettext_iface('Select Edges along Axis'), icon='EMPTY_ARROWS')
+		self.layout.operator(ROMLYADDON_OT_toggle_edge_bevel_weight.bl_idname, text=bpy.app.translations.pgettext_iface('Toggle Edges Bevel Weight'), icon='MOD_BEVEL')
 
 
 
@@ -126,6 +179,7 @@ def view3d_edit_mesh_context_menu_func(self, context):
 classes = [
 	ROMLYADDON_OT_select_edges_on_fair_surface,
 	ROMLYADDON_OT_select_edges_along_axis,
+	ROMLYADDON_OT_toggle_edge_bevel_weight,
 	ROMLYADDON_MT_romly_select_edges_on_fair_surface_menu_parent,
 ]
 

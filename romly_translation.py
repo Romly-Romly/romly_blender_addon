@@ -480,6 +480,10 @@ TRANSLATION_DICT = {
 		('*', 'Set the Bevel Weight of all edges to zero'): '全ての辺のベベルウェイトを0にします',
 		('*', 'Set the Bevel Weight of all vertices to zero'): '全ての頂点のベベルウェイトを0にします',
 
+		# Toggle Edges Bevel Weight
+		('*', 'Toggle Edges Bevel Weight'): '辺のベベルウェイトをトグル',
+		('*', "Toggle selected edges' bevel weight to 0 or 1"): '選択した辺のベベルウェイトを0または1に切り替えます',
+
 		# Apply All Modifiers
 		('*', 'Apply All Modifiers'): 'すべてのモデファイアを適用',
 		('*', 'Apply all modifiers on the active object'):

@@ -1,6 +1,6 @@
 bl_info = {
 	'name': 'Romly Blender Add-on',
-	'version': (1, 9, 5),
+	'version': (2, 0, 0),
 	'blender': (4, 0, 0),
 	'category': 'Object',
 	'author': 'Romly',
@@ -29,7 +29,7 @@ from .add_lead_nut import ROMLYADDON_OT_add_lead_nut
 from .add_pinheader import ROMLYADDON_OT_add_pinheader
 from .add_nut_hole import ROMLYADDON_OT_add_nut_hole
 from .export_collection_as_stl import ROMLYADDON_OT_export_collection_as_stl, ROMLYADDON_OT_export_selection_as_stl
-from .select_edges_on_fair_surface import ROMLYADDON_OT_select_edges_on_fair_surface, ROMLYADDON_OT_select_edges_along_axis
+from .select_edges_on_fair_surface import ROMLYADDON_OT_select_edges_on_fair_surface, ROMLYADDON_OT_select_edges_along_axis, ROMLYADDON_OT_toggle_edge_bevel_weight
 from .language_panel import ROMLYADDON_PT_language_panel, ROMLYADDON_OT_change_language
 from .reload_and_run_script import ROMLYADDON_OT_reload_and_run_script
 from .romly_translation import TRANSLATION_DICT
@@ -66,6 +66,7 @@ def view3d_edit_mesh_edges_menu_func(self, context):
 	self.layout.separator()
 	self.layout.operator(ROMLYADDON_OT_select_edges_on_fair_surface.bl_idname, text=bpy.app.translations.pgettext_iface('Select Edges on Fair Surface'), icon='EDGESEL')
 	self.layout.operator(ROMLYADDON_OT_select_edges_along_axis.bl_idname, text=bpy.app.translations.pgettext_iface('Select Edges along Axis'), icon='EMPTY_ARROWS')
+	self.layout.operator(ROMLYADDON_OT_toggle_edge_bevel_weight.bl_idname, text=bpy.app.translations.pgettext_iface('Toggle Edges Bevel Weight'), icon='MOD_BEVEL')
 
 
 
@@ -81,6 +82,7 @@ def view3d_edit_mesh_context_menu_func(self, context):
 		self.layout.separator()
 		self.layout.operator(ROMLYADDON_OT_select_edges_on_fair_surface.bl_idname, text=bpy.app.translations.pgettext_iface('Select Edges on Fair Surface'), icon='EDGESEL')
 		self.layout.operator(ROMLYADDON_OT_select_edges_along_axis.bl_idname, text=bpy.app.translations.pgettext_iface('Select Edges along Axis'), icon='EMPTY_ARROWS')
+		self.layout.operator(ROMLYADDON_OT_toggle_edge_bevel_weight.bl_idname, text=bpy.app.translations.pgettext_iface('Toggle Edges Bevel Weight'), icon='MOD_BEVEL')
 
 
 
@@ -238,6 +240,7 @@ MY_CLASS_LIST = [
 	ROMLYADDON_MT_romly_export_selection_as_stl_menu_parent,
 	ROMLYADDON_OT_select_edges_on_fair_surface,
 	ROMLYADDON_OT_select_edges_along_axis,
+	ROMLYADDON_OT_toggle_edge_bevel_weight,
 	ROMLYADDON_PT_language_panel,
 	ROMLYADDON_OT_change_language,
 	ROMLYADDON_OT_reload_and_run_script,
