@@ -162,6 +162,68 @@ def VECTOR_Y_PLUS():
 
 
 
+def make_circle_vertices(radius: float, num_vertices: int, center: tuple[float, float, float] = (0, 0, 0), start_angle_degree: float = 0, angle_degree: float = 360, normal_vector: tuple[float, float, float] = (0, 0, 1)) -> list[tuple[float, float, float]]:
+	"""
+	円周上の頂点群を生成する。指定された半径を持つ円を外接円とする多角形の作成にも使えるよ。頂点はディフォルトではXY平面上に配置され、Z座標はすべて0だけど、法線ベクトルを指定することで任意の平面に配置できるよ。
+
+	Parameters
+	----------
+	radius : float
+		円（外接円）の半径。
+	num_vertices : int
+		生成する頂点の数、または多角形の辺の数。
+	center : tuple[float, float, float], optional
+		円の中心座標 (x, y, z)。ディフォルトは (0, 0, 0)
+	start_angle_degree : float, optional
+		開始角度（度単位）。デフォルトは0（右、X軸プラス）。90で上、180で左、270で下からになる。
+	normal_vector : tuple[float, float, float], optional
+		円を配置する平面の法線ベクトル。デフォルトは(0, 0, 1)、つまりZ軸で、XY平面に配置される。
+
+	Returns
+	-------
+	list[tuple[float, float, float]]
+		生成された頂点の座標リスト。(x, y, z)のリスト。
+	"""
+	vertices = []
+
+	# 法線ベクトルを正規化
+	normal = Vector(normal_vector).normalized()
+
+	# Z軸（(0, 0, 1)）と法線ベクトルとの間の回転を表す行列を作成
+	if normal != Vector((0, 0, 1)):
+		rot_axis = normal.cross(Vector((0, 0, 1)))
+		if rot_axis.length != 0:
+			rot_axis.normalize()
+			angle = math.acos(normal.dot(Vector((0, 0, 1))))
+			rot_matrix = Matrix.Rotation(angle, 4, rot_axis)
+		else:
+			# 法線ベクトルがZ軸と一致または逆向きの場合
+			rot_matrix = Matrix.Rotation(math.pi, 4, Vector((1, 0, 0))) if normal.z < 0 else Matrix.Identity(4)
+	else:
+		rot_matrix = Matrix.Identity(4)
+
+	# 円の頂点を計算
+	start_angle = math.radians(start_angle_degree)
+	for i in range(num_vertices):
+		angle = math.radians(angle_degree) * i / num_vertices + start_angle
+		x = radius * math.cos(angle)
+		y = radius * math.sin(angle)
+		vertex = Vector((x, y, 0))
+		vertex = rot_matrix @ vertex # 回転
+		vertex += Vector(center) # 中心へ移動
+		vertices.append(tuple(vertex))
+
+	return vertices
+
+
+
+
+
+
+
+
+
+
 def make_arc_vertices(start, center, axis, rotate_degrees: float, segments) -> list[Vector]:
 	"""任意の座標を中心とした円または円弧を作る頂点のリストを返す。
 
@@ -344,6 +406,7 @@ def create_box_from_corners(corner1: tuple[float, float, float], corner2: tuple[
 	Returns
 	-------
 	bpy.types.Object
+		作成されたオブジェクト。Blenderのシーンには既にリンクされた状態。
 	"""
 	# 座標を小さい順と大きい順で整理
 	min_c = [min(corner1[i], corner2[i]) for i in range(3)]
@@ -705,7 +768,7 @@ def translate_vertices(object, vector):
 
 
 
-def add_revolved_surface(vertices: list[Vector], faces: list[list[int]], rotation_vertex_count: int, segments: int, close=False, z_offset: float = 0) -> None:
+def add_revolved_surface(vertices: list[Vector], faces: list[list[int]], rotation_vertex_count: int, segments: int, close=False, z_offset: float = 0, rotation_degree: float = 360, ccw: bool = False) -> None:
 	"""
 	頂点群で表される面を360度回転させて回転体を作る。
 
@@ -723,16 +786,28 @@ def add_revolved_surface(vertices: list[Vector], faces: list[list[int]], rotatio
 		回転体の両端を閉じるかどうか。Trueの場合、端の面が作成される。
 	z_offset : float, optional
 		頂点のZ座標に加算されるオフセット。このオフセットは全セグメントに渡って線形に加算される。ねじ切りはこの値を使うことで軸方向にずらしている。
+	rotation_degree : float, optional
+
+	ccw : bool, optional
+		True の場合、左回りに作成する。ディフォルトでは False で見回り。
 
 	Notes
 	-----
 	この関数は`vertices`と`faces`を直接変更します。メッシュデータは呼び出し元で管理する必要があります。
 	"""
-	rot = mathutils.Matrix.Rotation(-math.radians(360.0 / segments), 4, 'Z')
-	for i in range(segments):
+	degree_per_segment = 360.0 / segments
+	count = math.floor(rotation_degree / degree_per_segment)
+
+	radians = -math.radians(degree_per_segment)
+	if ccw:
+		radians = -radians
+	rot = mathutils.Matrix.Rotation(radians, 4, 'Z')
+
+	for _ in range(count):
 		temp_vertices = []
 		for j in range(rotation_vertex_count):
-			v = vertices[len(vertices) - rotation_vertex_count + j].copy()
+			current = vertices[len(vertices) - rotation_vertex_count + j]
+			v = current.copy() if isinstance(current, Vector) else Vector(current)
 			v.z += z_offset / segments
 			v.rotate(rot)
 			temp_vertices.append(v)
@@ -754,6 +829,37 @@ def add_revolved_surface(vertices: list[Vector], faces: list[list[int]], rotatio
 				n - rotation_vertex_count,
 				n - rotation_vertex_count + rotation_vertex_count - 1])
 
+	remain_degree = rotation_degree - (count * degree_per_segment)
+	if remain_degree > 0.0:
+		radians = -math.radians(remain_degree)
+		if ccw:
+			radians = -radians
+		rot = mathutils.Matrix.Rotation(radians, 4, 'Z')
+
+		temp_vertices = []
+		for j in range(rotation_vertex_count):
+			current = vertices[len(vertices) - rotation_vertex_count + j]
+			v = current.copy() if isinstance(current, Vector) else Vector(current)
+			v.z += z_offset / segments
+			v.rotate(rot)
+			temp_vertices.append(v)
+		for j in range(len(temp_vertices)):
+			vertices.append(temp_vertices[j])
+
+		# 面を貼る
+		n = len(vertices)
+		for j in range(rotation_vertex_count - 1):
+			faces.append([
+				n - rotation_vertex_count * 2 + j,
+				n - rotation_vertex_count * 2 + 1 + j,
+				n - rotation_vertex_count + 1 + j,
+				n - rotation_vertex_count + j])
+		if close:
+			faces.append([
+				n - rotation_vertex_count * 2 + rotation_vertex_count - 1,
+				n - rotation_vertex_count * 2,
+				n - rotation_vertex_count,
+				n - rotation_vertex_count + rotation_vertex_count - 1])
 
 
 
@@ -1395,68 +1501,6 @@ def is_edge_along_z_axis(edge: bmesh.types.BMEdge) -> bool:
 			エッジの始点と終点のZ座標が同じならTrue。
 	"""
 	return edge.verts[0].co[2] == edge.verts[1].co[2]
-
-
-
-
-
-
-
-
-
-
-def make_circle_vertices(radius: float, num_vertices: int, center: tuple[float, float, float] = (0, 0, 0), start_angle_degree: float = 0, angle_degree: float = 360, normal_vector: tuple[float, float, float] = (0, 0, 1)) -> list[tuple[float, float, float]]:
-	"""
-	円周上の頂点群を生成する。指定された半径を持つ円を外接円とする多角形の作成にも使えるよ。頂点はディフォルトではXY平面上に配置され、Z座標はすべて0だけど、法線ベクトルを指定することで任意の平面に配置できるよ。
-
-	Parameters
-	----------
-	radius : float
-		円（外接円）の半径。
-	num_vertices : int
-		生成する頂点の数、または多角形の辺の数。
-	center : tuple[float, float, float], optional
-		円の中心座標 (x, y, z)
-	start_angle_degree : float, optional
-		開始角度（度単位）。デフォルトは0（右、X軸プラス）。90で上、180で左、270で下からになる。
-	normal_vector : tuple[float, float, float], optional
-		円を配置する平面の法線ベクトル。デフォルトは(0, 0, 1)、つまりZ軸で、XY平面に配置される。
-
-	Returns
-	-------
-	list[tuple[float, float, float]]
-		生成された頂点の座標リスト。(x, y, z)のリスト。
-	"""
-	vertices = []
-
-	# 法線ベクトルを正規化
-	normal = Vector(normal_vector).normalized()
-
-	# Z軸（(0, 0, 1)）と法線ベクトルとの間の回転を表す行列を作成
-	if normal != Vector((0, 0, 1)):
-		rot_axis = normal.cross(Vector((0, 0, 1)))
-		if rot_axis.length != 0:
-			rot_axis.normalize()
-			angle = math.acos(normal.dot(Vector((0, 0, 1))))
-			rot_matrix = Matrix.Rotation(angle, 4, rot_axis)
-		else:
-			# 法線ベクトルがZ軸と一致または逆向きの場合
-			rot_matrix = Matrix.Rotation(math.pi, 4, Vector((1, 0, 0))) if normal.z < 0 else Matrix.Identity(4)
-	else:
-		rot_matrix = Matrix.Identity(4)
-
-	# 円の頂点を計算
-	start_angle = math.radians(start_angle_degree)
-	for i in range(num_vertices):
-		angle = math.radians(angle_degree) * i / num_vertices + start_angle
-		x = radius * math.cos(angle)
-		y = radius * math.sin(angle)
-		vertex = Vector((x, y, 0))
-		vertex = rot_matrix @ vertex # 回転
-		vertex += Vector(center) # 中心へ移動
-		vertices.append(tuple(vertex))
-
-	return vertices
 
 
 

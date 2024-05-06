@@ -1,6 +1,6 @@
 bl_info = {
 	'name': 'Romly Blender Add-on',
-	'version': (2, 0, 5),
+	'version': (2, 1, 0),
 	'blender': (4, 0, 0),
 	'category': 'Object',
 	'author': 'Romly',
@@ -26,6 +26,7 @@ from .add_aluminum_extrusion import ROMLYADDON_OT_add_aluminum_extrusion
 from .add_linear_guide import ROMLYADDON_OT_add_linear_guide_rail, ROMLYADDON_OT_add_linear_guide_block
 from .add_coupling import ROMLYADDON_OT_add_coupling
 from .add_lead_nut import ROMLYADDON_OT_add_lead_nut
+from .add_compression_spring import ROMLYADDON_OT_add_compression_spring
 from .add_pinheader import ROMLYADDON_OT_add_pinheader
 from .add_nut_hole import ROMLYADDON_OT_add_nut_hole
 from .export_collection_as_stl import ROMLYADDON_OT_export_collection_as_stl, ROMLYADDON_OT_export_selection_as_stl
@@ -165,6 +166,7 @@ class ROMLYADDON_MT_romly_add_mesh_menu_parent(bpy.types.Menu):
 			(ROMLYADDON_OT_add_linear_guide_block, 'Add Linear Guide Block', 'SNAP_MIDPOINT'),
 			(ROMLYADDON_OT_add_coupling, 'Add Coupling', 'MESH_CYLINDER'),
 			(ROMLYADDON_OT_add_lead_nut, 'Add Lead Nut', 'MOD_CLOTH'),
+			(ROMLYADDON_OT_add_compression_spring, 'Add Compression Spring', 'MESH_CAPSULE'),
 			(ROMLYADDON_OT_add_pinheader, 'Add Pin Header', 'EMPTY_SINGLE_ARROW'),
 			(None, None, None),
 			(ROMLYADDON_OT_add_nut_hole, 'Add Nut Hole', 'SEQ_CHROMA_SCOPE'),
@@ -238,6 +240,7 @@ MY_CLASS_LIST = [
 	ROMLYADDON_OT_add_linear_guide_block,
 	ROMLYADDON_OT_add_coupling,
 	ROMLYADDON_OT_add_lead_nut,
+	ROMLYADDON_OT_add_compression_spring,
 	ROMLYADDON_OT_add_pinheader,
 	ROMLYADDON_OT_add_nut_hole,
 	ROMLYADDON_MT_romly_add_mesh_menu_parent,
