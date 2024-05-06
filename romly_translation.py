@@ -484,6 +484,15 @@ TRANSLATION_DICT = {
 		('*', 'Toggle Edges Bevel Weight'): '辺のベベルウェイトをトグル',
 		('*', "Toggle selected edges' bevel weight to 0 or 1"): '選択した辺のベベルウェイトを0または1に切り替えます',
 
+		# Transform object aligning edge to axis
+		('*', 'Rotate object aligning edge to axis'): '辺が軸に沿うようにオブジェクトを回転',
+		('*', 'Rotate and translate the object to align the selected edge to the axis'): '選択した辺が軸に沿うようにオブジェクトを回転・移動します',
+		('*', 'Rotate object to align selected edges to X-axis'): '選択した辺がZ軸に沿うようにオブジェクトを回転します',
+		('*', 'Rotate object to align selected edges to Y-axis'): '選択した辺がZ軸に沿うようにオブジェクトを回転します',
+		('*', 'Rotate object to align selected edges to Z-axis'): '選択した辺がZ軸に沿うようにオブジェクトを回転します',
+		('*', 'Please select the object'): 'オブジェクトを選択して下さい',
+		('*', 'Please select the edge'): '辺を選択して下さい',
+
 		# Apply All Modifiers
 		('*', 'Apply All Modifiers'): 'すべてのモデファイアを適用',
 		('*', 'Apply all modifiers on the active object'):

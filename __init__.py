@@ -1,6 +1,6 @@
 bl_info = {
 	'name': 'Romly Blender Add-on',
-	'version': (2, 0, 0),
+	'version': (2, 0, 5),
 	'blender': (4, 0, 0),
 	'category': 'Object',
 	'author': 'Romly',
@@ -29,7 +29,7 @@ from .add_lead_nut import ROMLYADDON_OT_add_lead_nut
 from .add_pinheader import ROMLYADDON_OT_add_pinheader
 from .add_nut_hole import ROMLYADDON_OT_add_nut_hole
 from .export_collection_as_stl import ROMLYADDON_OT_export_collection_as_stl, ROMLYADDON_OT_export_selection_as_stl
-from .select_edges_on_fair_surface import ROMLYADDON_OT_select_edges_on_fair_surface, ROMLYADDON_OT_select_edges_along_axis, ROMLYADDON_OT_toggle_edge_bevel_weight
+from .select_edges_on_fair_surface import ROMLYADDON_OT_select_edges_on_fair_surface, ROMLYADDON_OT_select_edges_along_axis, ROMLYADDON_OT_toggle_edge_bevel_weight, ROMLYADDON_OT_transform_object_aligning_edge_to_axis
 from .language_panel import ROMLYADDON_PT_language_panel, ROMLYADDON_OT_change_language
 from .reload_and_run_script import ROMLYADDON_OT_reload_and_run_script
 from .romly_translation import TRANSLATION_DICT
@@ -61,12 +61,18 @@ def outliner_object_menu_func(self, context):
 
 
 
+
+
+
+
+
 def view3d_edit_mesh_edges_menu_func(self, context):
 	"""編集モードのエッジメニューに追加する関数。平面上にある辺を選択する項目を追加"""
 	self.layout.separator()
 	self.layout.operator(ROMLYADDON_OT_select_edges_on_fair_surface.bl_idname, text=bpy.app.translations.pgettext_iface('Select Edges on Fair Surface'), icon='EDGESEL')
 	self.layout.operator(ROMLYADDON_OT_select_edges_along_axis.bl_idname, text=bpy.app.translations.pgettext_iface('Select Edges along Axis'), icon='EMPTY_ARROWS')
 	self.layout.operator(ROMLYADDON_OT_toggle_edge_bevel_weight.bl_idname, text=bpy.app.translations.pgettext_iface('Toggle Edges Bevel Weight'), icon='MOD_BEVEL')
+	self.layout.operator(ROMLYADDON_OT_transform_object_aligning_edge_to_axis.bl_idname, text=bpy.app.translations.pgettext_iface('Rotate object aligning edge to axis'), icon='MOD_BEVEL')
 
 
 
@@ -83,6 +89,7 @@ def view3d_edit_mesh_context_menu_func(self, context):
 		self.layout.operator(ROMLYADDON_OT_select_edges_on_fair_surface.bl_idname, text=bpy.app.translations.pgettext_iface('Select Edges on Fair Surface'), icon='EDGESEL')
 		self.layout.operator(ROMLYADDON_OT_select_edges_along_axis.bl_idname, text=bpy.app.translations.pgettext_iface('Select Edges along Axis'), icon='EMPTY_ARROWS')
 		self.layout.operator(ROMLYADDON_OT_toggle_edge_bevel_weight.bl_idname, text=bpy.app.translations.pgettext_iface('Toggle Edges Bevel Weight'), icon='MOD_BEVEL')
+		self.layout.operator(ROMLYADDON_OT_transform_object_aligning_edge_to_axis.bl_idname, text=bpy.app.translations.pgettext_iface('Rotate object aligning edge to axis'), icon='MOD_BEVEL')
 
 
 
@@ -241,6 +248,7 @@ MY_CLASS_LIST = [
 	ROMLYADDON_OT_select_edges_on_fair_surface,
 	ROMLYADDON_OT_select_edges_along_axis,
 	ROMLYADDON_OT_toggle_edge_bevel_weight,
+	ROMLYADDON_OT_transform_object_aligning_edge_to_axis,
 	ROMLYADDON_PT_language_panel,
 	ROMLYADDON_OT_change_language,
 	ROMLYADDON_OT_reload_and_run_script,
