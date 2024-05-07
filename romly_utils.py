@@ -224,14 +224,14 @@ def make_circle_vertices(radius: float, num_vertices: int, center: tuple[float, 
 
 
 
-def make_arc_vertices(start, center, axis, rotate_degrees: float, segments) -> list[Vector]:
+def make_arc_vertices(start: Vector, center: Vector, axis: Literal['X', 'Y', 'Z'], rotate_degrees: float, segments: int) -> list[Vector]:
 	"""任意の座標を中心とした円または円弧を作る頂点のリストを返す。
 
 	Parameters
 	----------
-	start : Vertex
+	start : Vector
 		円弧の開始座標
-	center : Vertex
+	center : Vector
 		円の中心。円の半径はstartとの差となる。
 	axis : ['X', 'Y', 'Z']
 	rotate_degrees : float
@@ -240,7 +240,7 @@ def make_arc_vertices(start, center, axis, rotate_degrees: float, segments) -> l
 		頂点の数。2以上を指定。
 	Returns
 	-------
-	list[Vertex]
+	list[Vector]
 		[description]
 	"""
 	vertices = []
@@ -249,6 +249,38 @@ def make_arc_vertices(start, center, axis, rotate_degrees: float, segments) -> l
 		v = rotated_vector(vector=start - center, angle_radians=math.radians(rotate_degrees / segments * i), axis=axis)
 		v += center
 		vertices.append(v)
+
+	return vertices
+
+
+
+
+
+
+
+
+
+
+def make_arc_vertices_from_start_to_end(center: Vector, start: Vector, end: Vector, segments: int) -> list[Vector]:
+	# 半径を求める
+	radius = (Vector(start) - Vector(center)).length
+
+	# startとendのベクトルと中心点vを基に、角度を計算
+	angle_start = math.atan2(start[1] - center[1], start[0] - center[0])
+	angle_end = math.atan2(end[1] - center[1], end[0] - center[0])
+
+	# 角度の差分を計算
+	angle_diff = angle_end - angle_start
+	if angle_diff <= 0:
+		angle_diff += 2 * math.pi
+
+	# 頂点リストを作成
+	vertices = []
+	for segment in range(segments + 1):
+		angle = angle_start + (angle_diff / segments) * segment
+		x = center[0] + math.cos(angle) * radius
+		y = center[1] + math.sin(angle) * radius
+		vertices.append((x, y, center[2]))
 
 	return vertices
 
@@ -767,7 +799,6 @@ def translate_vertices(object, vector):
 
 
 
-
 def add_revolved_surface(vertices: list[Vector], faces: list[list[int]], rotation_vertex_count: int, segments: int, close=False, z_offset: float = 0, rotation_degree: float = 360, ccw: bool = False) -> None:
 	"""
 	頂点群で表される面を360度回転させて回転体を作る。
@@ -795,6 +826,34 @@ def add_revolved_surface(vertices: list[Vector], faces: list[list[int]], rotatio
 	-----
 	この関数は`vertices`と`faces`を直接変更します。メッシュデータは呼び出し元で管理する必要があります。
 	"""
+	def append_revolution_vertices(vertices: list[Vector], faces: list[list[int]], num_revolution_vertices: int, rotation_matrix: Matrix, z_offset: float, close: bool):
+		temp_vertices = []
+		for j in range(num_revolution_vertices):
+			current = vertices[len(vertices) - num_revolution_vertices + j]
+			v = current.copy() if isinstance(current, Vector) else Vector(current)
+			v.z += z_offset
+			v.rotate(rotation_matrix)
+			temp_vertices.append(v)
+		for j in range(len(temp_vertices)):
+			vertices.append(temp_vertices[j])
+
+		# 面を張る
+		current_vertex_count = len(vertices)
+		for j in range(num_revolution_vertices - 1):
+			faces.append([
+				current_vertex_count - num_revolution_vertices * 2 + j,
+				current_vertex_count - num_revolution_vertices * 2 + 1 + j,
+				current_vertex_count - num_revolution_vertices + 1 + j,
+				current_vertex_count - num_revolution_vertices + j])
+		if close:
+			faces.append([
+				current_vertex_count - num_revolution_vertices * 2 + num_revolution_vertices - 1,
+				current_vertex_count - num_revolution_vertices * 2,
+				current_vertex_count - num_revolution_vertices,
+				current_vertex_count - num_revolution_vertices + num_revolution_vertices - 1])
+
+
+
 	degree_per_segment = 360.0 / segments
 	count = math.floor(rotation_degree / degree_per_segment)
 
@@ -804,30 +863,8 @@ def add_revolved_surface(vertices: list[Vector], faces: list[list[int]], rotatio
 	rot = mathutils.Matrix.Rotation(radians, 4, 'Z')
 
 	for _ in range(count):
-		temp_vertices = []
-		for j in range(rotation_vertex_count):
-			current = vertices[len(vertices) - rotation_vertex_count + j]
-			v = current.copy() if isinstance(current, Vector) else Vector(current)
-			v.z += z_offset / segments
-			v.rotate(rot)
-			temp_vertices.append(v)
-		for j in range(len(temp_vertices)):
-			vertices.append(temp_vertices[j])
-
-		# 面を貼る
-		n = len(vertices)
-		for j in range(rotation_vertex_count - 1):
-			faces.append([
-				n - rotation_vertex_count * 2 + j,
-				n - rotation_vertex_count * 2 + 1 + j,
-				n - rotation_vertex_count + 1 + j,
-				n - rotation_vertex_count + j])
-		if close:
-			faces.append([
-				n - rotation_vertex_count * 2 + rotation_vertex_count - 1,
-				n - rotation_vertex_count * 2,
-				n - rotation_vertex_count,
-				n - rotation_vertex_count + rotation_vertex_count - 1])
+		# 頂点を複製して面を貼る
+		append_revolution_vertices(vertices, faces, num_revolution_vertices=rotation_vertex_count, rotation_matrix=rot, z_offset=z_offset / segments, close=close)
 
 	remain_degree = rotation_degree - (count * degree_per_segment)
 	if remain_degree > 0.0:
@@ -836,30 +873,8 @@ def add_revolved_surface(vertices: list[Vector], faces: list[list[int]], rotatio
 			radians = -radians
 		rot = mathutils.Matrix.Rotation(radians, 4, 'Z')
 
-		temp_vertices = []
-		for j in range(rotation_vertex_count):
-			current = vertices[len(vertices) - rotation_vertex_count + j]
-			v = current.copy() if isinstance(current, Vector) else Vector(current)
-			v.z += z_offset / segments
-			v.rotate(rot)
-			temp_vertices.append(v)
-		for j in range(len(temp_vertices)):
-			vertices.append(temp_vertices[j])
-
-		# 面を貼る
-		n = len(vertices)
-		for j in range(rotation_vertex_count - 1):
-			faces.append([
-				n - rotation_vertex_count * 2 + j,
-				n - rotation_vertex_count * 2 + 1 + j,
-				n - rotation_vertex_count + 1 + j,
-				n - rotation_vertex_count + j])
-		if close:
-			faces.append([
-				n - rotation_vertex_count * 2 + rotation_vertex_count - 1,
-				n - rotation_vertex_count * 2,
-				n - rotation_vertex_count,
-				n - rotation_vertex_count + rotation_vertex_count - 1])
+		# 頂点を複製して面を貼る
+		append_revolution_vertices(vertices, faces, num_revolution_vertices=rotation_vertex_count, rotation_matrix=rot, z_offset=z_offset * (remain_degree / 360), close=close)
 
 
 
@@ -1312,6 +1327,90 @@ def select_edges_along_axis(obj: bpy.types.Object, axis: tuple[bool, bool, bool]
 
 
 
+def select_edges_by_condition(obj: bpy.types.Object, condition_func: Callable[[bmesh.types.BMEdge], bool]) -> None:
+	"""
+	指定された条件に合った全ての辺を選択する。
+
+	Parameters
+	----------
+	condition_func : Callable[[bmesh.types.BMEdge], bool]
+		選択の条件となるboolを返す関数。
+	"""
+	bm = bmesh.new()
+	bm.from_mesh(obj.data)
+	bm.select_flush(True)
+	for edge in bm.edges:
+		edge.select = condition_func(edge)
+
+	# これがキモで呼ばないと選択状態が変わらない
+	bm.select_flush(False)
+
+	# 更新
+	bm.to_mesh(obj.data)
+	bm.free()
+
+
+
+
+
+
+
+
+
+
+def select_verts_by_condition(obj: bpy.types.Object, condition_func: Callable[[bmesh.types.BMVert], bool]) -> None:
+	"""
+	指定された条件に合った全ての頂点を選択する。
+
+	Parameters
+	----------
+	condition_func : Callable[[bmesh.types.BMVert], bool]
+		選択の条件となるboolを返す関数。
+	"""
+	bm = bmesh.new()
+	bm.from_mesh(obj.data)
+	bm.select_flush(True)
+	for vert in bm.verts:
+		vert.select = condition_func(vert)
+
+	# これがキモで呼ばないと選択状態が変わらない
+	bm.select_flush(False)
+
+	# 更新
+	bm.to_mesh(obj.data)
+	bm.free()
+
+
+
+
+
+
+
+
+
+
+def is_edge_along_z_axis(edge: bmesh.types.BMEdge) -> bool:
+	"""
+	エッジがZ軸に沿っている（Z軸に平行）かどうかを判定する、`select_edges_by_condition`用の関数。
+
+	Parameters:
+		edge : bmesh.types.BMEdge
+
+	Returns:
+		bool
+			エッジの始点と終点のZ座標が同じならTrue。
+	"""
+	return edge.verts[0].co[2] == edge.verts[1].co[2]
+
+
+
+
+
+
+
+
+
+
 # MARK: clear_bevel_weight
 def clear_bevel_weight(obj: bpy.types.Object) -> None:
 	"""
@@ -1417,90 +1516,6 @@ def set_verts_bevel_weight(obj: bpy.types.Object, bevel_weight: float = 1.0) -> 
 
 	# これも忘れないように実行しないと即時反映されない
 	obj.data.update()
-
-
-
-
-
-
-
-
-
-
-def select_edges_by_condition(obj: bpy.types.Object, condition_func: Callable[[bmesh.types.BMEdge], bool]) -> None:
-	"""
-	指定された条件に合った全ての辺を選択する。
-
-	Parameters
-	----------
-	condition_func : Callable[[bmesh.types.BMEdge], bool]
-		選択の条件となるboolを返す関数。
-	"""
-	bm = bmesh.new()
-	bm.from_mesh(obj.data)
-	bm.select_flush(True)
-	for edge in bm.edges:
-		edge.select = condition_func(edge)
-
-	# これがキモで呼ばないと選択状態が変わらない
-	bm.select_flush(False)
-
-	# 更新
-	bm.to_mesh(obj.data)
-	bm.free()
-
-
-
-
-
-
-
-
-
-
-def select_verts_by_condition(obj: bpy.types.Object, condition_func: Callable[[bmesh.types.BMVert], bool]) -> None:
-	"""
-	指定された条件に合った全ての頂点を選択する。
-
-	Parameters
-	----------
-	condition_func : Callable[[bmesh.types.BMVert], bool]
-		選択の条件となるboolを返す関数。
-	"""
-	bm = bmesh.new()
-	bm.from_mesh(obj.data)
-	bm.select_flush(True)
-	for vert in bm.verts:
-		vert.select = condition_func(vert)
-
-	# これがキモで呼ばないと選択状態が変わらない
-	bm.select_flush(False)
-
-	# 更新
-	bm.to_mesh(obj.data)
-	bm.free()
-
-
-
-
-
-
-
-
-
-
-def is_edge_along_z_axis(edge: bmesh.types.BMEdge) -> bool:
-	"""
-	エッジがZ軸に沿っている（Z軸に平行）かどうかを判定する、`select_edges_by_condition`用の関数。
-
-	Parameters:
-		edge : bmesh.types.BMEdge
-
-	Returns:
-		bool
-			エッジの始点と終点のZ座標が同じならTrue。
-	"""
-	return edge.verts[0].co[2] == edge.verts[1].co[2]
 
 
 

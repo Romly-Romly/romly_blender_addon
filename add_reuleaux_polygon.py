@@ -17,7 +17,7 @@ from . import romly_utils
 
 
 
-# MARK: Class
+# MARK: add_reuleaux_polygon
 class ROMLYADDON_OT_add_reuleaux_polygon(bpy.types.Operator):
 	bl_idname = 'romlyaddon.add_reuleaux_polygon'
 	bl_label = bpy.app.translations.pgettext_iface('Add Reuleaux Polygon')
@@ -38,6 +38,16 @@ class ROMLYADDON_OT_add_reuleaux_polygon(bpy.types.Operator):
 	# 整列（作成する平面）
 	val_align_plane: EnumProperty(name='Construct on', items=romly_utils.ALIGN_PLANE_ITEMS, default='xy')
 
+	# 立体化
+	val_solidify: EnumProperty(name='Solidify', items=[('none', 'None', ''), ('extrude', 'Extrude', ''), ('revolve', 'Revolve', '')], default='none')
+
+	# 立体化の厚み
+	val_thickness: FloatProperty(name='Thickness', description='Thickness of the extrusion', default=1, min=0.0, soft_max=100.0, step=1, precision=2, unit=bpy.utils.units.categories.LENGTH)
+
+	# 回転体の設定
+	val_revolution_angle: FloatProperty(name='Revolution Angle', description='Angle of the rotational solid', default=math.radians(360), min=0, max=math.radians(360), step=1, precision=2, subtype='ANGLE', unit=bpy.utils.units.categories.ROTATION)
+	val_revolve_segments: IntProperty(name='Revolve Segments', description='Number of segments in the revolutional solid', default=32, min=3, max=128, step=1)
+
 
 
 	def invoke(self, context, event):
@@ -51,6 +61,14 @@ class ROMLYADDON_OT_add_reuleaux_polygon(bpy.types.Operator):
 		col.prop(self, 'val_radius')
 		col.prop(self, 'val_segments')
 		col.prop(self, 'val_align_plane')
+		col.separator()
+
+		col.prop(self, 'val_solidify')
+		if self.val_solidify == 'extrude':
+			col.prop(self, 'val_thickness')
+		elif self.val_solidify == 'revolve':
+			col.prop(self, 'val_revolution_angle')
+			col.prop(self, 'val_revolve_segments')
 
 
 
@@ -72,27 +90,68 @@ class ROMLYADDON_OT_add_reuleaux_polygon(bpy.types.Operator):
 				center = polygon_vertices[i]
 				start = polygon_vertices[(i + num_sides // 2) % num_sides]
 				end = polygon_vertices[(i + num_sides // 2 + 1) % num_sides]
-				reuleaux_polygon_vertices.extend(create_arc(center=center, start=start, end=end, segments=segments))
+				reuleaux_polygon_vertices.extend(romly_utils.make_arc_vertices_from_start_to_end(center=center, start=start, end=end, segments=segments))
 		else:
 			for i in range(num_sides):
 				# 頂点の数が偶数の場合は、反対側の辺の中点を中心として円弧を描く。
 				center = Vector(polygon_vertices[i]) + (Vector(polygon_vertices[(i + 1) % num_sides]) - Vector(polygon_vertices[i])) / 2
 				start = polygon_vertices[(i + num_sides // 2) % num_sides]
 				end = polygon_vertices[(i + num_sides // 2 + 1) % num_sides]
-				reuleaux_polygon_vertices.extend(create_arc(center=center, start=start, end=end, segments=segments))
+				reuleaux_polygon_vertices.extend(romly_utils.make_arc_vertices_from_start_to_end(center=center, start=start, end=end, segments=segments))
 
 		# ngonで面を作成
 		faces = [list(range(len(reuleaux_polygon_vertices)))]
 
+		# X軸プラス方向に向いていて扱いづらいので、90度回転
+		romly_utils.rotate_vertices(reuleaux_polygon_vertices, degrees=90, axis='Z')
 
+		obj = None
+		if self.val_solidify == 'revolve':
+			# 回転体を作る場合
 
-		# オブジェクトを生成し、クリーンアップした上でシーンに追加
-		obj = romly_utils.cleanup_mesh(romly_utils.create_object(reuleaux_polygon_vertices, faces, name=get_polygon_name(num_sides=num_sides)))
-		bpy.context.collection.objects.link(obj)
+			obj = romly_utils.create_object(reuleaux_polygon_vertices, faces, name=get_polygon_name(num_sides=num_sides))
+			bpy.context.collection.objects.link(obj)
 
-		# 90度回転
-		romly_utils.rotate_vertices(obj, degrees=90, axis='Z')
+			# 半分をカット
+			cutter = romly_utils.create_box_from_corners(corner1=(0, -radius * 2, -1), corner2=(radius * 2, radius * 2, 1))
+			romly_utils.apply_boolean_object(obj, cutter)
 
+			# スクリューを追加
+			bpy.context.view_layer.objects.active = obj
+			mod = bpy.context.object.modifiers.new(type='SCREW', name='Screw')
+			mod.angle = self.val_revolution_angle
+			mod.screw_offset = 0
+			mod.axis = 'Y'
+			mod.steps = self.val_revolve_segments
+			mod.render_steps = self.val_revolve_segments
+			mod.use_merge_vertices = True
+			mod.use_smooth_shade = False	# これを忘れるとスムーズシェーディングになってしまうのだ
+			bpy.ops.object.modifier_apply(modifier=mod.name)
+
+			# 真ん中に辺が残ってしまうので削除
+			# 面を一つも持っていない辺は is_wire が True になっているので、それらを削除する
+			bm = bmesh.new()
+			bm.from_mesh(obj.data)
+			edges_to_delete = []
+			for edge in bm.edges:
+				if edge.is_wire:
+					edges_to_delete.append(edge)
+			bmesh.ops.delete(bm, geom=edges_to_delete, context='EDGES')
+			bm.to_mesh(obj.data)
+			bm.free()
+
+			obj = romly_utils.cleanup_mesh(obj)
+
+		else:
+
+			# 立体化（厚み）
+			if self.val_solidify == 'extrude':
+				# 頂点を掃引
+				romly_utils.extrude_face(vertices=reuleaux_polygon_vertices, faces=faces, extrude_vertex_indices=list(range(len(reuleaux_polygon_vertices))), z_offset=self.val_thickness, offset=None, cap=True)
+
+			# オブジェクトを生成し、クリーンアップした上でシーンに追加
+			obj = romly_utils.cleanup_mesh(romly_utils.create_object(reuleaux_polygon_vertices, faces, name=get_polygon_name(num_sides=num_sides)))
+			bpy.context.collection.objects.link(obj)
 
 
 
@@ -171,56 +230,10 @@ def get_polygon_name(num_sides):
 
 
 
-def create_arc(center: Vector, start: Vector, end: Vector, segments):
-	# 半径を求める
-	radius = (Vector(start) - Vector(center)).length
-
-	# startとendのベクトルと中心点vを基に、角度を計算
-	angle_start = math.atan2(start[1] - center[1], start[0] - center[0])
-	angle_end = math.atan2(end[1] - center[1], end[0] - center[0])
-
-	# 角度の差分を計算
-	angle_diff = angle_end - angle_start
-	if angle_diff <= 0:
-		angle_diff += 2 * math.pi
-
-	# 頂点リストを作成
-	vertices = []
-	for segment in range(segments + 1):
-		angle = angle_start + (angle_diff / segments) * segment
-		x = center[0] + math.cos(angle) * radius
-		y = center[1] + math.sin(angle) * radius
-		vertices.append((x, y, center[2]))
-
-	return vertices
-
-
-
-
-
-
-
-
-# 親となるメニュー
-class ROMLYADDON_MT_romly_add_mesh_menu_parent(bpy.types.Menu):
-	bl_idname = 'ROMLYADDON_MT_romly_add_mesh_menu_parent'
-	bl_label = 'Romly'
-	bl_description = 'Romly Addon Menu'
-
-
-
-	def draw(self, context):
-		layout = self.layout
-		layout.operator(ROMLYADDON_OT_add_reuleaux_polygon.bl_idname, text=bpy.app.translations.pgettext_iface('Add Reuleaux Polygon'), icon='MESH_CIRCLE')
-
-
-
-
-
 # 新規作成メニューに登録
 def menu_func(self, context):
 	self.layout.separator()
-	self.layout.menu(ROMLYADDON_MT_romly_add_mesh_menu_parent.bl_idname, icon='NONE')
+	self.layout.operator(ROMLYADDON_OT_add_reuleaux_polygon.bl_idname, text=bpy.app.translations.pgettext_iface('Add Reuleaux Polygon'), icon='MESH_CIRCLE')
 
 
 
@@ -228,7 +241,6 @@ def menu_func(self, context):
 
 classes = [
 	ROMLYADDON_OT_add_reuleaux_polygon,
-	ROMLYADDON_MT_romly_add_mesh_menu_parent,
 ]
 
 
