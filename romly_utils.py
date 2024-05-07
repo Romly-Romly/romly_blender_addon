@@ -1062,35 +1062,59 @@ def rotated_vector(vector: Vector, angle_radians: float, axis: Literal['X', 'Y',
 
 
 
-def rotate_vertices(object: bpy.types.Mesh | list[Vector], degrees: float, axis: Literal['X', 'Y', 'Z']):
-	"""MeshまたはVectorの配列のすべての頂点を原点周りで回転する
+
+
+
+
+
+def rotate_object(object: bpy.types.Object, degrees: float, axis: Literal['X', 'Y', 'Z']) -> None:
+	"""
+	オブジェクト内のすべての頂点を原点周りで回転する
 
 	Parameters
 	----------
-	object : bpy.types.Mesh | list[Vector]
-		回転する頂点を含むMeshオブジェクトか、Vectorの配列。
+	object : bpy.types.Object
+		回転する頂点を持つオブジェクト。
 	axis : Literal['X', 'Y', 'Z']
-		回転軸。Matrix.Rotationメソッドにそのまま渡される。
-
+		回転軸。`Matrix.Rotation`メソッドにそのまま渡される。
 	"""
-	if isinstance(object, bpy.types.Mesh) or isinstance(object, bpy.types.Object):
-		bm = bmesh.new()
-		bm.from_mesh(object.data)
-		bmesh.ops.rotate(bm, verts=bm.verts, cent=(0.0, 0.0, 0.0), matrix=mathutils.Matrix.Rotation(math.radians(degrees), 4, axis))
-		bm.to_mesh(object.data)
-		bm.clear()
-		object.data.update()
-		bm.free()
-	elif isinstance(object, list):
-		for i in range(len(object)):
-			v = object[i]
-			if isinstance(v, mathutils.Vector):
-				v.rotate(mathutils.Matrix.Rotation(math.radians(degrees), 4, axis))
-				object[i] = v
-			else:
-				vec = Vector(v)
-				vec.rotate(mathutils.Matrix.Rotation(math.radians(degrees), 4, axis))
-				object[i] = vec.to_tuple()
+	bm = bmesh.new()
+	bm.from_mesh(object.data)
+	bmesh.ops.rotate(bm, verts=bm.verts, cent=(0.0, 0.0, 0.0), matrix=mathutils.Matrix.Rotation(math.radians(degrees), 4, axis))
+	bm.to_mesh(object.data)
+	bm.clear()
+	object.data.update()
+	bm.free()
+
+
+
+
+
+
+
+
+
+
+def rotate_vertices(vertices: list[Vector | tuple[float, float, float]], degrees: float, axis: Literal['X', 'Y', 'Z']) -> None:
+	"""
+	Vectorまたは座標を表すタプルの配列のすべての頂点を原点周りで回転する
+
+	Parameters
+	----------
+	vertices : list[Vector | tuple[float, float, float]]
+		回転する頂点を含むVectorまたは座標を表すタプルの配列。
+	axis : Literal['X', 'Y', 'Z']
+		回転軸。`Matrix.Rotation`メソッドにそのまま渡される。
+	"""
+	for i in range(len(vertices)):
+		v = vertices[i]
+		if isinstance(v, mathutils.Vector):
+			v.rotate(mathutils.Matrix.Rotation(math.radians(degrees), 4, axis))
+			object[i] = v
+		else:
+			vec = Vector(v)
+			vec.rotate(mathutils.Matrix.Rotation(math.radians(degrees), 4, axis))
+			object[i] = vec.to_tuple()
 
 
 

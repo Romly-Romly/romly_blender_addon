@@ -275,7 +275,7 @@ def create_nut(diameter: float, thickness: float, bevel_segments: int) -> bpy.ty
 
 		for i in range(6):
 			temp_vertices = make_hexagon_beveled_vertices(radius=diameter / 2, bevel_radius=bevel_radius, bevel_segments=bevel_segments)
-			romly_utils.rotate_vertices(object=temp_vertices, degrees=60 * i, axis=AXIS_Z)
+			romly_utils.rotate_vertices(temp_vertices, degrees=60 * i, axis=AXIS_Z)
 			vertices.extend(temp_vertices)
 	else:
 		hexagon_vertices = romly_utils.make_arc_vertices(start=mathutils.Vector([0, diameter / 2, 0]), center=mathutils.Vector([0, 0, 0]), axis=AXIS_Z, rotate_degrees=360, segments=6)
@@ -801,15 +801,15 @@ class ROMLYADDON_OT_add_jis_screw(bpy.types.Operator):
 
 			# 回転
 			if self.val_direction == '-z':
-				romly_utils.rotate_vertices(object=obj, degrees=180, axis=AXIS_Y)
+				romly_utils.rotate_object(object=obj, degrees=180, axis=AXIS_Y)
 			elif self.val_direction == 'x':
-				romly_utils.rotate_vertices(object=obj, degrees=-90, axis=AXIS_Y)
+				romly_utils.rotate_object(object=obj, degrees=-90, axis=AXIS_Y)
 			elif self.val_direction == '-x':
-				romly_utils.rotate_vertices(object=obj, degrees=90, axis=AXIS_Y)
+				romly_utils.rotate_object(object=obj, degrees=90, axis=AXIS_Y)
 			elif self.val_direction == 'y':
-				romly_utils.rotate_vertices(object=obj, degrees=90, axis=AXIS_X)
+				romly_utils.rotate_object(object=obj, degrees=90, axis=AXIS_X)
 			elif self.val_direction == '-y':
-				romly_utils.rotate_vertices(object=obj, degrees=-90, axis=AXIS_X)
+				romly_utils.rotate_object(object=obj, degrees=-90, axis=AXIS_X)
 
 			# 3Dカーソルの位置へ
 			obj.location = bpy.context.scene.cursor.location

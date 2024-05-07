@@ -75,7 +75,7 @@ def CreatePieCutMesh(amountAngle, rotateAngle, cutSize=10, cutHeight=10):
 	romly_utils.extrude_face(vertices=vertices, faces=faces, extrude_vertex_indices=faces[0], z_offset=cutHeight)
 
 	# 回転
-	romly_utils.rotate_vertices(object=vertices, degrees=math.degrees(rotateAngle), axis='Z')
+	romly_utils.rotate_vertices(vertices, degrees=math.degrees(rotateAngle), axis='Z')
 
 	mesh = romly_utils.create_object(vertices=vertices, faces=faces, name='Pie Cutter')
 	romly_utils.cleanup_mesh(object=mesh)
