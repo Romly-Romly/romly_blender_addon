@@ -4,32 +4,42 @@
 # romly_blender_addon
 
 個人的に作成、使用している[Blender](https://www.blender.org/)用のスクリプトいろいろをアドオンにまとめたもの。<br>
-動作確認したBlenderのバージョンは4.0です。<br>
+動作確認したBlenderのバージョンは4.0, 4.1です。<br>
 
 ## 含まれる機能
 
 - メッシュ作成
-	- 原点位置を設定可能な立方体([Add Box](#Add-Box))
-	- 中空構造のシリンダー([Add Donut Cylinder](#add-donut-cylinder))
-	- 十字架を掃引した形状([Add Cross Extrusion](#add-cross-extrusion))
-	- ルーローの多角形([Add Reuleaux Polygon](#add-reuleaux-polygon))
-	- ルーローの四面体([Add Reuleaux Tetrahedron](#add-reuleaux-tetrahedron))
-	- スフェリコン([Add Sphericon](#add-sphericon))
-	- オロイド／アンチオロイド([Add Oloid](#add-oloid))
-	- クロソイド曲線([Add Clothoid Curve](#add-clothoid-curve))
-	- クロソイド角丸矩形([Add Clothoid Corner Plate](#add-clothoid-corner-plate))
-	- ねじ／ナット([Add JIS Screw](#add-jis-screw), [Add JIS Nut](#add-jis-nut))
-	- アルミフレーム([Add Aluminum Extrusion](#add-aluminum-extrusion))
-	- ピンヘッダー([Add Pin Header](#add-pin-header))
-	- 3Dプリント用ナット穴([Add Nut Hole](#add-nut-hole))
+	- オブジェクト
+		- 原点位置を設定可能な立方体([Add Box](#Add-Box))
+		- 中空構造のシリンダー([Add Donut Cylinder](#add-donut-cylinder))
+		- 十字架を掃引した形状([Add Cross Extrusion](#add-cross-extrusion))
+		- ルーローの多角形([Add Reuleaux Polygon](#add-reuleaux-polygon))
+		- ルーローの四面体([Add Reuleaux Tetrahedron](#add-reuleaux-tetrahedron))
+		- スフェリコン([Add Sphericon](#add-sphericon))
+		- オロイド／アンチオロイド([Add Oloid](#add-oloid))
+		- クロソイド曲線([Add Clothoid Curve](#add-clothoid-curve))
+		- クロソイド角丸矩形([Add Clothoid Corner Plate](#add-clothoid-corner-plate))
+	- 機械部品
+		- ねじ／ナット([Add JIS Screw](#add-jis-screw), [Add JIS Nut](#add-jis-nut))
+		- リニアガイドレール／ブロック([Add Linear Guide Rail/Block](#add-linear-guide-railblock))
+		- カップリング([Add Coupling](#add-coupling))
+		- リードナット([Add Lead Nut](#add-lead-nut))
+		- 圧縮コイルばね([Add Compression Spring](#add-compression-spring))
+		- アルミフレーム([Add Aluminum Extrusion](#add-aluminum-extrusion))
+		- ピンヘッダー([Add Pin Header](#add-pin-header))
+	- 3Dプリント用
+		- 3Dプリント用ナット穴([Add Nut Hole](#add-nut-hole))
 - オブジェクトのコンテキストメニュー
 	- すべてのモデファイアを適用([Apply All Modifiers](#apply-all-modifiers))
 	- 固定距離の配列モデファイアを追加([Add Constant Offset Array Modifier](#add-constant-offset-array-modifier))
+	- ベベルウェイトをクリア([Clear Bevel Weight](#clear-bevel-weight))
 	- ウェイト制限のベベルモデファイアを追加([Add Weight Bevel Modifier](#add-weight-bevel-modifier))
 	- ビューポート表示のテクスチャ／ワイヤーフレーム切り替え([Toggle Viewport Display As](#toggle-viewport-display-as))
 - 編集モードの辺メニュー
 	- 平面上にある辺（溶解可能な辺）を選択([Select edges on Fair Surface](#select-edges-on-fair-surface))
 	- 軸に沿った辺を選択([Select edges along Axis](#select-edges-along-axis))
+	- 辺のベベルウェイトをトグル([Toggle Edges' Bevel Weight](#toggle-edges-bevel-weight))
+	- 辺が軸に沿うようにオブジェクトを回転([Rotate object aligning edge to axis](#rotate-object-aligning-edge-to-axis))
 - オブジェクト／コレクションをSTL形式で簡単にエクスポート([Export Selection as STL](#export-selection-as-stl), [Export Collection as STL](#export-collection-as-stl))
 - 言語設定を切り替えられるパネル([Language Panel](#language-panel))
 - アクティブスクリプトを再読み込みして実行([Reload and Run Script](#reload-and-run-script))
@@ -90,6 +100,8 @@ XY平面に描いた十字をZ方向に掃引した形状を作成します。�
 XY平面にルーローの多角形を作成します。正しくルーローの多角形になるのは辺の数が奇数の場合のみで、偶数の正多角形の時は反対側の辺の中点を中心とする円弧でそれっぽい形にしているだけです。
 
 円弧部のセグメント数を指定でき、1にすると円弧無しの正多角形になります。
+
+厚みを追加してコイン状に立体化したり、回転体にして定幅立体にすることができます。
 
 -----
 
@@ -176,6 +188,46 @@ JIS規格のナットを作成します。ネジ同様、M2〜M8のサイズを�
 
 -----
 
+### Add Linear Guide Rail/Block
+
+*Add Menu(<kbd>Shift+A</kbd>) → *Romly*
+
+![リニアガイドレール／ブロックをBlender上で作成している様子](images/add_linear_guid_railblock.jpg)
+
+Aliexpressなどで一番入手しやすいHGNとHGWシリーズのリニアガイドレール／ブロックを作成します。ケースなどの設計時に当たりをとるためのものです。軸の秤を設計する時にどうしても必要で、しかもサイズ違いのバリエーションが豊富でいちいち作るのが面倒だったので……
+
+-----
+
+### Add Coupling
+
+*Add Menu(<kbd>Shift+A</kbd>) → *Romly*
+
+![カップリングをBlender上で作成している様子](images/add_coupling.jpg)
+
+イモネジで締めるタイプのカップリングを作成します。これも軸の秤の設計で必要で、単純な形状なんですが、外径に内径が2つと毎回作るのも面倒なのでスクリプトにまとめました。おまけで螺旋スリットを入れて見た目をそれっぽく出来ます。
+
+-----
+
+### Add Lead Nut
+
+*Add Menu(<kbd>Shift+A</kbd>) → *Romly*
+
+![リードナットをBlender上で作成している様子](images/add_lead_nut.jpg)
+
+リードスクリュー、ボールねじでよくあるタイプのリードナットを作成します。これも軸の秤（以下略）。
+
+-----
+
+### Add Compression Spring
+
+*Add Menu(<kbd>Shift+A</kbd>) → *Romly*
+
+![圧縮コイルばねをBlender上で作成している様子](images/add_compression_spring.jpg)
+
+圧縮コイルばねを作成します。機械用部品っぽく、線径や外径、自由長や座巻数を指定して作成できるのがポイントです。自由長を指定して作る場合、巻数が切れの良い数字になるよう調整しないと座巻との境目で線が急に曲がってしまうのでご留意下さい。
+
+-----
+
 ### Add Aluminum Extrusion
 
 *Add Menu(<kbd>Shift+A</kbd>) → *Romly*
@@ -233,6 +285,16 @@ L型のも作れるといいんだけどとりあえずストレートのみで�
 
 Relative OffsetではなくConstant Offsetを設定した状態のArrayモデファイアを追加します。<br>
 自分の用途的にはRelative Offsetを指定することは極めて稀で、毎回毎回Constant Offsetにチェックを入れ直してオフセット距離を指定するのが面倒なのでスクリプトにまとめました。
+
+-----
+
+### Clear Bevel Weight
+
+*Object Context Menu*（オブジェクトを右クリック） → *Romly Tools*
+
+そのまんまです。すべての辺のベベルウェイトを0にリセットします。
+
+選択されている辺のみベベルウェイトを切り替えたい場合は、編集メニュー内に『[辺のベベルウェイトをトグル](#toggle-edges-bevel-weight)』という機能があります。
 
 -----
 
@@ -299,6 +361,30 @@ Limit MethodにWeightを設定済みのベベルモデファイアを追加し�
 *Edit Mesh Context Menu*（編集モード・辺選択時に右クリック）
 
 編集中のメッシュの、XYZ各軸に沿った辺をまとめて選択します。例えば、立方体の縦方向の縁だけ選択してベベルを設定したいなどの用途に使えるかなと思います。『[平面上にある面を選択](#select-edges-on-fair-surface)』同様、閾値角度を変更できます。
+
+-----
+
+### Toggle Edges' Bevel Weight
+
+**辺のベベルウェイトをトグル**
+
+*Edge Menu*（編集モード）
+*Edit Mesh Context Menu*（編集モード・辺選択時に右クリック）
+
+編集中のメッシュの選択されている辺について、ベベルウェイトを0または1に切り替えます。処理としては、選択されているすべての辺のベベルウェイトが0ならすべて1にし、一つでも0以外の辺があればすべて0にします。ベベルウェイトをパネルから設定するの、地味に面倒なんですよね。
+
+-----
+
+### Rotate object aligning edge to axis
+
+**辺が軸に沿うようにオブジェクトを回転**
+
+*Edge Menu*（編集モード）
+*Edit Mesh Context Menu*（編集モード・辺選択時に右クリック）
+
+選択されている辺が、XYZ軸いずれかに沿うようにオブジェクトを回転します。この時、選択されている辺の中点の位置が変わらないようにオブジェクトの位置も設定されます。
+
+くるくる回した上に回転を適用してしまい、元の向きに戻せなくなったオブジェクトなどに使えると思います。
 
 -----
 
