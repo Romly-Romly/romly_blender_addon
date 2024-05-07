@@ -312,7 +312,7 @@ def update_spec_property(self: bpy.types.OperatorProperties, context):
 
 
 
-# MARK: Class
+# MARK: add_linear_guide_rail
 class ROMLYADDON_OT_add_linear_guide_rail(bpy.types.Operator):
 	"""リニアガイドのレールを作成するオペレーター。"""
 	bl_idname = 'romlyaddon.add_linear_guide_rail'
@@ -526,7 +526,7 @@ def update_block_spec_property(self: bpy.types.OperatorProperties, context):
 
 
 
-# MARK: Class
+# MARK: add_linear_guide_block
 class ROMLYADDON_OT_add_linear_guide_block(bpy.types.Operator):
 	"""リニアガイドのブロックを作成するオペレーター。"""
 	bl_idname = 'romlyaddon.add_linear_guide_block'
@@ -682,6 +682,11 @@ class ROMLYADDON_OT_add_linear_guide_block(bpy.types.Operator):
 
 
 	def execute(self, context):
+		# 現在の選択を解除
+		bpy.ops.object.select_all(action='DESELECT')
+
+
+
 		# 中央部分と上下部分との大きさの差
 		TOP_BOTTOM_SIZE_DIFF = 0.1
 
