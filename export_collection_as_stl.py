@@ -35,6 +35,49 @@ def selectObjectsInChildren(layerCollection):
 
 
 
+
+def export_stl_compatible(filepath: str) -> bool:
+	"""
+	メッシュをSTLでエクスポートする関数。 Blender 4.2 でのAPI変更に対応。
+
+	Parameters
+	----------
+	filepath : str
+		エクスポート先のファイルパス。
+
+	Returns
+	-------
+	bool
+		エクスポートが成功したかどうか。
+	"""
+	# Blenderのバージョンを取得
+	major, minor, _ = bpy.app.version
+
+	# オプション指定
+	check_existing = True # 既存ファイルをチェックするかどうか
+	use_selection = True # 選択されたオブジェクトのみをエクスポートするかどうか。
+	ascii = True	# ASCIIフォーマットで保存するかどうか
+
+	# バージョン4.2以降かどうかをチェック
+	if (major, minor) >= (4, 2):
+		# 新しいメソッドを使用
+		result = bpy.ops.wm.stl_export(filepath=filepath, check_existing=check_existing, export_selected_objects=use_selection, ascii_format=ascii)
+	else:
+		# 古いメソッドを使用
+		result = bpy.ops.export_mesh.stl(filepath=filepath, check_existing=check_existing, use_selection=use_selection, ascii=ascii)
+
+	# OPERATORクラスの戻り値をチェック
+	return 'FINISHED' in result
+
+
+
+
+
+
+
+
+
+
 # MARK: Class
 class ROMLYADDON_OT_export_collection_as_stl(bpy.types.Operator):
 	"""
@@ -69,7 +112,7 @@ class ROMLYADDON_OT_export_collection_as_stl(bpy.types.Operator):
 		# エクスポートするSTLのファイル名を作る。
 		# blendファイル名 + " - " + コレクション名 + ".stl"
 		stl_filepath = os.path.splitext(filepath)[0] + " - " + bpy.context.collection.name + ".stl"
-		bpy.ops.export_mesh.stl(filepath=stl_filepath, check_existing=True, use_selection=True, ascii=True)
+		export_stl_compatible(filepath=stl_filepath)
 
 		msg_key = 'The collection {collection} is exported to: {filename}'
 		params = {'collection': bpy.context.view_layer.active_layer_collection.name, 'filename': stl_filepath}
@@ -123,7 +166,7 @@ class ROMLYADDON_OT_export_selection_as_stl(bpy.types.Operator):
 		stl_filepath = os.path.splitext(filepath)[0] + " - " + bpy.context.active_object.name + ".stl"
 
 		# STLとしてエクスポート
-		bpy.ops.export_mesh.stl(filepath=stl_filepath, check_existing=True, use_selection=True, ascii=True)
+		export_stl_compatible(filepath=stl_filepath)
 
 		msg_key = 'The selection is exported to: {filename}'
 		params = {'filename': stl_filepath}
