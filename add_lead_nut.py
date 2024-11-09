@@ -56,6 +56,78 @@ def is_bevel_edge(edge: bmesh.types.BMEdge) -> bool:
 
 
 
+class LeadNutSpec(NamedTuple):
+	"""_summary_
+
+	Attributes
+	----------
+	hole_diameter: float
+		穴の直径。スペック表では『公称直径』となっていることが多い。
+	shaft_diameter: float
+		芯部分の直径。D1と表記されていることが多い。
+	flange_diameter: float
+		鍔の直径。D3と表記されていることが多い。
+	holes_center_diameter: float
+		ネジ穴の中心部分の直径。D4と表記されていることが多い。
+	holes_diameter: float
+		ネジ穴の直径。D5と表記されていることが多い。
+	flange_thickness: float
+		鍔の部分の厚み。Bと表記されていることが多い。
+	height_below_flange: float
+		鍔より下の部分の長さ（高さ）。鍔を含む長さがL1で表記されているので、L1 - Bで求まる。
+	num_holes: int
+		ネジ穴の数。内径32mm以下は3、40以上は4。
+	hole_angle_degree: float
+		ネジ穴の角度ピッチ（度）。内径32mm以下は45度、40以上は30度。
+	flange_width: float
+		鍔の部分の幅。H1と表記されていることが多い。
+	"""
+	hole_diameter: float
+	shaft_diameter: float
+	flange_diameter: float
+	holes_center_diameter: float
+	holes_diameter: float
+	flange_thickness: float
+	height_above_flange: float
+	height_below_flange: float
+	num_holes: int
+	hole_angle_degree: float
+	flange_width: float
+
+
+
+LEAD_NUT_TEMPLATES = {
+	't8round': LeadNutSpec(hole_diameter=8, shaft_diameter=10, flange_diameter=22, height_above_flange=15 - 10 - 3.5, holes_center_diameter=16, holes_diameter=3.5, flange_thickness=3.5, height_below_flange=10, num_holes=2, hole_angle_degree=90, flange_width=0),
+	't8hflange': LeadNutSpec(hole_diameter=8, shaft_diameter=10, flange_diameter=22, height_above_flange=15 - 10 - 3.5, holes_center_diameter=16, holes_diameter=3.5, flange_thickness=3.5, height_below_flange=10, num_holes=1, hole_angle_degree=0, flange_width=12),
+	'sfu1204': LeadNutSpec(hole_diameter=12, shaft_diameter=22, flange_diameter=42, height_above_flange=0, holes_center_diameter=32, holes_diameter=4.8, flange_thickness=8, height_below_flange=35 - 8, num_holes=3, hole_angle_degree=45, flange_width=30),
+	'sfu1604': LeadNutSpec(hole_diameter=16, shaft_diameter=28, flange_diameter=48, holes_center_diameter=38, holes_diameter=5.5, flange_thickness=10, height_above_flange=0, height_below_flange=36 - 10, num_holes=3, hole_angle_degree=45, flange_width=40),
+	'sfu1605': LeadNutSpec(hole_diameter=16, shaft_diameter=28, flange_diameter=48, holes_center_diameter=38, holes_diameter=5.5, flange_thickness=10, height_above_flange=0, height_below_flange=42 - 10, num_holes=3, hole_angle_degree=45, flange_width=40),
+}
+
+def update_templates(self: bpy.types.OperatorProperties, context):
+	spec = LEAD_NUT_TEMPLATES.get(self.val_templates)
+	if spec:
+		self.val_hole_diameter = spec.hole_diameter
+		self.val_shaft_diameter = spec.shaft_diameter
+		self.val_plate_diameter = spec.flange_diameter
+		self.val_screw_holes_diameter = spec.holes_diameter
+		self.val_screw_holes_center_diameter = spec.holes_center_diameter
+		self.val_plate_thickness = spec.flange_thickness
+		self.val_shaft_length_above = spec.height_above_flange
+		self.val_shaft_length_below = spec.height_below_flange
+		self.val_screw_hole_count = spec.num_holes
+		self.val_screw_hole_angular_pitch = math.radians(spec.hole_angle_degree)
+		self.val_plate_width = spec.flange_width
+
+
+
+
+
+
+
+
+
+
 # MARK: ROMLYADDON_OT_add_lead_nut
 class ROMLYADDON_OT_add_lead_nut(bpy.types.Operator):
 	"""リードナットを作成するオペレーター。"""
@@ -92,7 +164,14 @@ class ROMLYADDON_OT_add_lead_nut(bpy.types.Operator):
 	# ネジ穴のセグメント数
 	val_screw_holes_segments: IntProperty(name='Screw Hole Segments', default=16, min=3, max=64, step=1)
 
-
+	# テンプレート
+	val_templates: EnumProperty(name='Templates', items=[
+		('t8round', 'T8 Round', ''),
+		('t8hflange', 'T8 H-Flange', ''),
+		('sfu1204', 'SFU1204', ''),
+		('sfu1604', 'SFU1604', ''),
+		('sfu1605', 'SFU1605', ''),
+	], default='t8round', update=update_templates)
 
 
 
@@ -103,6 +182,10 @@ class ROMLYADDON_OT_add_lead_nut(bpy.types.Operator):
 
 	def draw(self, context):
 		col = self.layout.column()
+
+		col.prop(self, 'val_templates')
+		col.separator()
+
 		col.prop(self, 'val_hole_diameter')
 		col.separator()
 

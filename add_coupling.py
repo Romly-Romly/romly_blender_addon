@@ -267,7 +267,7 @@ class ROMLYADDON_OT_add_coupling(bpy.types.Operator):
 		('m4', 'M4', 'Set specs to M4 size'),
 		], default=SETSCREW_SIZE_DEFAULT, update=update_setscrew_sizes)
 	val_setscrew_diameter: FloatProperty(name='Diameter', description='Diameter of the set screw holes', default=romly_utils.SCREW_SPECS[SETSCREW_SIZE_DEFAULT].diameter, min=1, soft_max=10, subtype='DISTANCE', unit=bpy.utils.units.categories.LENGTH)
-	val_setscrew_thread: BoolProperty(name='Threading', description="Thread screw holes if it's checked", default=False)
+	val_setscrew_thread: BoolProperty(name='Threaded', description="Thread screw holes if it's checked", default=False)
 	val_setscrew_thread_pitch: FloatProperty(name='Pitch', description='Pitch of the set screw hole threads', default=romly_utils.SCREW_SPECS[SETSCREW_SIZE_DEFAULT].pitch, min=0.1, soft_max=10, subtype='DISTANCE', unit=bpy.utils.units.categories.LENGTH)
 	val_setscrew_thread_depth: FloatProperty(name='Depth', description='Depth of the set screw hole threads', default=romly_utils.SCREW_SPECS[SETSCREW_SIZE_DEFAULT].thread_depth(), min=0.1, soft_max=10, subtype='DISTANCE', unit=bpy.utils.units.categories.LENGTH)
 

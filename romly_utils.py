@@ -375,13 +375,13 @@ def create_combined_object(objects: list[bpy.types.Object], obj_name: str, mesh_
 
 
 
-def create_box(size: Vector, offset: Vector = Vector((0, 0, 0))) -> bpy.types.Object:
+def create_box(size: Vector | tuple[float, float, float], offset: Vector = Vector((0, 0, 0))) -> bpy.types.Object:
 	"""
 	直方体のオブジェクトを生成する。
 
 	Parameters
 	----------
-	size : Vector
+	size : Vector | tuple[float, float, float]
 		直方体の各軸の大きさを表すベクトル。(1.0, 1.0, 1.0)なら大きさ1の立方体を作る。
 	offset : Vector, optional
 		直方体の中心からのオフセットを表すベクトル。直方体の位置を決める。
@@ -409,6 +409,10 @@ def create_box(size: Vector, offset: Vector = Vector((0, 0, 0))) -> bpy.types.Ob
 		(0, 4, 6, 2),	# 底面
 		(1, 5, 7, 3),	# 上面
 	]
+
+	# sizeがVector型でない場合はVectorに変換する
+	if not isinstance(size, Vector):
+		size = Vector(size)
 
 	actual_vertices = [(v * size) + offset for v in vertices]
 	obj = cleanup_mesh(create_object(vertices=actual_vertices, faces=faces))
@@ -615,7 +619,7 @@ def create_threaded_cylinder(diameter: float, length: float, pitch: float, lead:
 			bevel_start = mathutils.Vector([-major_radius + H / 8, 0, z + pitch / 2 + rh])
 
 			# アールの開始位置から適当に伸ばした垂線
-			perpendicular_point = rotated_vector(vector=peak - bevel_start, angle_radians=math.radians(-90), axis='Y')
+			perpendicular_point = rotated_vector(vector=(peak - bevel_start) * 100, angle_radians=math.radians(-90), axis='Y')
 			perpendicular_point += bevel_start
 
 			# アール（ベベル）の中心を求める
@@ -1166,7 +1170,7 @@ def calc_angle(peak: Vector, point1: Vector, point2: Vector) -> float:
 
 
 
-def apply_boolean_object(object, boolObject, operation='DIFFERENCE', use_self=False, unlink=True, apply=True, fast_solver=False):
+def apply_boolean_object(object, boolObject, operation='DIFFERENCE', use_self=False, unlink=True, apply=True, fast_solver=False, use_hole_torelant=False):
 	"""
 	ブーリアンモデファイア(Difference)を使ってメッシュをもう一方のメッシュの形状で削る。
 
@@ -1180,12 +1184,15 @@ def apply_boolean_object(object, boolObject, operation='DIFFERENCE', use_self=Fa
 		処理後にboolObjectをシーンからアンリンクするか。
 	apply : Bool, optional
 		ブーリアンモデファイアを適用するかどうか。デフォルトはTrue。
+	use_hole_torelant: Bool, optional
+		穴を許容
 	"""
 	bpy.context.view_layer.objects.active = object
 	mod = bpy.context.object.modifiers.new(type='BOOLEAN', name='Boolean')
 	mod.operation = operation
 	mod.object = boolObject
 	mod.use_self = use_self
+	mod.use_hole_tolerant = use_hole_torelant
 	if fast_solver:
 		mod.solver = 'FAST'
 	if apply:
@@ -1202,13 +1209,13 @@ def apply_boolean_object(object, boolObject, operation='DIFFERENCE', use_self=Fa
 
 
 
-def apply_bevel_modifier(obj: bpy.types.Object, width: float) -> None:
+def apply_bevel_modifier(obj: bpy.types.Object, width: float, segments: int = 1) -> None:
 	bevel_modifier = obj.modifiers.new(name='Bevel', type='BEVEL')
 	bevel_modifier.offset_type = 'OFFSET'
 	bevel_modifier.use_clamp_overlap = True
 	bevel_modifier.limit_method = 'WEIGHT'
 	bevel_modifier.width = width
-	bevel_modifier.segments = 1
+	bevel_modifier.segments = segments
 	bevel_modifier.profile = 0.5
 	bpy.context.view_layer.objects.active = obj
 	bpy.ops.object.modifier_apply(modifier=bevel_modifier.name)
@@ -1222,12 +1229,12 @@ def apply_bevel_modifier(obj: bpy.types.Object, width: float) -> None:
 
 
 
-def apply_bevel_modifier_to_edges(obj: bpy.types.Object, width: float, edge_select_func: Callable[[bmesh.types.BMEdge], bool]) -> None:
+def apply_bevel_modifier_to_edges(obj: bpy.types.Object, width: float, edge_select_func: Callable[[bmesh.types.BMEdge], bool], segments: int = 1) -> None:
 	select_edges_by_condition(obj, lambda edge: edge_select_func(edge))
 	set_bevel_weight(obj)
 
 	# ベベルモディファイアを追加、適用
-	apply_bevel_modifier(obj, width)
+	apply_bevel_modifier(obj, width, segments=segments)
 
 
 
@@ -1435,6 +1442,30 @@ def is_edge_along_z_axis(edge: bmesh.types.BMEdge) -> bool:
 
 
 
+def is_edge_along_z_axis2(edge: bmesh.types.BMEdge) -> bool:
+	"""
+	エッジがZ軸に沿っている（Z軸に平行）かどうかを判定する、`select_edges_by_condition`用の関数。
+
+	Parameters:
+		edge : bmesh.types.BMEdge
+
+	Returns:
+		bool
+			エッジの始点と終点のZ座標が同じならTrue。
+	"""
+	edge_vector = (edge.verts[1].co - edge.verts[0].co).normalized()
+	dot_abs = abs(edge_vector.dot(Vector([0, 0, 1])))
+	return dot_abs >= 0.99
+
+
+
+
+
+
+
+
+
+
 # MARK: clear_bevel_weight
 def clear_bevel_weight(obj: bpy.types.Object) -> None:
 	"""
@@ -1540,6 +1571,127 @@ def set_verts_bevel_weight(obj: bpy.types.Object, bevel_weight: float = 1.0) -> 
 
 	# これも忘れないように実行しないと即時反映されない
 	obj.data.update()
+
+
+
+
+
+
+
+
+
+
+# MARK: 数学・ベクトル関連
+
+def mm_to_mil(mm: float) -> float:
+	"""mm単位の値をmil単位の値に変換する。"""
+	return mm / 25.4 * 1000
+
+
+
+
+
+
+
+
+
+
+def get_mid_point(v1: Vector, v2: Vector) -> Vector:
+	"""二つのベクトルの中間点を求める。"""
+	return v1 + (v2 - v1) * 0.5
+
+
+
+
+
+
+
+
+
+
+def get_closest_points_between_segments(line1_start: Vector, line1_end: Vector, line2_start: Vector, line2_end: Vector):
+	"""
+	2つの線分の最近傍点を取得する
+
+	Parameters
+	----------
+	line1_start : Vector
+		線分1の始点
+	line1_end : Vector
+		線分1の終点
+	line2_start : Vector
+		線分2の始点
+	line2_end : Vector
+		線分2の終点
+
+	Returns
+	-------
+	tuple[Vector, Vector]
+		2つの線分の最近傍点
+	"""
+	d1 = line1_end - line1_start	# 線分1の方向ベクトル
+	d2 = line2_end - line2_start	# 線分2の方向ベクトル
+	r = line1_start - line2_start	# 線分1の始点から線分2の始点へのベクトル
+
+	# 方向ベクトル間のドット積を計算
+	a = d1.dot(d1)
+	b = d1.dot(d2)
+	c = d2.dot(d2)
+	d = d1.dot(r)
+	e = d2.dot(r)
+
+	denom = a * c - b * b
+	if abs(denom) < 1e-10:
+		# 平行またはほぼ平行な場合の処理
+		s = 0
+	else:
+		s = (b * e - c * d) / denom
+
+	# 分母が十分に大きい場合は t も計算
+	t = (a * e - b * d) / denom if abs(denom) > 1e-10 else 0
+
+	# パラメータsとtを[0, 1]の範囲に制限して、線分上の点とする
+	s = max(0, min(1, s))
+	t = max(0, min(1, t))
+
+	# 最近傍点を線分上で計算
+	closest_point_on_1 = line1_start + d1 * s
+	closest_point_on_2 = line2_start + d2 * t
+	return (closest_point_on_1, closest_point_on_2)
+
+
+
+
+
+
+
+
+
+
+def get_distance_between_segments(line1_start: Vector, line1_end: Vector, line2_start: Vector, line2_end: Vector) -> float:
+	"""
+	2つの線分の最短距離を取得する
+
+	Parameters
+	----------
+	line1_start : Vector
+		線分1の始点
+	line1_end : Vector
+		線分1の終点
+	line2_start : Vector
+		線分2の始点
+	line2_end : Vector
+		線分2の終点
+
+	Returns
+	-------
+	float
+		2つの線分間の最短距離
+	"""
+	p1, p2 = get_closest_points_between_segments(line1_start, line1_end, line2_start, line2_end)
+
+	# 最短距離を計算
+	return (p1 - p2).length
 
 
 

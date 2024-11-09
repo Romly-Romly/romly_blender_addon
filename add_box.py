@@ -56,6 +56,7 @@ class ROMLYADDON_OT_add_box(bpy.types.Operator):
 		col = self.layout.column()
 
 		col.prop(self, 'val_size')
+		col.prop(self, 'val_thin_part_size')
 		col.separator()
 
 		col.label(text='Origin')

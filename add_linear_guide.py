@@ -550,7 +550,7 @@ class ROMLYADDON_OT_add_linear_guide_block(bpy.types.Operator):
 	val_screw_c: FloatProperty(name='Vertical Distance', description='[C] Vertical distance (parallel to the rail) between the screw holes', default=BLOCK_SPECS[DEFAULT_SIZE].screw_c, min=0, soft_max=100, unit=bpy.utils.units.categories.LENGTH, precision=3, update=update_block_spec_property)
 	val_screw_pitch: FloatProperty(name='Pitch', description='Pitch of the screw threads', default=romly_utils.SCREW_SPECS[BLOCK_SPECS[DEFAULT_SIZE].screw].pitch, min=0.25, max=5, unit=bpy.utils.units.categories.LENGTH, precision=3)
 	val_screw_thread_depth: FloatProperty(name='Thread Depth', description='Depth of threads of screw holes', default=romly_utils.SCREW_SPECS[BLOCK_SPECS[DEFAULT_SIZE].screw].thread_depth(), min=0.1, max=5, unit=bpy.utils.units.categories.LENGTH, precision=3)
-	val_threading: BoolProperty(name='Threading', description="Thread screw holes if it's checked", default=False)
+	val_threading: BoolProperty(name='Threaded', description="Thread screw holes if it's checked", default=False)
 
 	val_grease_hole_diameter: FloatProperty(name='Diameter', description='[Gn] Diameter of the grease hole in the end seal (the red part)', default=BLOCK_SPECS[DEFAULT_SIZE].grease_hole_diameter, min=0.0, soft_max=3, unit=bpy.utils.units.categories.LENGTH, precision=3)
 	val_grease_hole_position: FloatProperty(name='Position', description='[H2] Distance to the grease hole on the end seal (the red part) from the block surface', default=BLOCK_SPECS[DEFAULT_SIZE].grease_hole_position, min=0.0, soft_max=5, unit=bpy.utils.units.categories.LENGTH, precision=3)

@@ -212,10 +212,6 @@ class ROMLYADDON_OT_transform_object_aligning_edge_to_axis(bpy.types.Operator):
 			else:
 				return v1, v2
 
-		def get_mid_point(v1: Vector, v2: Vector) -> Vector:
-			"""二つのベクトルの中間点を求める。"""
-			return v1 + (v2 - v1) * 0.5
-
 
 
 		# 選択されているすべての辺の始点終点の平均を計算
@@ -247,7 +243,7 @@ class ROMLYADDON_OT_transform_object_aligning_edge_to_axis(bpy.types.Operator):
 
 		# 再び選択されているすべての辺の始点終点の平均を計算し、以前の中間点から新しい中間点へのオフセットを求め、以前の中間点の位置が維持されるようにオブジェクトを移動
 		new_selected_v1, new_selected_v2 = get_selected_v1_v2(obj)
-		obj.location += get_mid_point(selected_v1, selected_v2) - get_mid_point(new_selected_v1, new_selected_v2)
+		obj.location += romly_utils.get_mid_point(selected_v1, selected_v2) - romly_utils.get_mid_point(new_selected_v1, new_selected_v2)
 
 
 

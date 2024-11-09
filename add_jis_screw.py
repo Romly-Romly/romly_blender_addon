@@ -391,18 +391,19 @@ def create_screw_shaft(length: float, unthreaded_length: float, diameter: float,
 		# モデファイアを使って上部をカットする
 		# この時、ネジの座標がぴったり0だとブーリアンできないので、ごく僅かにずらす
 		# blenderが2.8になってブーリアンのメソッドが選択できなくなった結果、回転も加えないといけなくなった。
-		tool_obj_size = 100
+		tool_obj_size = diameter * 2
 		romly_utils.translate_vertices(obj, [0, 0, 0.001])
 		bpy.ops.mesh.primitive_cube_add(size=tool_obj_size, enter_editmode=False, location=(0, 0, tool_obj_size / 2), rotation=(0, 0, 30))
 		bool_tool_obj = bpy.data.objects[bpy.context.active_object.name]
 
 		# 高速ソルバーにしないとピッチの値によっては正しくカットされない事があるので
-		romly_utils.apply_boolean_object(object=obj, boolObject=bool_tool_obj, unlink=True, fast_solver=True)
+		# 直径が6cmの時に高速ソルバーだとうまくカットできなかったので「正確」と「穴を許容」を追加
+		romly_utils.apply_boolean_object(object=obj, boolObject=bool_tool_obj, unlink=True, fast_solver=False, use_hole_torelant=True)
 
 		# 同様に下部をカット
 		bpy.ops.mesh.primitive_cube_add(size=100, enter_editmode=False, location=(0, 0, -thread_length - 50), rotation=(0, 0, 30))
 		bool_tool_obj = bpy.data.objects[bpy.context.active_object.name]
-		romly_utils.apply_boolean_object(object=obj, boolObject=bool_tool_obj, unlink=True, fast_solver=True)
+		romly_utils.apply_boolean_object(object=obj, boolObject=bool_tool_obj, unlink=True, fast_solver=False, use_hole_torelant=True)
 
 		# ねじ切りのない部分の長さだけ下に移動
 		if unthreaded_length > 0:
@@ -597,15 +598,15 @@ class ROMLYADDON_OT_add_jis_screw(bpy.types.Operator):
 	val_head_shape: EnumProperty(name='Head Shape', items=HeadShape, default=SCREW_HEAD_SHAPE_PAN)
 
 	# なべネジのサイズ
-	val_head_diameter: FloatProperty(name='Head Diameter', description='Head Diameter', default=romly_utils.SCREW_SPECS[DEFAULT_SIZE].head_diameter, min=1, max=55, subtype='DISTANCE', unit=bpy.utils.units.categories.LENGTH)
+	val_head_diameter: FloatProperty(name='Head Diameter', description='Head Diameter', default=romly_utils.SCREW_SPECS[DEFAULT_SIZE].head_diameter, min=1, max=200, subtype='DISTANCE', unit=bpy.utils.units.categories.LENGTH)
 	val_panhead_height: FloatProperty(name='Head Height', description='Head Height', default=romly_utils.SCREW_SPECS[DEFAULT_SIZE].panhead_height, min=0.1, max=50, subtype='DISTANCE', unit=bpy.utils.units.categories.LENGTH)
 
 	# 皿ネジのサイズ
-	val_flatHeadDiameter: FloatProperty(name='Flat Head Diameter', default=romly_utils.SCREW_SPECS[DEFAULT_SIZE].flathead_diameter, min=1, max=55, subtype='DISTANCE', unit=bpy.utils.units.categories.LENGTH)
+	val_flatHeadDiameter: FloatProperty(name='Flat Head Diameter', default=romly_utils.SCREW_SPECS[DEFAULT_SIZE].flathead_diameter, min=1, max=200, subtype='DISTANCE', unit=bpy.utils.units.categories.LENGTH)
 	val_flathead_edge_thickness: FloatProperty(name='Thickness of Flat Head Screw Edge', description='Thickness of Flat Head Screw Edge', default=romly_utils.SCREW_SPECS[DEFAULT_SIZE].flathead_edge_thickness, min=0, max=50, subtype='DISTANCE', unit=bpy.utils.units.categories.LENGTH)
 
 	# 六角ボルトのサイズ
-	val_boltHeadDiameter: FloatProperty(name='Head Diameter', description="Hexagon head's diagonal length", default=romly_utils.SCREW_SPECS[DEFAULT_SIZE].bolthead_diameter(), min=1, max=55, subtype='DISTANCE', unit=bpy.utils.units.categories.LENGTH)
+	val_boltHeadDiameter: FloatProperty(name='Head Diameter', description="Hexagon head's diagonal length", default=romly_utils.SCREW_SPECS[DEFAULT_SIZE].bolthead_diameter(), min=1, max=200, subtype='DISTANCE', unit=bpy.utils.units.categories.LENGTH)
 	val_boltHeadHeight: FloatProperty(name='Head Height', description='Head Height', default=romly_utils.SCREW_SPECS[DEFAULT_SIZE].bolthead_height, min=0.1, max=50, subtype='DISTANCE', unit=bpy.utils.units.categories.LENGTH)
 
 	# 十字穴のサイズ
@@ -613,7 +614,7 @@ class ROMLYADDON_OT_add_jis_screw(bpy.types.Operator):
 	val_phillips_depth: FloatProperty(name='Phillips Slit Depth', description='Phillips Slit Depth', default=romly_utils.SCREW_SPECS[DEFAULT_SIZE].phillips_depth, min=0, max=50, subtype='DISTANCE', unit=bpy.utils.units.categories.LENGTH)
 	val_phillips_rotation: FloatProperty(name='Phillips Rotation', description='Phillips Rotation', min=0, max=math.pi / 2, default=math.pi / 4, subtype='ANGLE', unit='ROTATION')
 
-	val_diameter: FloatProperty(name='Shaft Diameter', description='Shaft Diameter', default=romly_utils.SCREW_SPECS[DEFAULT_SIZE].diameter, min=1, max=55, subtype='DISTANCE', unit=bpy.utils.units.categories.LENGTH)
+	val_diameter: FloatProperty(name='Shaft Diameter', description='Shaft Diameter', default=romly_utils.SCREW_SPECS[DEFAULT_SIZE].diameter, min=1, max=200, subtype='DISTANCE', unit=bpy.utils.units.categories.LENGTH)
 
 	# ネジの長さ
 	val_lengths: EnumProperty(name='Lengths', items=LENGTH_ITEMS, default='l10', update=update_properties)
@@ -704,7 +705,7 @@ class ROMLYADDON_OT_add_jis_screw(bpy.types.Operator):
 			row.label(text=f"{bpy.app.translations.pgettext_iface('The length of the threaded part')}: {romly_utils.units_to_string(value=self.val_length - self.val_unthreaded_length)}")
 		col.separator()
 
-		col.label(text='Threading')
+		col.label(text='Threaded')
 		row = col.row(align=True)
 		row.prop(self, 'val_pitch')
 		row.prop(self, 'val_lead')
@@ -846,7 +847,7 @@ class ROMLYADDON_OT_add_jis_nut(bpy.types.Operator):
 	]
 	val_nut_type_number: EnumProperty(name='types', items=NUT_TYPE_NUMBERS, default='1', update=update_properties)
 
-	val_nutDiameter: FloatProperty(name='Nut Diameter', description='Nut Diameter', default=romly_utils.SCREW_SPECS[DEFAULT_SIZE].bolthead_diameter(), min=0.1, max=55, subtype='DISTANCE', unit=bpy.utils.units.categories.LENGTH)
+	val_nutDiameter: FloatProperty(name='Nut Diameter', description='Nut Diameter', default=romly_utils.SCREW_SPECS[DEFAULT_SIZE].bolthead_diameter(), min=0.1, max=200, subtype='DISTANCE', unit=bpy.utils.units.categories.LENGTH)
 	val_diameter: FloatProperty(name='Hole Diameter', description='Hole Diameter', default=romly_utils.SCREW_SPECS[DEFAULT_SIZE].diameter, min=0, max=50, subtype='DISTANCE', unit=bpy.utils.units.categories.LENGTH)
 	val_nutHeight: FloatProperty(name='Thickness', description='The thickness of the nut', default=romly_utils.SCREW_SPECS[DEFAULT_SIZE].nut_height, min=0.1, max=50, subtype='DISTANCE', unit=bpy.utils.units.categories.LENGTH)
 
@@ -880,7 +881,7 @@ class ROMLYADDON_OT_add_jis_nut(bpy.types.Operator):
 		col.prop(self, 'val_diameter')
 		col.prop(self, 'val_nutHeight', text=romly_utils.translate('Thickness', 'IFACE'))	# 'Thickness'はBlender内部の辞書で『幅』に翻訳されてしまうので、自前で翻訳
 
-		col.label(text='Threading')
+		col.label(text='Threaded')
 		row = col.row(align=True)
 		row.prop(self, 'val_pitch')
 		row.prop(self, 'val_lead')

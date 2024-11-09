@@ -257,7 +257,7 @@ class ROMLYADDON_OT_add_compression_spring(bpy.types.Operator):
 # 新規作成メニューに登録
 def menu_func(self, context):
 	self.layout.separator()
-	self.layout.operator(ROMLYADDON_OT_add_compression_spring.bl_idname, text=bpy.app.translations.pgettext_iface('Add Compression Spring'), icon='MESH_CAPSULE')
+	self.layout.operator(ROMLYADDON_OT_add_compression_spring.bl_idname, text=bpy.app.translations.pgettext_iface('Add Compression Spring'), icon='MOD_SCREW')
 
 
 

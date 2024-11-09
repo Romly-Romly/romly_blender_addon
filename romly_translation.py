@@ -204,7 +204,7 @@ TRANSLATION_DICT = {
 		('*', 'Set specs to M8 size'): 'M8サイズにします',
 		('*', 'Shaft Diameter'): '芯の直径',
 		('*', 'Screw Length'): 'ネジの長さ',
-		('*', 'Threading'): 'ねじ切り',
+		('*', 'Threaded'): 'ねじ切り',
 		('*', 'The distance between two adjacent threads'): 'ネジの山と山の間の距離',
 		('*', 'Thread Lead'): 'リード',
 		('*', 'How many times the pitch distance does the screw advance when turned once'):
@@ -409,6 +409,21 @@ TRANSLATION_DICT = {
 		('*', 'Shaft Length Below'): '芯の長さ（下部）',
 		('*', 'Total Length (Height): {value}'): '全体の長さ（高さ）: {value}',
 
+		# Add Lead Screw
+		('*', 'Add Lead Screw'): 'リードスクリューを追加',
+		('*', 'Construct a Lead Screw'): 'リードスクリューを作成します',
+		('*', 'The length of the lead screw'): 'リードスクリューの長さ',
+		('*', 'Major Dia.'): '外径',
+		('*', 'The outer diameter of the lead screw'): 'リードスクリューの外径',
+		('*', 'Minor Dia.'): '谷径',
+		('*', 'The thread valley diameter of the lead screw'): 'リードスクリューのねじ切りの谷部分の直径',
+		('*', 'The pitch of the lead screw'): 'リードスクリューのピッチ',
+		('*', 'Starts'): '多条',
+		('*', 'The number of thread starts of the lead screw'): 'リードスクリューの多条数',
+		('*', 'Thread Angle'): 'ねじ山の角度',
+		('*', 'The angle of the thread'): 'リードスクリューのねじ山の角度',
+		('*', 'Lead: {value}'): 'リード: {value}',
+
 		# MARK: Add Compression Spring
 		('*', 'Add Compression Spring'): '圧縮コイルばねを追加',
 		('*', 'Construct a Compression Spring'): '圧縮コイルばねを作成します',
@@ -457,6 +472,53 @@ TRANSLATION_DICT = {
 		('*', 'Center Position Diameter'): '中心位置の直径',
 		('*', 'The number of screw holes on one side. The total number of screw holes will be twice this value'): '片面のネジ穴の数。全ネジ穴の数はこの値の2倍になります',
 		('*', 'The angle between each screw hole'): '各ネジ穴の間の角度',
+
+		# Add Loadcell
+		('*', 'Add Loadcell'): 'ロードセルを追加',
+		('*', 'Construct a Loadcell'): 'ロードセルを作成します',
+		('*', 'Screw Holes Distance'): 'ネジ穴間の距離',
+		('*', 'Between Inner Holes'): '内側のネジ穴同士',
+		('*', 'Between Front/Rear Holes'): '手前（後ろ）のネジ穴同士',
+		('*', 'In the X Direction'): 'X軸方向',
+		('*', 'Screw Hole Sizes'): 'ネジ穴のサイズ',
+		('*', 'Front:'): '手前:',
+		('*', 'Rear:'): '後ろ:',
+		('*', 'Y-Origin'): '原点(Y軸)',
+		('*', 'Z-Origin:'): '原点(Z軸)',
+		('*', 'Front Screw Hole 1'): '手前のネジ穴1',
+		('*', 'Front Screw Hole 2'): '手前のネジ穴2',
+		('*', 'Front Screw Holes Center'): '手前のネジ穴の中央',
+		('*', 'Rear Screw Hole 1'): '手前のネジ穴1',
+		('*', 'Rear Screw Hole 2'): '手前のネジ穴2',
+		('*', 'Rear Screw Holes Center'): '手前のネジ穴の中央',
+		('*', 'Thin Part'): '細い部分',
+		('*', 'Cutout'): '切り抜き',
+		('*', 'Cutout Holes Diameter'): '切り抜きの穴の直径',
+		('*', 'The diameter of the cutout holes'): '切り抜きの穴の直径',
+		('*', 'Distance Between Cutout Holes'): '切り抜きの穴間の距離',
+		('*', 'Cutout Bridge Height'): '切り抜きのブリッジ部の高さ',
+		('*', 'Template:'): 'テンプレート:',
+		('*', '5kg Size'): '5kgサイズ',
+		('*', '1kg Size'): '1kgサイズ',
+		('*', '500g Size'): '500gサイズ',
+		('*', '100g Size'): '100gサイズ',
+		('*', 'Width and length of the middle narrow part'): '中央の細い部分の幅と長さ',
+		('*', 'Overall size of the loadcell'): 'ロードセルの全体の大きさ',
+		('*', 'Y-axis distance between two cutout holes'): '切り抜きの穴のY軸方向の距離',
+		('*', 'Z-axis height of the bridge between two cutout holes'): '2つの切り抜きの穴間のブリッジ部のZ軸方向の高さ',
+		('*', 'The diameter of the center hole located between the two cutout holes'): '2つの切り抜きの穴の中央の穴の直径',
+		('*', 'The distance between two innermost screw holes'): '内側の2つのネジ穴の間の距離',
+		('*', 'The distance between two front/rear screw holes. Setting it to zero results in one screw hole at the front and one at the rear'): '手前（後ろ）の2つのネジ穴の間の距離。ゼロに設定すると、手前（後ろ）のネジ穴は一つになります',
+		('*', 'The distance between each pair of horizontally aligned screw holes. Setting it to zero aligns the screw holes in a single row'): '水平に並んだネジ穴間の距離。ゼロに設定すると、ネジ穴は一列になります',
+		('*', 'Size of the front screw holes'): '手前のネジ穴のサイズ',
+		('*', 'Size of the rear screw holes'): '後ろのネジ穴のサイズ',
+		('*', "Thread the front screw holes. You also need to check the 'Enable Threading'"): '手前のネジ穴をねじ切りします。『ねじ切りを有効にする』もチェックする必要があります',
+		('*', "Thread the rear screw holes. You also need to check the 'Enable Threading'"): '後ろのネジ穴をねじ切りします。『ねじ切りを有効にする』もチェックする必要があります',
+		('*', 'Cutout Hole Segments'): '切り抜きの穴のセグメント数',
+		('*', 'The Y-axis origin position of the loadcell object'): 'ロードセルオブジェクトのY軸の原点位置',
+		('*', 'The Z-axis origin position of the loadcell object'): 'ロードセルオブジェクトのZ軸の原点位置',
+		('*', 'Checking this option enables threading settings for the front and rear screw holes'): 'チェックすると、前後のネジ穴のねじ切り設定が有効になります',
+		('*', 'Enable Threading'): 'ねじ切りを有効にする',
 
 		# Add Nut Hole
 		('*', 'Add Nut Hole'): 'ナット穴を追加',
@@ -553,6 +615,12 @@ TRANSLATION_DICT = {
 		('*', 'Export the selected objects as an STL file'): '選択されたオブジェクトをSTLファイルとしてエクスポートします',
 		('*', 'The selection is exported to: {filename}'): '選択されているオブジェクトを {filename} にエクスポートしました',
 
+		# Mil Size Panel
+		('*', 'Mil Size'): 'Milサイズ',
+		('*', 'Toggle Unit mm/mil(thou)'): 'mm/mil(thou) 単位切替',
+		('*', 'Distance Between 2 Verts'): '2つの頂点間の距離',
+		('*', 'Minimum Distance Between 2 Edges'): '2つの辺間の最小距離',
+
 		# language_panel
 		('*', 'Set blender language to specified language'): 'blenderを指定された言語に設定します',
 		('*', 'The language was set to {language}'): '言語が {language} に設定されました',
@@ -561,6 +629,15 @@ TRANSLATION_DICT = {
 		('*', 'Reload and Run Script'): '再読み込みして実行',
 		('*', 'Reload active script from disk and run'): 'アクティブスクリプトをディスクから再読み込みして実行します'
 	},
+
+
+
+
+
+
+
+
+
 
 	'fr_FR': {
 		# ルーローの多角形
@@ -605,13 +682,16 @@ TRANSLATION_DICT = {
 		('*', 'Add JIS Nut'): 'Ajouter écrou JIS',
 		('*', 'Nut'): 'Écrou',
 
-		# MARK: Add Coupling
+		# Add Coupling
 		('*', 'Add Coupling'): 'Ajouter Accouplement',
 		('*', 'Coupling'): 'Accouplement',
 
-		# MARK: Add Lead Nut
+		# Add Lead Nut
 		('*', 'Add Lead Nut'): 'Ajouter Écrou à vis mère',
 		('*', 'Flange'): 'Bride',
+
+		# Add Loadcell
+		('*', 'Add Loadcell'): 'Ajouter Cellule de Charge',
 
 		# language_panel
 		('*', 'Set blender language to specified language'): 'Régler la langue du blender sur la langue spécifiée',
@@ -619,5 +699,21 @@ TRANSLATION_DICT = {
 
 		# Reload and Run Script
 		('*', 'Reload and Run Script'): 'Recharger et Exécuter le Script',
+	},
+
+
+
+
+
+
+
+
+
+
+	'de_DE': {
+		('*', 'Pitch'): 'Steigung',
+
+		# Add Loadcell
+		('*', 'Add Loadcell'): 'Ebene Lastzelle',
 	},
 }
